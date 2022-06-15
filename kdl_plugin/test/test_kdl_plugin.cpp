@@ -1,3 +1,19 @@
+// Copyright (c) 2022, PickNik, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+//
+/// \author: Paul Gesel
+
 #include <gmock/gmock.h>
 #include <memory>
 #include "kinematics_interface/kinematics_interface_base.hpp"
@@ -41,9 +57,7 @@ public:
         node->declare_parameter("alpha", 0.005);
         node->set_parameter(param);
     }
-
 };
-
 
 TEST_F(TestKDLPlugin, KDL_plugin_function) {
     std::vector<double> pos = {0, 0};
@@ -67,12 +81,10 @@ TEST_F(TestKDLPlugin, KDL_plugin_function) {
     // convert joint delta to cartesian delta
     std::vector<double> delta_x_est(6);
     ASSERT_TRUE(ik_->convert_joint_deltas_to_cartesian_deltas(delta_theta, delta_x_est));
-
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description) {
+
     loadAlphaParameter();
-
     ASSERT_FALSE(ik_->initialize(node, end_effector));
-
 }

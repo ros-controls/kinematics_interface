@@ -12,11 +12,9 @@ find_package(pluginlib REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(kinematics_interface REQUIRED)
 
-
 add_library(kdl_plugin SHARED
         src/kdl_plugin.cpp
         )
-
 
 ament_target_dependencies(kdl_plugin
         kdl_parser

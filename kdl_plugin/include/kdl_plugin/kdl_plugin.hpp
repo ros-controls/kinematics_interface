@@ -13,6 +13,7 @@
 // limitations under the License.
 //
 /// \author: Andy Zelenak, Paul Gesel
+/// \description: KDL plugin for kinematics interface
 
 #pragma once
 
@@ -82,11 +83,7 @@ namespace kdl_plugin
 
 
     private:
-        /** \brief Possibly calculate a velocity scaling factor, due to proximity of
-         * singularity and direction of motion
-      //   */
         KDL::JntArray convert_vector_to_kdl_joint_array(std::vector<double> vec);
-        KDL::JntArrayVel convert_vector_to_kdl_joint_array_vel(std::vector<double> vec);
 
         bool initialized = false;
         std::string end_effector_name_;
@@ -94,13 +91,13 @@ namespace kdl_plugin
         KDL::Chain chain_;
         std::shared_ptr<KDL::ChainFkSolverPos_recursive> fk_pos_solver_;
         KDL::JntArray q_;
-        KDL::JntArrayVel q_vel_;
         KDL::Frame frame_;
         std::shared_ptr<KDL::Jacobian> jacobian_;
         std::shared_ptr<KDL::TreeJntToJacSolver> jac_solver_;
         std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
         std::unordered_map<std::string, int> name_segment_map_;
-        double alpha; // damping term for Jacobian inverse
+        // alpha: damping term for Jacobian inverse
+        double alpha;
     };
 
 }  // namespace moveit_differential_ik_plugin

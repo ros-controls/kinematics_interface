@@ -1,4 +1,4 @@
-// Copyright (c) 2021, PickNik, Inc.
+// Copyright (c) 2022, PickNik, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 /// \author: Andy Zelenak
-/// \description: Base class for differential kinematics plugins
+/// \description: Base class for kinematics interface
 
 #include "kinematics_interface/kinematics_interface_base.hpp"
 

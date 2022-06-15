@@ -25,7 +25,6 @@ namespace kdl_plugin {
         end_effector_name_ = end_effector_name;
 
         // get robot description
-//        node->declare_parameter("robot_description", "");
         auto robot_param = rclcpp::Parameter();
         if (!node->get_parameter("robot_description", robot_param)){
             RCLCPP_ERROR(LOGGER, "parameter robot_description not set");
@@ -162,12 +161,6 @@ namespace kdl_plugin {
         KDL::JntArray joint_array;
         joint_array.data = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(vec.data(), vec.size());
         return {joint_array};
-    }
-
-    KDL::JntArrayVel KDLKinematics::convert_vector_to_kdl_joint_array_vel(std::vector<double> vec){
-        KDL::JntArray joint_array;
-        joint_array.data = Eigen::Map<Eigen::VectorXd, Eigen::Unaligned>(vec.data(), vec.size());
-        return KDL::JntArrayVel(joint_array);
     }
 
 }
