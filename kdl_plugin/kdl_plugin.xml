@@ -1,0 +1,9 @@
+<library path="kdl_plugin">
+  <class name="kdl_plugin/KDLKinematics"
+         type="kdl_plugin::KDLKinematics"
+         base_class_type="kinematics_interface::KinematicsBaseClass">
+    <description>
+      KDL plugin for ROS2 control kinematics interface
+    </description>
+  </class>
+</library>
