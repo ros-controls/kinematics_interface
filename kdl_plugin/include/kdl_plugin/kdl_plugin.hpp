@@ -92,7 +92,7 @@ namespace kdl_plugin
         std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
         std::unordered_map<std::string, int> link_name_map_;
         double alpha; // damping term for Jacobian inverse
-        Eigen::Vector<double,6> delta_x;
+        Eigen::Matrix<double,6,1> delta_x;
         Eigen::VectorXd delta_theta;
         Eigen::MatrixXd I;
     };

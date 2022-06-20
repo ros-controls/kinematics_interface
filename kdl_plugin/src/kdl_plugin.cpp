@@ -93,9 +93,10 @@ namespace kdl_plugin {
     memcpy(delta_x.data(), delta_x_vec.data(), delta_x_vec.size()*sizeof(double));
     // calculate Jacobian
     jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[end_effector_name_]);
+    // TODO this dynamic allocation needs to be replaced
     Eigen::Matrix<double, 6, Eigen::Dynamic> J = jacobian_->data;
     // damped inverse
-    auto J_inverse = (J.transpose() * J + alpha * I).inverse() * J.transpose();
+    Eigen::Matrix<double, 6, 6> J_inverse = (J.transpose() * J + alpha * I).inverse() * J.transpose();
     delta_theta = J_inverse * delta_x;
     // copy eigen type to vector
     memcpy(delta_theta_vec.data(), delta_theta.data(), num_joints_*sizeof(double));
