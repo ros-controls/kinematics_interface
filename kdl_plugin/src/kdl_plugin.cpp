@@ -32,7 +32,7 @@ namespace kdl_plugin {
     }
     auto robot_description = robot_param.as_string();
     // get alpha damping term
-    auto alpha_param = rclcpp::Parameter("alpha", 0.0005);
+    auto alpha_param = rclcpp::Parameter("alpha", 0.000005);
     if (node->has_parameter("alpha")) {
       node->get_parameter("alpha", alpha_param);
     }
