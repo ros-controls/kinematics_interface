@@ -111,6 +111,10 @@ namespace kdl_plugin {
     if (!update_joint_array(joint_pos)) {
       return false;
     }
+
+    // reset transform_vec
+    memset(transform_vec.data(), 0, 16*sizeof(double));
+
     // special case: since the root is not in the robot tree, need to return identity transform
     if (link_name == root_name_) {
       transform_vec[0] = 1.0;
