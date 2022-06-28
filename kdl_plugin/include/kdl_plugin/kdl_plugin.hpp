@@ -82,6 +82,7 @@ namespace kdl_plugin
 
     private:
         bool update_joint_array(const std::vector<double>& joint_pos);
+        bool verify_link_name(const std::string& link_name);
 
         bool initialized = false;
         std::string end_effector_name_;

@@ -73,10 +73,13 @@ namespace kdl_plugin {
     if (!update_joint_array(joint_pos)) {
       return false;
     }
+    if (!verify_link_name(link_name)){
+      return false;
+    }
     // copy vector to eigen type
     memcpy(delta_theta.data(), delta_theta_vec.data(), delta_theta_vec.size()*sizeof(double));
     // calculate Jacobian
-    jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[end_effector_name_]);
+    jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
     delta_x = jacobian_->data * delta_theta;
     // copy eigen type to vector
     memcpy(delta_x_vec.data(), delta_x.data(), 6*sizeof(double));
@@ -91,10 +94,13 @@ namespace kdl_plugin {
     if (!update_joint_array(joint_pos)) {
       return false;
     }
+    if (!verify_link_name(link_name)){
+      return false;
+    }
     // copy vector to eigen type
     memcpy(delta_x.data(), delta_x_vec.data(), delta_x_vec.size()*sizeof(double));
     // calculate Jacobian
-    jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[end_effector_name_]);
+    jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
     // TODO this dynamic allocation needs to be replaced
     Eigen::Matrix<double, 6, Eigen::Dynamic> J = jacobian_->data;
     // damped inverse
@@ -113,6 +119,9 @@ namespace kdl_plugin {
     if (!update_joint_array(joint_pos)) {
       return false;
     }
+    if (!verify_link_name(link_name)){
+      return false;
+    }
 
     // reset transform_vec
     memset(transform_vec.data(), 0, 16*sizeof(double));
@@ -124,15 +133,6 @@ namespace kdl_plugin {
       transform_vec[10] = 1.0;
       transform_vec[15] = 1.0;
       return true;
-    }
-    if (link_name_map_.find(link_name) == link_name_map_.end()) {
-      std::string links;
-      for (auto i = 0u; i < chain_.getNrOfSegments(); i++) {
-        links += "\n" + chain_.getSegment(i).getName();
-      }
-      RCLCPP_ERROR(LOGGER, "The link %s was not found in the robot chain. Available links are: %s",
-                   link_name.c_str(), links.c_str());
-      return false;
     }
     fk_pos_solver_->JntToCart(q_, frame_, link_name_map_[link_name]);
     double tmp[] = {frame_.p.x(), frame_.p.y(), frame_.p.z()};
@@ -160,6 +160,22 @@ namespace kdl_plugin {
       return false;
     }
     memcpy(q_.data.data(), joint_pos.data(), joint_pos.size()*sizeof(double));
+    return true;
+  }
+
+  bool KDLKinematics::verify_link_name(const std::string &link_name) {
+    if (link_name == root_name_) {
+      return true;
+    }
+    if (link_name_map_.find(link_name) == link_name_map_.end()) {
+      std::string links;
+      for (auto i = 0u; i < chain_.getNrOfSegments(); i++) {
+        links += "\n" + chain_.getSegment(i).getName();
+      }
+      RCLCPP_ERROR(LOGGER, "The link %s was not found in the robot chain. Available links are: %s",
+                   link_name.c_str(), links.c_str());
+      return false;
+    }
     return true;
   }
 }
