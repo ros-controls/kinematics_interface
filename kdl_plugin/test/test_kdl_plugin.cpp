@@ -74,11 +74,11 @@ TEST_F(TestKDLPlugin, KDL_plugin_function) {
     // convert cartesian delta to joint delta
     std::vector<double> delta_x = {0, 0, 1, 0, 0, 0};
     std::vector<double> delta_theta(6);
-    ASSERT_TRUE(ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, delta_theta));
+    ASSERT_TRUE(ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector, delta_theta));
 
     // convert joint delta to cartesian delta
     std::vector<double> delta_x_est(6);
-    ASSERT_TRUE(ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, delta_x_est));
+    ASSERT_TRUE(ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector, delta_x_est));
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description) {

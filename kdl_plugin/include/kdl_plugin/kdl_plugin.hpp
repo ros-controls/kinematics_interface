@@ -44,24 +44,28 @@ namespace kdl_plugin
        * \brief Convert Cartesian delta-x to joint delta-theta, using the Jacobian.
        * \param[in] joint_pos joint positions of the robot in radians
        * \param[in] delta_x_vec input Cartesian deltas (x, y, z, wx, wy, wz)
+       * \param[in] link_name the name of the link that the Jacobian is calculated with
        * \param[out] delta_theta_vec output vector with joint states
        * \return true if successful
        */
       virtual bool
       convert_cartesian_deltas_to_joint_deltas(const std::vector<double> &joint_pos,
                                                const std::vector<double> &delta_x_vec,
+                                               const std::string &link_name,
                                                std::vector<double> &delta_theta_vec);
 
       /**
        * \brief Convert joint delta-theta to Cartesian delta-x.
        * \param joint_pos joint positions of the robot in radians
        * \param[in] delta_theta_vec vector with joint states
+       * \param[in] link_name the name of the link that the Jacobian is calculated with
        * \param[out] delta_x_vec  Cartesian deltas (x, y, z, wx, wy, wz)
        * \return true if successful
        */
       virtual bool
       convert_joint_deltas_to_cartesian_deltas(const std::vector<double> &joint_pos,
                                                const std::vector<double> &delta_theta_vec,
+                                               const std::string &link_name,
                                                std::vector<double> &delta_x_vec);
 
       /**

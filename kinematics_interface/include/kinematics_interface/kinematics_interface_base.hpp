@@ -43,6 +43,7 @@ namespace kinematics_interface {
     virtual bool
     convert_cartesian_deltas_to_joint_deltas(const std::vector<double> &joint_pos,
                                              const std::vector<double> &delta_x_vec,
+                                             const std::string &link_name,
                                              std::vector<double> &delta_theta_vec) = 0;
 
     /**
@@ -55,6 +56,7 @@ namespace kinematics_interface {
     virtual bool
     convert_joint_deltas_to_cartesian_deltas(const std::vector<double> &joint_pos,
                                              const std::vector<double> &delta_theta_vec,
+                                             const std::string &link_name,
                                              std::vector<double> &delta_x_vec) = 0;
 
     /**

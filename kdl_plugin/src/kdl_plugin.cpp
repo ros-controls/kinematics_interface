@@ -67,6 +67,7 @@ namespace kdl_plugin {
 
   bool KDLKinematics::convert_joint_deltas_to_cartesian_deltas(const std::vector<double> &joint_pos,
                                                                const std::vector<double> &delta_theta_vec,
+                                                               const std::string &link_name,
                                                                std::vector<double> &delta_x_vec) {
     // get joint array and check dimensions
     if (!update_joint_array(joint_pos)) {
@@ -84,6 +85,7 @@ namespace kdl_plugin {
 
   bool KDLKinematics::convert_cartesian_deltas_to_joint_deltas(const std::vector<double> &joint_pos,
                                                                const std::vector<double> &delta_x_vec,
+                                                               const std::string &link_name,
                                                                std::vector<double> &delta_theta_vec) {
     // get joint array and check dimensions
     if (!update_joint_array(joint_pos)) {
@@ -151,9 +153,9 @@ namespace kdl_plugin {
       RCLCPP_ERROR(LOGGER, "The KDL kinematics plugin was not initialized. Ensure you called the initialize method.");
       return false;
     }
-    // check that joint_pos is the correct size
+    // check that joint_pos_ is the correct size
     if (joint_pos.size() != num_joints_) {
-      RCLCPP_ERROR(LOGGER, "The size of joint_pos (%zu) does not match that of the robot model (%zu)",
+      RCLCPP_ERROR(LOGGER, "The size of joint_pos_ (%zu) does not match that of the robot model (%zu)",
                    joint_pos.size(), num_joints_);
       return false;
     }
