@@ -79,6 +79,17 @@ namespace kdl_plugin
       calculate_link_transform(const std::vector<double> &joint_pos, const std::string &link_name,
                                std::vector<double> &transform_vec);
 
+      /**
+      * \brief Calculates the joint transform for a specified link using provided joint positions.
+      * \param[in] joint_pos joint positions of the robot in radians
+      * \param[in] link_name the name of the link to find the transform for
+      * \param[out] jacobian Jacobian matrix of the specified link in column major format.
+      * \return true if successful
+      */
+      virtual bool
+      calculate_jacobian(const std::vector<double> &joint_pos, const std::string &link_name,
+                         std::vector<double> &jacobian);
+
 
     private:
         bool update_joint_array(const std::vector<double>& joint_pos);

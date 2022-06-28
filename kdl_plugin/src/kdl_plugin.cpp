@@ -104,10 +104,34 @@ namespace kdl_plugin {
     // TODO this dynamic allocation needs to be replaced
     Eigen::Matrix<double, 6, Eigen::Dynamic> J = jacobian_->data;
     // damped inverse
-    Eigen::Matrix<double, 6, 6> J_inverse = (J.transpose() * J + alpha * I).inverse() * J.transpose();
+    Eigen::Matrix<double, Eigen::Dynamic, 6> J_inverse = (J.transpose() * J + alpha * I).inverse() * J.transpose();
     delta_theta = J_inverse * delta_x;
     // copy eigen type to vector
     memcpy(delta_theta_vec.data(), delta_theta.data(), num_joints_*sizeof(double));
+    return true;
+  }
+
+  bool KDLKinematics::calculate_jacobian(const std::vector<double> &joint_pos,
+                                                               const std::string &link_name,
+                                                               std::vector<double> &jacobian) {
+    // get joint array and check dimensions
+    if (!update_joint_array(joint_pos)) {
+      return false;
+    }
+    if (!verify_link_name(link_name)){
+      return false;
+    }
+    if (jacobian.size() != 6*num_joints_) {
+      RCLCPP_ERROR(LOGGER, "The size of the jacobian argument (%zu) does not match the required size of (%zu)",
+                   jacobian.size(), 6*num_joints_);
+      return false;
+    }
+
+    // calculate Jacobian
+    jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
+
+    memcpy(jacobian.data(), jacobian_->data.data(), 6*num_joints_*sizeof(double));
+
     return true;
   }
 
@@ -136,7 +160,7 @@ namespace kdl_plugin {
     }
     fk_pos_solver_->JntToCart(q_, frame_, link_name_map_[link_name]);
     double tmp[] = {frame_.p.x(), frame_.p.y(), frame_.p.z()};
-    // KDL::Rotation stores data in row-major format. e.g Xx, Yz, Zx, Xy... = data index at 0, 1, 2, 3, 4...
+    // KDL::Rotation stores data in row-major format. e.g Xx, Yx, Zx, Xy... = data index at 0, 1, 2, 3, 4...
     for (int r = 0; r < 3; r++) {
       for (int c = 0; c < 3; c++) {
         transform_vec[r + 4 * c] = frame_.M.data[3 * r + c];
