@@ -25,7 +25,7 @@ namespace kinematics_interface {
   public:
     KinematicsBaseClass();
 
-    ~KinematicsBaseClass();
+    virtual ~KinematicsBaseClass() = default;
 
     /**
      * \brief Create an interface object which takes calculate forward and inverse kinematics

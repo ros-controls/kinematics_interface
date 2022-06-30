@@ -28,7 +28,7 @@
 #include "eigen3/Eigen/LU"
 
 
-namespace kdl_plugin
+namespace kinematics_interface_kdl
 {
 
     class KDLKinematics : public kinematics_interface::KinematicsBaseClass
@@ -113,4 +113,4 @@ namespace kdl_plugin
         Eigen::MatrixXd I;
     };
 
-}  // namespace moveit_differential_ik_plugin
+}  // namespace kinematics_interface_kdl

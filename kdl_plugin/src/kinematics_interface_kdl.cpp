@@ -14,11 +14,11 @@
 //
 /// \author: Andy Zelenak, Paul Gesel
 
-#include "kdl_plugin/kdl_plugin.hpp"
+#include "kinematics_interface_kdl/kinematics_interface_kdl.hpp"
 
-namespace kdl_plugin {
+namespace kinematics_interface_kdl {
 
-  rclcpp::Logger LOGGER = rclcpp::get_logger("kdl_plugin");
+  rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_kdl");
 
   bool KDLKinematics::initialize(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
                                  const std::string &end_effector_name) {
@@ -206,5 +206,5 @@ namespace kdl_plugin {
 
 #include "pluginlib/class_list_macros.hpp"
 
-PLUGINLIB_EXPORT_CLASS(kdl_plugin::KDLKinematics,
+PLUGINLIB_EXPORT_CLASS(kinematics_interface_kdl::KDLKinematics,
                        kinematics_interface::KinematicsBaseClass)

@@ -12,11 +12,11 @@ find_package(pluginlib REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(kinematics_interface REQUIRED)
 
-add_library(kdl_plugin SHARED
-        src/kdl_plugin.cpp
+add_library(kinematics_interface_kdl SHARED
+        src/kinematics_interface_kdl.cpp
         )
 
-ament_target_dependencies(kdl_plugin
+ament_target_dependencies(kinematics_interface_kdl
         kdl_parser
         pluginlib
         Eigen3
@@ -24,15 +24,15 @@ ament_target_dependencies(kdl_plugin
         )
 
 target_include_directories(
-        kdl_plugin
+        kinematics_interface_kdl
         PRIVATE
         include
 )
 
-pluginlib_export_plugin_description_file(kdl_plugin kdl_plugin.xml)
+pluginlib_export_plugin_description_file(kinematics_interface_kdl kinematics_interface_kdl.xml)
 
 install(
-        TARGETS kdl_plugin
+        TARGETS kinematics_interface_kdl
         RUNTIME DESTINATION bin
         ARCHIVE DESTINATION lib
         LIBRARY DESTINATION lib
@@ -50,11 +50,11 @@ if(BUILD_TESTING)
   find_package(ros2_control_test_assets REQUIRED)
 
   ament_add_gmock(
-          test_kdl_plugin
-          test/test_kdl_plugin.cpp
+          test_kinematics_interface_kdl
+          test/test_kinematics_interface_kdl.cpp
   )
-  target_include_directories(test_kdl_plugin PRIVATE include)
-  ament_target_dependencies(test_kdl_plugin
+  target_include_directories(test_kinematics_interface_kdl PRIVATE include)
+  ament_target_dependencies(test_kinematics_interface_kdl
           kinematics_interface
           ros2_control_test_assets
           pluginlib

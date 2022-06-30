@@ -23,9 +23,9 @@ namespace kinematics_interface
 
     }
 
-    KinematicsBaseClass::~KinematicsBaseClass(){
+    //KinematicsBaseClass::~KinematicsBaseClass(){
 
-    }
+    //}
 
 }
 
