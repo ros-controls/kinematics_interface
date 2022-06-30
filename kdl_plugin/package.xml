@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>kdl_plugin</name>
+  <name>kinematics_interface_kdl</name>
   <version>0.0.0</version>
-  <description>KDL based implementation of ROS2 control kinematics interface</description>
+  <description>KDL implementation of ros2_control kinematics interface</description>
   <maintainer email="paul.gesel@picknik.ai">paul</maintainer>
   <license>TODO: License declaration</license>
 

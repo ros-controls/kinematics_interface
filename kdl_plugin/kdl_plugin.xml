@@ -3,7 +3,7 @@
          type="kdl_plugin::KDLKinematics"
          base_class_type="kinematics_interface::KinematicsBaseClass">
     <description>
-      KDL plugin for ROS2 control kinematics interface
+      KDL plugin for ros2_control kinematics interface
     </description>
   </class>
 </library>
