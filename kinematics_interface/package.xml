@@ -5,6 +5,7 @@
   <version>0.0.0</version>
   <description>Kinematics interface for ROS 2 control</description>
   <maintainer email="denis@stogl.de">Denis Štogl</maintainer>
+  <maintainer email="bence.magyar.robotics@gmail.com">Bence Magyar</maintainer>
   <maintainer email="zelenak@picknik.ai">Andy Zelenak</maintainer>
   <maintainer email="paul.gesel@picknik.ai">Paul Gesel</maintainer>
   <license>Apache License 2.0</license>

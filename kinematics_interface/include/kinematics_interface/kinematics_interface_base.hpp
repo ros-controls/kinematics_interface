@@ -23,7 +23,7 @@
 namespace kinematics_interface {
   class KinematicsBaseClass {
   public:
-    KinematicsBaseClass();
+    KinematicsBaseClass() = default;
 
     virtual ~KinematicsBaseClass() = default;
 

@@ -5,7 +5,7 @@
   <version>0.0.0</version>
   <description>KDL implementation of ros2_control kinematics interface</description>
   <maintainer email="paul.gesel@picknik.ai">paul</maintainer>
-  <license>TODO: License declaration</license>
+  <license>Apache License 2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
