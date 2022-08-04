@@ -14,14 +14,14 @@ find_package(kinematics_interface REQUIRED)
 
 add_library(kinematics_interface_kdl SHARED
         src/kinematics_interface_kdl.cpp
-        )
+)
 
 ament_target_dependencies(kinematics_interface_kdl
         kdl_parser
         pluginlib
         Eigen3
         kinematics_interface
-        )
+)
 
 target_include_directories(
         kinematics_interface_kdl
@@ -46,7 +46,6 @@ install(
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
-  find_package(ros2_control_test_assets REQUIRED)
   find_package(ros2_control_test_assets REQUIRED)
 
   ament_add_gmock(
