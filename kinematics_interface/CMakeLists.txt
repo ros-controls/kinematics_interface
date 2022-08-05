@@ -17,8 +17,7 @@ find_package(rclcpp_lifecycle REQUIRED)
 # Create interface library for kinematics base class
 add_library(kinematics_interface
     INTERFACE
-    include/kinematics_interface/kinematics_interface_base.hpp
-    )
+)
 
 target_include_directories(
     kinematics_interface
@@ -38,7 +37,7 @@ target_compile_definitions(kinematics_interface INTERFACE "KINEMATICS_INTERFACE_
 
 install(DIRECTORY include/
     DESTINATION include
-    )
+)
 
 ament_export_dependencies(
     rclcpp_lifecycle
