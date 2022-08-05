@@ -25,7 +25,7 @@ public:
     std::shared_ptr<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>> ik_loader_;
     std::shared_ptr<kinematics_interface::KinematicsBaseClass> ik_;
     std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
-    std::string end_effector = "link2";
+    std::string end_effector_ = "link2";
 
     void SetUp() {
         // init ros
@@ -65,23 +65,23 @@ TEST_F(TestKDLPlugin, KDL_plugin_function) {
     loadAlphaParameter();
 
     // initialize the  plugin
-    ASSERT_TRUE(ik_->initialize(node_, end_effector));
+    ASSERT_TRUE(ik_->initialize(node_, end_effector_));
 
     // calculate end effector transform
     std::vector<double> pos = {0, 0};
     std::vector<double> end_effector_transform(16);
-    ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector, end_effector_transform));
+    ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
     // convert cartesian delta to joint delta
     std::vector<double> delta_x = {0, 0, 1, 0, 0, 0};
     std::vector<double> delta_theta(2);
     ASSERT_TRUE(
-            ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector, delta_theta));
+            ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
 
     // convert joint delta to cartesian delta
     std::vector<double> delta_x_est(6);
     ASSERT_TRUE(
-            ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector, delta_x_est));
+            ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 }
 
 TEST_F(TestKDLPlugin, incorrect_input_sizes) {
@@ -90,7 +90,7 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes) {
     loadAlphaParameter();
 
     // initialize the  plugin
-    ASSERT_TRUE(ik_->initialize(node_, end_effector));
+    ASSERT_TRUE(ik_->initialize(node_, end_effector_));
 
     // define correct values
     std::vector<double> pos = {0, 0};
@@ -103,32 +103,32 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes) {
     std::vector<double> vec_5 = {1.0, 2.0, 3.0, 4.0, 5.0};
 
     // calculate transform
-    ASSERT_FALSE(ik_->calculate_link_transform(vec_5, end_effector, end_effector_transform));
+    ASSERT_FALSE(ik_->calculate_link_transform(vec_5, end_effector_, end_effector_transform));
     ASSERT_FALSE(ik_->calculate_link_transform(pos, "link_not_in_model", end_effector_transform));
-    ASSERT_FALSE(ik_->calculate_link_transform(pos, end_effector, vec_5));
+    ASSERT_FALSE(ik_->calculate_link_transform(pos, end_effector_, vec_5));
 
     // convert cartesian delta to joint delta
     ASSERT_FALSE(
-            ik_->convert_cartesian_deltas_to_joint_deltas(vec_5, delta_x, end_effector, delta_theta));
+            ik_->convert_cartesian_deltas_to_joint_deltas(vec_5, delta_x, end_effector_, delta_theta));
     ASSERT_FALSE(
-            ik_->convert_cartesian_deltas_to_joint_deltas(pos, vec_5, end_effector, delta_theta));
+            ik_->convert_cartesian_deltas_to_joint_deltas(pos, vec_5, end_effector_, delta_theta));
     ASSERT_FALSE(
             ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, "link_not_in_model", delta_theta));
-    ASSERT_FALSE(ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector, vec_5));
+    ASSERT_FALSE(ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, vec_5));
 
     // convert joint delta to cartesian delta
     ASSERT_FALSE(
-            ik_->convert_joint_deltas_to_cartesian_deltas(vec_5, delta_theta, end_effector, delta_x_est));
+            ik_->convert_joint_deltas_to_cartesian_deltas(vec_5, delta_theta, end_effector_, delta_x_est));
     ASSERT_FALSE(
-            ik_->convert_joint_deltas_to_cartesian_deltas(pos, vec_5, end_effector, delta_x_est));
+            ik_->convert_joint_deltas_to_cartesian_deltas(pos, vec_5, end_effector_, delta_x_est));
     ASSERT_FALSE(ik_->convert_joint_deltas_to_cartesian_deltas(
             pos, delta_theta, "link_not_in_model", delta_x_est));
     ASSERT_FALSE(
-            ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector, vec_5));
+            ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, vec_5));
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description) {
     // load alpha to parameter server
     loadAlphaParameter();
-    ASSERT_FALSE(ik_->initialize(node_, end_effector));
+    ASSERT_FALSE(ik_->initialize(node_, end_effector_));
 }
