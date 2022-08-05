@@ -37,7 +37,7 @@ target_compile_definitions(kinematics_interface INTERFACE "KINEMATICS_INTERFACE_
 
 install(DIRECTORY include/
     DESTINATION include
-    )
+)
 
 ament_export_dependencies(
     rclcpp_lifecycle

@@ -58,7 +58,7 @@ if(BUILD_TESTING)
           ros2_control_test_assets
           pluginlib
           ros2_control_test_assets
-          )
+  )
 
 endif()
 
