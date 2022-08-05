@@ -22,8 +22,9 @@ namespace kinematics_interface_kdl {
 
   bool KDLKinematics::initialize(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
                                  const std::string &end_effector_name) {
+    // track initialization plugin
     initialized = true;
-    end_effector_name_ = end_effector_name;
+
     // get robot description
     auto robot_param = rclcpp::Parameter();
     if (!node->get_parameter("robot_description", robot_param)) {
@@ -69,20 +70,22 @@ namespace kinematics_interface_kdl {
                                                                const std::vector<double> &delta_theta_vec,
                                                                const std::string &link_name,
                                                                std::vector<double> &delta_x_vec) {
-    // get joint array and check dimensions
-    if (!update_joint_array(joint_pos)) {
+    // verify inputs
+    if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
+        !verify_cartesian_vector(delta_x_vec) || !verify_joint_vector(delta_theta_vec)) {
       return false;
     }
-    if (!verify_link_name(link_name)){
-      return false;
-    }
+
+    // get joint array
+    update_joint_array(joint_pos);
+
     // copy vector to eigen type
-    memcpy(delta_theta.data(), delta_theta_vec.data(), delta_theta_vec.size()*sizeof(double));
+    memcpy(delta_theta.data(), delta_theta_vec.data(), delta_theta_vec.size() * sizeof(double));
     // calculate Jacobian
     jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
     delta_x = jacobian_->data * delta_theta;
     // copy eigen type to vector
-    memcpy(delta_x_vec.data(), delta_x.data(), 6*sizeof(double));
+    memcpy(delta_x_vec.data(), delta_x.data(), 6 * sizeof(double));
     return true;
   }
 
@@ -90,15 +93,17 @@ namespace kinematics_interface_kdl {
                                                                const std::vector<double> &delta_x_vec,
                                                                const std::string &link_name,
                                                                std::vector<double> &delta_theta_vec) {
-    // get joint array and check dimensions
-    if (!update_joint_array(joint_pos)) {
+    // verify inputs
+    if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
+        !verify_cartesian_vector(delta_x_vec) || !verify_joint_vector(delta_theta_vec)) {
       return false;
     }
-    if (!verify_link_name(link_name)){
-      return false;
-    }
+
+    // get joint array
+    update_joint_array(joint_pos);
+
     // copy vector to eigen type
-    memcpy(delta_x.data(), delta_x_vec.data(), delta_x_vec.size()*sizeof(double));
+    memcpy(delta_x.data(), delta_x_vec.data(), delta_x_vec.size() * sizeof(double));
     // calculate Jacobian
     jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
     // TODO this dynamic allocation needs to be replaced
@@ -107,48 +112,44 @@ namespace kinematics_interface_kdl {
     Eigen::Matrix<double, Eigen::Dynamic, 6> J_inverse = (J.transpose() * J + alpha * I).inverse() * J.transpose();
     delta_theta = J_inverse * delta_x;
     // copy eigen type to vector
-    memcpy(delta_theta_vec.data(), delta_theta.data(), num_joints_*sizeof(double));
+    memcpy(delta_theta_vec.data(), delta_theta.data(), num_joints_ * sizeof(double));
     return true;
   }
 
   bool KDLKinematics::calculate_jacobian(const std::vector<double> &joint_pos,
-                                                               const std::string &link_name,
-                                                               std::vector<double> &jacobian) {
-    // get joint array and check dimensions
-    if (!update_joint_array(joint_pos)) {
+                                         const std::string &link_name,
+                                         std::vector<double> &jacobian_vector) {
+    // verify inputs
+    if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
+        !verify_jacobian(jacobian_vector)) {
       return false;
     }
-    if (!verify_link_name(link_name)){
-      return false;
-    }
-    if (jacobian.size() != 6*num_joints_) {
-      RCLCPP_ERROR(LOGGER, "The size of the jacobian argument (%zu) does not match the required size of (%zu)",
-                   jacobian.size(), 6*num_joints_);
-      return false;
-    }
+
+    // get joint array
+    update_joint_array(joint_pos);
 
     // calculate Jacobian
     jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
 
-    memcpy(jacobian.data(), jacobian_->data.data(), 6*num_joints_*sizeof(double));
+    memcpy(jacobian_vector.data(), jacobian_->data.data(), 6 * num_joints_ * sizeof(double));
 
     return true;
   }
 
   bool KDLKinematics::calculate_link_transform(const std::vector<double> &joint_pos,
                                                const std::string &link_name,
-                                               std::vector<double> &transform_vec
-  ) {
-    // get joint array and check dimensions
-    if (!update_joint_array(joint_pos)) {
-      return false;
-    }
-    if (!verify_link_name(link_name)){
+                                               std::vector<double> &transform_vec) {
+    // verify inputs
+    if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
+        !verify_transform_vector(transform_vec)) {
       return false;
     }
 
+    // get joint array
+    update_joint_array(joint_pos);
+
     // reset transform_vec
-    memset(transform_vec.data(), 0, 16*sizeof(double));
+    memset(transform_vec.data(), 0, 16 * sizeof(double));
 
     // special case: since the root is not in the robot tree, need to return identity transform
     if (link_name == root_name_) {
@@ -158,6 +159,8 @@ namespace kinematics_interface_kdl {
       transform_vec[15] = 1.0;
       return true;
     }
+
+    // create forward kinematics solver
     fk_pos_solver_->JntToCart(q_, frame_, link_name_map_[link_name]);
     double tmp[] = {frame_.p.x(), frame_.p.y(), frame_.p.z()};
     // KDL::Rotation stores data in row-major format. e.g Xx, Yx, Zx, Xy... = data index at 0, 1, 2, 3, 4...
@@ -172,18 +175,7 @@ namespace kinematics_interface_kdl {
   }
 
   bool KDLKinematics::update_joint_array(const std::vector<double> &joint_pos) {
-    // check if interface is initialized
-    if (!initialized) {
-      RCLCPP_ERROR(LOGGER, "The KDL kinematics plugin was not initialized. Ensure you called the initialize method.");
-      return false;
-    }
-    // check that joint_pos_ is the correct size
-    if (joint_pos.size() != num_joints_) {
-      RCLCPP_ERROR(LOGGER, "The size of joint_pos_ (%zu) does not match that of the robot model (%zu)",
-                   joint_pos.size(), num_joints_);
-      return false;
-    }
-    memcpy(q_.data.data(), joint_pos.data(), joint_pos.size()*sizeof(double));
+    memcpy(q_.data.data(), joint_pos.data(), joint_pos.size() * sizeof(double));
     return true;
   }
 
@@ -202,6 +194,55 @@ namespace kinematics_interface_kdl {
     }
     return true;
   }
+
+  bool KDLKinematics::verify_transform_vector(const std::vector<double> &transform) {
+    if (transform.size() != 16) {
+      RCLCPP_ERROR(LOGGER,
+                   "Invalid size (%zu) for the transformation vector. Expected size is 16.",
+                   transform.size());
+      return false;
+    }
+    return true;
+  }
+
+  bool KDLKinematics::verify_cartesian_vector(const std::vector<double> &cartesian_vector) {
+    if (cartesian_vector.size() != jacobian_->rows()) {
+      RCLCPP_ERROR(LOGGER,
+                   "Invalid size (%zu) for the cartesian vector. Expected size is %d.",
+                   cartesian_vector.size(), jacobian_->rows());
+      return false;
+    }
+    return true;
+  }
+
+  bool KDLKinematics::verify_joint_vector(const std::vector<double> &joint_vector) {
+    if (joint_vector.size() != num_joints_) {
+      RCLCPP_ERROR(LOGGER,
+                   "Invalid size (%zu) for the joint vector. Expected size is %d.",
+                   joint_vector.size(), num_joints_);
+      return false;
+    }
+    return true;
+  }
+
+  bool KDLKinematics::verify_initialized() {
+    // check if interface is initialized
+    if (!initialized) {
+      RCLCPP_ERROR(LOGGER, "The KDL kinematics plugin was not initialized. Ensure you called the initialize method.");
+      return false;
+    }
+    return true;
+  }
+
+  bool KDLKinematics::verify_jacobian(const std::vector<double> &jacobian_vector) {
+    if (jacobian_vector.size() != jacobian_->rows() * jacobian_->columns()) {
+      RCLCPP_ERROR(LOGGER, "The size of the jacobian argument (%zu) does not match the required size of (%zu)",
+                   jacobian_vector.size(), jacobian_->rows() * jacobian_->columns());
+      return false;
+    }
+    return true;
+  }
+
 }
 
 #include "pluginlib/class_list_macros.hpp"
