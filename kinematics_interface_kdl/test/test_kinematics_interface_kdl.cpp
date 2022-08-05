@@ -87,6 +87,7 @@ TEST_F(TestKDLPlugin, KDL_plugin_function) {
     for (auto i =0ul; i < delta_x.size(); i++){
         ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.01);
     }
+
 }
 
 TEST_F(TestKDLPlugin, incorrect_input_sizes) {
