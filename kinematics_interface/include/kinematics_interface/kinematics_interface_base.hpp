@@ -30,7 +30,7 @@ namespace kinematics_interface {
     virtual ~KinematicsBaseClass() = default;
 
     /**
-     * \brief Create an interface object which takes calculate forward and inverse kinematics
+     * \brief Initialize plugin. This method must be called before any other.
      */
     virtual bool
     initialize(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node, const std::string &end_effector_name) = 0;
@@ -38,42 +38,44 @@ namespace kinematics_interface {
     /**
      * \brief Convert Cartesian delta-x to joint delta-theta, using the Jacobian.
      * \param[in] joint_pos joint positions of the robot in radians
-     * \param[in] delta_x_vec input Cartesian deltas (x, y, z, wx, wy, wz)
-     * \param[out] delta_theta_vec output vector with joint states
+     * \param[in] delta_x input Cartesian deltas (x, y, z, wx, wy, wz)
+     * \param[in] link_name the link name at which delta_x is applied
+     * \param[out] delta_theta outputs joint deltas
      * \return true if successful
      */
     virtual bool
     convert_cartesian_deltas_to_joint_deltas(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos,
-                                             const Eigen::Matrix<double, 6, 1> &delta_x_vec,
+                                             const Eigen::Matrix<double, 6, 1> &delta_x,
                                              const std::string &link_name,
-                                             Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta_vec) = 0;
+                                             Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta) = 0;
 
     /**
      * \brief Convert joint delta-theta to Cartesian delta-x.
      * \param joint_pos joint positions of the robot in radians
-     * \param[in] delta_theta_vec vector with joint states
-     * \param[out] delta_x_vec  Cartesian deltas (x, y, z, wx, wy, wz)
+     * \param[in] delta_theta joint deltas
+     * \param[in] link_name the link name at which delta_x is calculated
+     * \param[out] delta_x  Cartesian deltas (x, y, z, wx, wy, wz)
      * \return true if successful
      */
     virtual bool
     convert_joint_deltas_to_cartesian_deltas(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos,
-                                             const Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta_vec,
+                                             const Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta,
                                              const std::string &link_name,
-                                             Eigen::Matrix<double, 6, 1> &delta_x_vec) = 0;
+                                             Eigen::Matrix<double, 6, 1> &delta_x) = 0;
 
     /**
     * \brief Calculates the joint transform for a specified link using provided joint positions.
     * \param[in] joint_pos joint positions of the robot in radians
     * \param[in] link_name the name of the link to find the transform for
-    * \param[out] transform_vec transformation matrix of the specified link in column major format.
+    * \param[out] transform transformation matrix of the specified link
     * \return true if successful
     */
     virtual bool
     calculate_link_transform(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const std::string &link_name,
-                             Eigen::Matrix<double, 4, 4> &transform_vec) = 0;
+                             Eigen::Matrix<double, 4, 4> &transform) = 0;
 
     /**
-    * \brief Calculates the joint transform for a specified link using provided joint positions.
+    * \brief Calculates the jacobian for a specified link using provided joint positions.
     * \param[in] joint_pos joint positions of the robot in radians
     * \param[in] link_name the name of the link to find the transform for
     * \param[out] jacobian Jacobian matrix of the specified link in column major format.
