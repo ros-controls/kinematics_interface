@@ -43,6 +43,7 @@ install(DIRECTORY include/
 
 ament_export_dependencies(
     rclcpp_lifecycle
+    Eigen3
 )
 
 ament_export_include_directories(
