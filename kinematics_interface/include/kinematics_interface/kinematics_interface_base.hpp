@@ -19,6 +19,8 @@
 #define IK_PLUGIN_BASE__IK_PLUGIN_BASE_HPP_
 
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/LU"
 
 namespace kinematics_interface {
   class KinematicsBaseClass {
@@ -41,10 +43,10 @@ namespace kinematics_interface {
      * \return true if successful
      */
     virtual bool
-    convert_cartesian_deltas_to_joint_deltas(const std::vector<double> &joint_pos,
-                                             const std::vector<double> &delta_x_vec,
+    convert_cartesian_deltas_to_joint_deltas(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos,
+                                             const Eigen::Matrix<double, 6, 1> &delta_x_vec,
                                              const std::string &link_name,
-                                             std::vector<double> &delta_theta_vec) = 0;
+                                             Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta_vec) = 0;
 
     /**
      * \brief Convert joint delta-theta to Cartesian delta-x.
@@ -54,10 +56,10 @@ namespace kinematics_interface {
      * \return true if successful
      */
     virtual bool
-    convert_joint_deltas_to_cartesian_deltas(const std::vector<double> &joint_pos,
-                                             const std::vector<double> &delta_theta_vec,
+    convert_joint_deltas_to_cartesian_deltas(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos,
+                                             const Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta_vec,
                                              const std::string &link_name,
-                                             std::vector<double> &delta_x_vec) = 0;
+                                             Eigen::Matrix<double, 6, 1> &delta_x_vec) = 0;
 
     /**
     * \brief Calculates the joint transform for a specified link using provided joint positions.
@@ -67,8 +69,8 @@ namespace kinematics_interface {
     * \return true if successful
     */
     virtual bool
-    calculate_link_transform(const std::vector<double> &joint_pos, const std::string &link_name,
-                             std::vector<double> &transform_vec) = 0;
+    calculate_link_transform(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const std::string &link_name,
+                             Eigen::Matrix<double, 4, 4> &transform_vec) = 0;
 
     /**
     * \brief Calculates the joint transform for a specified link using provided joint positions.
@@ -78,8 +80,8 @@ namespace kinematics_interface {
     * \return true if successful
     */
     virtual bool
-    calculate_jacobian(const std::vector<double> &joint_pos, const std::string &link_name,
-                             std::vector<double> &jacobian) = 0;
+    calculate_jacobian(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const std::string &link_name,
+                       Eigen::Matrix<double, 6, Eigen::Dynamic> &jacobian) = 0;
 
   };
 

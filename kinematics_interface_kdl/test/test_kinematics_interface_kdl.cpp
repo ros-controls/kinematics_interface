@@ -68,24 +68,25 @@ TEST_F(TestKDLPlugin, KDL_plugin_function) {
     ASSERT_TRUE(ik_->initialize(node_, end_effector_));
 
     // calculate end effector transform
-    std::vector<double> pos = {0, 0};
-    std::vector<double> end_effector_transform(16);
+    Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double,2,1>::Zero();
+    Eigen::Matrix<double, 4, 4> end_effector_transform;
     ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
     // convert cartesian delta to joint delta
-    std::vector<double> delta_x = {0, 0, .5, 0, 0, 0};
-    std::vector<double> delta_theta(2);
+    Eigen::Matrix<double, 6, 1> delta_x  = Eigen::Matrix<double,6,1>::Zero();
+    delta_x[2] = 1;
+    Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double,2,1>::Zero();
     ASSERT_TRUE(
             ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
 
     // convert joint delta to cartesian delta
-    std::vector<double> delta_x_est(6);
+    Eigen::Matrix<double, 6, 1> delta_x_est;
     ASSERT_TRUE(
             ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
     // Ensure kinematics math is correct
-    for (auto i =0ul; i < delta_x.size(); i++){
-        ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.01);
+    for (auto i =0l; i < delta_x.size(); i++){
+        ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
     }
 
 }
@@ -99,25 +100,23 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes) {
     ASSERT_TRUE(ik_->initialize(node_, end_effector_));
 
     // define correct values
-    std::vector<double> pos = {0, 0};
-    std::vector<double> end_effector_transform(16);
-    std::vector<double> delta_x = {0, 0, 1, 0, 0, 0};
-    std::vector<double> delta_theta(2);
-    std::vector<double> delta_x_est(6);
+    Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double,2,1>::Zero();
+    Eigen::Matrix<double, 4, 4> end_effector_transform;
+    Eigen::Matrix<double, 6, 1> delta_x  = Eigen::Matrix<double,6,1>::Zero();
+    delta_x[2] = 1;
+    Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double,2,1>::Zero();
+    Eigen::Matrix<double, 6, 1> delta_x_est;
 
     // wrong size input vector
-    std::vector<double> vec_5 = {1.0, 2.0, 3.0, 4.0, 5.0};
+    Eigen::Matrix<double, Eigen::Dynamic, 1> vec_5 = Eigen::Matrix<double,5,1>::Zero();
 
     // calculate transform
     ASSERT_FALSE(ik_->calculate_link_transform(vec_5, end_effector_, end_effector_transform));
     ASSERT_FALSE(ik_->calculate_link_transform(pos, "link_not_in_model", end_effector_transform));
-    ASSERT_FALSE(ik_->calculate_link_transform(pos, end_effector_, vec_5));
 
     // convert cartesian delta to joint delta
     ASSERT_FALSE(
             ik_->convert_cartesian_deltas_to_joint_deltas(vec_5, delta_x, end_effector_, delta_theta));
-    ASSERT_FALSE(
-            ik_->convert_cartesian_deltas_to_joint_deltas(pos, vec_5, end_effector_, delta_theta));
     ASSERT_FALSE(
             ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, "link_not_in_model", delta_theta));
     ASSERT_FALSE(ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, vec_5));
@@ -129,8 +128,7 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes) {
             ik_->convert_joint_deltas_to_cartesian_deltas(pos, vec_5, end_effector_, delta_x_est));
     ASSERT_FALSE(ik_->convert_joint_deltas_to_cartesian_deltas(
             pos, delta_theta, "link_not_in_model", delta_x_est));
-    ASSERT_FALSE(
-            ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, vec_5));
+
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description) {
