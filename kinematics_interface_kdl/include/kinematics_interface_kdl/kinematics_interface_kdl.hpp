@@ -45,8 +45,8 @@ namespace kinematics_interface_kdl {
      * \return true if successful
      */
     bool convert_cartesian_deltas_to_joint_deltas(
-            const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const Eigen::Matrix<double, 6, 1> &delta_x,
-            const std::string &link_name, Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta) override;
+            const Eigen::VectorXd &joint_pos, const Eigen::Matrix<double, 6, 1> &delta_x,
+            const std::string &link_name, Eigen::VectorXd &delta_theta) override;
 
     /**
      * \brief Convert joint delta-theta to Cartesian delta-x.
@@ -57,7 +57,7 @@ namespace kinematics_interface_kdl {
      * \return true if successful
      */
     bool convert_joint_deltas_to_cartesian_deltas(
-      const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta,
+      const Eigen::VectorXd &joint_pos, const Eigen::VectorXd &delta_theta,
       const std::string &link_name, Eigen::Matrix<double, 6, 1> &delta_x) override;
 
     /**
@@ -67,7 +67,7 @@ namespace kinematics_interface_kdl {
     * \param[out] transform transformation matrix of the specified link
     * \return true if successful
     */
-    bool calculate_link_transform(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const std::string &link_name,
+    bool calculate_link_transform(const Eigen::VectorXd &joint_pos, const std::string &link_name,
                                   Eigen::Matrix<double, 4, 4> &transform) override;
 
     /**
@@ -77,20 +77,19 @@ namespace kinematics_interface_kdl {
     * \param[out] jacobian Jacobian matrix of the specified link in column major format.
     * \return true if successful
     */
-    bool calculate_jacobian(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const std::string &link_name,
-                            Eigen::Matrix<double, 6, Eigen::Dynamic> &jacobian) override;
+    bool calculate_jacobian(const Eigen::VectorXd &joint_pos, const std::string &link_name,
+                            Eigen::Matrix<double, 6, Eigen::Dynamic>  &jacobian) override;
 
   private:
-    bool update_joint_array(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos);
 
     //verification methods
     bool verify_initialized();
 
     bool verify_link_name(const std::string &link_name);
 
-    bool verify_joint_vector(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_vector);
+    bool verify_joint_vector(const Eigen::VectorXd &joint_vector);
 
-    bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> &jacobian);
+    bool verify_jacobian(const Eigen::VectorXd &jacobian);
 
     bool initialized = false;
     std::string root_name_;

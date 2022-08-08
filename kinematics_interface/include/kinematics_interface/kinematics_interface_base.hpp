@@ -19,10 +19,11 @@
 #define IK_PLUGIN_BASE__IK_PLUGIN_BASE_HPP_
 
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/LU"
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/LU>
 
 namespace kinematics_interface {
+
   class KinematicsBaseClass {
   public:
     KinematicsBaseClass() = default;
@@ -44,10 +45,10 @@ namespace kinematics_interface {
      * \return true if successful
      */
     virtual bool
-    convert_cartesian_deltas_to_joint_deltas(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos,
+    convert_cartesian_deltas_to_joint_deltas(const Eigen::VectorXd &joint_pos,
                                              const Eigen::Matrix<double, 6, 1> &delta_x,
                                              const std::string &link_name,
-                                             Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta) = 0;
+                                             Eigen::VectorXd &delta_theta) = 0;
 
     /**
      * \brief Convert joint delta-theta to Cartesian delta-x.
@@ -58,8 +59,8 @@ namespace kinematics_interface {
      * \return true if successful
      */
     virtual bool
-    convert_joint_deltas_to_cartesian_deltas(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos,
-                                             const Eigen::Matrix<double, Eigen::Dynamic, 1> &delta_theta,
+    convert_joint_deltas_to_cartesian_deltas(const Eigen::VectorXd &joint_pos,
+                                             const Eigen::VectorXd &delta_theta,
                                              const std::string &link_name,
                                              Eigen::Matrix<double, 6, 1> &delta_x) = 0;
 
@@ -71,7 +72,7 @@ namespace kinematics_interface {
     * \return true if successful
     */
     virtual bool
-    calculate_link_transform(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const std::string &link_name,
+    calculate_link_transform(const Eigen::VectorXd &joint_pos, const std::string &link_name,
                              Eigen::Matrix<double, 4, 4> &transform) = 0;
 
     /**
@@ -82,8 +83,34 @@ namespace kinematics_interface {
     * \return true if successful
     */
     virtual bool
-    calculate_jacobian(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const std::string &link_name,
+    calculate_jacobian(const Eigen::VectorXd &joint_pos, const std::string &link_name,
                        Eigen::Matrix<double, 6, Eigen::Dynamic> &jacobian) = 0;
+
+  protected:
+    bool
+    convert_cartesian_deltas_to_joint_deltas(const std::vector<double> &joint_pos,
+                                             const std::vector<double> &delta_x_vec,
+                                             const std::string &link_name,
+                                             std::vector<double> &delta_theta_vec) {
+      return false;
+    }
+    bool
+    convert_joint_deltas_to_cartesian_deltas(const std::vector<double> &joint_pos,
+                                             const std::vector<double> &delta_theta_vec,
+                                             const std::string &link_name,
+                                             std::vector<double> &delta_x_vec) {
+      return false;
+    }
+    bool
+    calculate_link_transform(const std::vector<double> &joint_pos, const std::string &link_name,
+                             std::vector<double> &transform_vec) {
+      return false;
+    }
+    bool
+    calculate_jacobian(const std::vector<double> &joint_pos, const std::string &link_name,
+                       std::vector<double> &jacobian) {
+      return false;
+    }
 
   };
 

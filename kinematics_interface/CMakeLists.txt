@@ -29,8 +29,8 @@ target_include_directories(
 ament_target_dependencies(
     kinematics_interface
     INTERFACE
-    rclcpp_lifecycle
     Eigen3
+    rclcpp_lifecycle
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,

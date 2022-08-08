@@ -83,7 +83,7 @@ bool KDLKinematics::convert_joint_deltas_to_cartesian_deltas(
   }
 
   // get joint array
-  update_joint_array(joint_pos);
+  q_.data = joint_pos;
 
   // calculate Jacobian
   jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
@@ -104,12 +104,12 @@ bool KDLKinematics::convert_cartesian_deltas_to_joint_deltas(
   }
 
   // get joint array
-  update_joint_array(joint_pos);
+  q_.data = joint_pos;
 
   // calculate Jacobian
   jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
   // TODO this dynamic allocation needs to be replaced
-  Eigen::Matrix<double, 6, Eigen::Dynamic> J = jacobian_->data;
+  Eigen::VectorXd J = jacobian_->data;
   // damped inverse
   Eigen::Matrix<double, Eigen::Dynamic, 6> J_inverse =
     (J.transpose() * J + alpha * I).inverse() * J.transpose();
@@ -120,7 +120,7 @@ bool KDLKinematics::convert_cartesian_deltas_to_joint_deltas(
 
 bool KDLKinematics::calculate_jacobian(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos, const std::string & link_name,
-  Eigen::Matrix<double, 6, Eigen::Dynamic>& jacobian)
+  Eigen::Matrix<double, 6, Eigen::Dynamic> &jacobian)
 {
   // verify inputs
   if (
@@ -131,7 +131,7 @@ bool KDLKinematics::calculate_jacobian(
   }
 
   // get joint array
-  update_joint_array(joint_pos);
+  q_.data = joint_pos;
 
   // calculate Jacobian
   jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
@@ -151,7 +151,7 @@ bool KDLKinematics::calculate_link_transform(
   }
 
   // get joint array
-  update_joint_array(joint_pos);
+  q_.data = joint_pos;
 
   // reset transform_vec
   transform.setIdentity();
@@ -174,12 +174,6 @@ bool KDLKinematics::calculate_link_transform(
     }
     transform(4 * 3 + r) = tmp[r];
   }
-  return true;
-}
-
-bool KDLKinematics::update_joint_array(const Eigen::Matrix<double, Eigen::Dynamic, 1> &joint_pos)
-{
-  memcpy(q_.data.data(), joint_pos.data(), joint_pos.size() * sizeof(double));
   return true;
 }
 
@@ -229,7 +223,7 @@ bool KDLKinematics::verify_initialized()
   return true;
 }
 
-bool KDLKinematics::verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> &jacobian)
+bool KDLKinematics::verify_jacobian(const Eigen::VectorXd &jacobian)
 {
   if (jacobian.rows() != jacobian_->rows() || jacobian.cols() != jacobian_->columns())
   {
