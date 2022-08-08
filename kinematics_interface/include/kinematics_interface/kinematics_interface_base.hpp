@@ -62,6 +62,7 @@ public:
     const Eigen::VectorXd & joint_pos, const Eigen::VectorXd & delta_theta,
     const std::string & link_name, Eigen::Matrix<double, 6, 1> & delta_x) = 0;
 
+
   /**
     * \brief Calculates the joint transform for a specified link using provided joint positions.
     * \param[in] joint_pos joint positions of the robot in radians

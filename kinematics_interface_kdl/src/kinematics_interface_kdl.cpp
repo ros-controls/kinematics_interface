@@ -112,7 +112,7 @@ bool KDLKinematics::convert_cartesian_deltas_to_joint_deltas(
   // calculate Jacobian
   jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
   // TODO this dynamic allocation needs to be replaced
-  Eigen::VectorXd J = jacobian_->data;
+  Eigen::Matrix<double, 6, Eigen::Dynamic> J = jacobian_->data;
   // damped inverse
   Eigen::Matrix<double, Eigen::Dynamic, 6> J_inverse =
     (J.transpose() * J + alpha * I).inverse() * J.transpose();
@@ -202,6 +202,7 @@ bool KDLKinematics::verify_link_name(const std::string & link_name)
 }
 
 bool KDLKinematics::verify_joint_vector(const Eigen::VectorXd & joint_vector)
+
 {
   if (joint_vector.size() != num_joints_)
   {
