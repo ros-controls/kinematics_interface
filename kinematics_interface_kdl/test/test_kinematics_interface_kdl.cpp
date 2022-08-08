@@ -128,7 +128,6 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes) {
             ik_->convert_joint_deltas_to_cartesian_deltas(pos, vec_5, end_effector_, delta_x_est));
     ASSERT_FALSE(ik_->convert_joint_deltas_to_cartesian_deltas(
             pos, delta_theta, "link_not_in_model", delta_x_est));
-
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description) {
