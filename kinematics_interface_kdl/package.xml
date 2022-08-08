@@ -13,7 +13,7 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
-  <build>eigen</build>
+  <depend>eigen</depend>
   <depend>kdl_parser</depend>
   <depend>kinematics_interface</depend>
   <depend>pluginlib</depend>

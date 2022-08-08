@@ -25,18 +25,19 @@
 #include "kdl_parser/kdl_parser.hpp"
 #include "kinematics_interface/kinematics_interface_base.hpp"
 
-namespace kinematics_interface_kdl {
-
-  class KDLKinematics : public kinematics_interface::KinematicsBaseClass {
-  public:
-
-    /**
+namespace kinematics_interface_kdl
+{
+class KDLKinematics : public kinematics_interface::KinematicsBaseClass
+{
+public:
+  /**
      * \brief Initialize plugin. This method must be called before any other.
      */
-    bool initialize(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
-                    const std::string &end_effector_name) override;
+  bool initialize(
+    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+    const std::string & end_effector_name) override;
 
-    /**
+  /**
      * \brief Convert Cartesian delta-x to joint delta-theta, using the Jacobian.
      * \param[in] joint_pos joint positions of the robot in radians
      * \param[in] delta_x input Cartesian deltas (x, y, z, wx, wy, wz)
@@ -44,11 +45,11 @@ namespace kinematics_interface_kdl {
      * \param[out] delta_theta outputs joint deltas
      * \return true if successful
      */
-    bool convert_cartesian_deltas_to_joint_deltas(
-        const Eigen::VectorXd &joint_pos, const Eigen::Matrix<double, 6, 1> &delta_x,
-        const std::string &link_name, Eigen::VectorXd &delta_theta) override;
+  bool convert_cartesian_deltas_to_joint_deltas(
+    const Eigen::VectorXd & joint_pos, const Eigen::Matrix<double, 6, 1> & delta_x,
+    const std::string & link_name, Eigen::VectorXd & delta_theta) override;
 
-    /**
+  /**
      * \brief Convert joint delta-theta to Cartesian delta-x.
      * \param joint_pos joint positions of the robot in radians
      * \param[in] delta_theta joint deltas
@@ -56,54 +57,55 @@ namespace kinematics_interface_kdl {
      * \param[out] delta_x  Cartesian deltas (x, y, z, wx, wy, wz)
      * \return true if successful
      */
-    bool convert_joint_deltas_to_cartesian_deltas(
-        const Eigen::VectorXd &joint_pos, const Eigen::VectorXd &delta_theta,
-        const std::string &link_name, Eigen::Matrix<double, 6, 1> &delta_x) override;
+  bool convert_joint_deltas_to_cartesian_deltas(
+    const Eigen::VectorXd & joint_pos, const Eigen::VectorXd & delta_theta,
+    const std::string & link_name, Eigen::Matrix<double, 6, 1> & delta_x) override;
 
-    /**
+  /**
     * \brief Calculates the joint transform for a specified link using provided joint positions.
     * \param[in] joint_pos joint positions of the robot in radians
     * \param[in] link_name the name of the link to find the transform for
     * \param[out] transform transformation matrix of the specified link
     * \return true if successful
     */
-    bool calculate_link_transform(const Eigen::VectorXd &joint_pos, const std::string &link_name,
-                                  Eigen::Matrix<double, 4, 4> &transform) override;
+  bool calculate_link_transform(
+    const Eigen::VectorXd & joint_pos, const std::string & link_name,
+    Eigen::Matrix<double, 4, 4> & transform) override;
 
-    /**
+  /**
     * \brief Calculates the jacobian for a specified link using provided joint positions.
     * \param[in] joint_pos joint positions of the robot in radians
     * \param[in] link_name the name of the link to find the transform for
     * \param[out] jacobian Jacobian matrix of the specified link in column major format.
     * \return true if successful
     */
-    bool calculate_jacobian(const Eigen::VectorXd &joint_pos, const std::string &link_name,
-                            Eigen::Matrix<double, 6, Eigen::Dynamic>  &jacobian) override;
+  bool calculate_jacobian(
+    const Eigen::VectorXd & joint_pos, const std::string & link_name,
+    Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian) override;
 
-  private:
+private:
+  //verification methods
+  bool verify_initialized();
 
-    //verification methods
-    bool verify_initialized();
+  bool verify_link_name(const std::string & link_name);
 
-    bool verify_link_name(const std::string &link_name);
+  bool verify_joint_vector(const Eigen::VectorXd & joint_vector);
 
-    bool verify_joint_vector(const Eigen::VectorXd &joint_vector);
+  bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian);
 
-    bool verify_jacobian(const Eigen::VectorXd &jacobian);
-
-    bool initialized = false;
-    std::string root_name_;
-    size_t num_joints_;
-    KDL::Chain chain_;
-    std::shared_ptr<KDL::ChainFkSolverPos_recursive> fk_pos_solver_;
-    KDL::JntArray q_;
-    KDL::Frame frame_;
-    std::shared_ptr<KDL::Jacobian> jacobian_;
-    std::shared_ptr<KDL::ChainJntToJacSolver> jac_solver_;
-    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
-    std::unordered_map<std::string, int> link_name_map_;
-    double alpha;  // damping term for Jacobian inverse
-    Eigen::MatrixXd I;
-  };
+  bool initialized = false;
+  std::string root_name_;
+  size_t num_joints_;
+  KDL::Chain chain_;
+  std::shared_ptr<KDL::ChainFkSolverPos_recursive> fk_pos_solver_;
+  KDL::JntArray q_;
+  KDL::Frame frame_;
+  std::shared_ptr<KDL::Jacobian> jacobian_;
+  std::shared_ptr<KDL::ChainJntToJacSolver> jac_solver_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
+  std::unordered_map<std::string, int> link_name_map_;
+  double alpha;  // damping term for Jacobian inverse
+  Eigen::MatrixXd I;
+};
 
 }  // namespace kinematics_interface_kdl

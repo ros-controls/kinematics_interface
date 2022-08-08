@@ -18,25 +18,27 @@
 #ifndef IK_PLUGIN_BASE__IK_PLUGIN_BASE_HPP_
 #define IK_PLUGIN_BASE__IK_PLUGIN_BASE_HPP_
 
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/LU>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 
-namespace kinematics_interface {
+namespace kinematics_interface
+{
+class KinematicsBaseClass
+{
+public:
+  KinematicsBaseClass() = default;
 
-  class KinematicsBaseClass {
-  public:
-    KinematicsBaseClass() = default;
+  virtual ~KinematicsBaseClass() = default;
 
-    virtual ~KinematicsBaseClass() = default;
-
-    /**
+  /**
      * \brief Initialize plugin. This method must be called before any other.
      */
-    virtual bool
-    initialize(std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node, const std::string &end_effector_name) = 0;
+  virtual bool initialize(
+    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+    const std::string & end_effector_name) = 0;
 
-    /**
+  /**
      * \brief Convert Cartesian delta-x to joint delta-theta, using the Jacobian.
      * \param[in] joint_pos joint positions of the robot in radians
      * \param[in] delta_x input Cartesian deltas (x, y, z, wx, wy, wz)
@@ -44,13 +46,11 @@ namespace kinematics_interface {
      * \param[out] delta_theta outputs joint deltas
      * \return true if successful
      */
-    virtual bool
-    convert_cartesian_deltas_to_joint_deltas(const Eigen::VectorXd &joint_pos,
-                                             const Eigen::Matrix<double, 6, 1> &delta_x,
-                                             const std::string &link_name,
-                                             Eigen::VectorXd &delta_theta) = 0;
+  virtual bool convert_cartesian_deltas_to_joint_deltas(
+    const Eigen::VectorXd & joint_pos, const Eigen::Matrix<double, 6, 1> & delta_x,
+    const std::string & link_name, Eigen::VectorXd & delta_theta) = 0;
 
-    /**
+  /**
      * \brief Convert joint delta-theta to Cartesian delta-x.
      * \param joint_pos joint positions of the robot in radians
      * \param[in] delta_theta joint deltas
@@ -58,35 +58,32 @@ namespace kinematics_interface {
      * \param[out] delta_x  Cartesian deltas (x, y, z, wx, wy, wz)
      * \return true if successful
      */
-    virtual bool
-    convert_joint_deltas_to_cartesian_deltas(const Eigen::VectorXd &joint_pos,
-                                             const Eigen::VectorXd &delta_theta,
-                                             const std::string &link_name,
-                                             Eigen::Matrix<double, 6, 1> &delta_x) = 0;
+  virtual bool convert_joint_deltas_to_cartesian_deltas(
+    const Eigen::VectorXd & joint_pos, const Eigen::VectorXd & delta_theta,
+    const std::string & link_name, Eigen::Matrix<double, 6, 1> & delta_x) = 0;
 
-    /**
+  /**
     * \brief Calculates the joint transform for a specified link using provided joint positions.
     * \param[in] joint_pos joint positions of the robot in radians
     * \param[in] link_name the name of the link to find the transform for
     * \param[out] transform transformation matrix of the specified link
     * \return true if successful
     */
-    virtual bool
-    calculate_link_transform(const Eigen::VectorXd &joint_pos, const std::string &link_name,
-                             Eigen::Matrix<double, 4, 4> &transform) = 0;
+  virtual bool calculate_link_transform(
+    const Eigen::VectorXd & joint_pos, const std::string & link_name,
+    Eigen::Matrix<double, 4, 4> & transform) = 0;
 
-    /**
+  /**
     * \brief Calculates the jacobian for a specified link using provided joint positions.
     * \param[in] joint_pos joint positions of the robot in radians
     * \param[in] link_name the name of the link to find the transform for
     * \param[out] jacobian Jacobian matrix of the specified link in column major format.
     * \return true if successful
     */
-    virtual bool
-    calculate_jacobian(const Eigen::VectorXd &joint_pos, const std::string &link_name,
-                       Eigen::Matrix<double, 6, Eigen::Dynamic> &jacobian) = 0;
-
-  };
+  virtual bool calculate_jacobian(
+    const Eigen::VectorXd & joint_pos, const std::string & link_name,
+    Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian) = 0;
+};
 
 }  // namespace kinematics_interface
 
