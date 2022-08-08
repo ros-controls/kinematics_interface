@@ -45,8 +45,8 @@ namespace kinematics_interface_kdl {
      * \return true if successful
      */
     bool convert_cartesian_deltas_to_joint_deltas(
-            const Eigen::VectorXd &joint_pos, const Eigen::Matrix<double, 6, 1> &delta_x,
-            const std::string &link_name, Eigen::VectorXd &delta_theta) override;
+        const Eigen::VectorXd &joint_pos, const Eigen::Matrix<double, 6, 1> &delta_x,
+        const std::string &link_name, Eigen::VectorXd &delta_theta) override;
 
     /**
      * \brief Convert joint delta-theta to Cartesian delta-x.
@@ -57,8 +57,8 @@ namespace kinematics_interface_kdl {
      * \return true if successful
      */
     bool convert_joint_deltas_to_cartesian_deltas(
-      const Eigen::VectorXd &joint_pos, const Eigen::VectorXd &delta_theta,
-      const std::string &link_name, Eigen::Matrix<double, 6, 1> &delta_x) override;
+        const Eigen::VectorXd &joint_pos, const Eigen::VectorXd &delta_theta,
+        const std::string &link_name, Eigen::Matrix<double, 6, 1> &delta_x) override;
 
     /**
     * \brief Calculates the joint transform for a specified link using provided joint positions.

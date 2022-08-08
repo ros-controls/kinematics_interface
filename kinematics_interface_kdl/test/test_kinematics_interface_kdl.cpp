@@ -20,52 +20,58 @@
 #include "pluginlib/class_loader.hpp"
 #include "ros2_control_test_assets/descriptions.hpp"
 
-class TestKDLPlugin : public ::testing::Test {
+class TestKDLPlugin : public ::testing::Test
+{
 public:
-    std::shared_ptr<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>> ik_loader_;
-    std::shared_ptr<kinematics_interface::KinematicsBaseClass> ik_;
-    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
-    std::string end_effector_ = "link2";
+  std::shared_ptr<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>> ik_loader_;
+  std::shared_ptr<kinematics_interface::KinematicsBaseClass> ik_;
+  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
+  std::string end_effector_ = "link2";
 
-    void SetUp() {
-        // init ros
-        rclcpp::init(0, nullptr);
-        node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test_node");
-        std::string plugin_name = "kinematics_interface_kdl/KDLKinematics";
-        ik_loader_ =
-                std::make_shared<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>>(
-                        "kinematics_interface_kdl", "kinematics_interface::KinematicsBaseClass");
-        ik_ = std::unique_ptr<kinematics_interface::KinematicsBaseClass>(
-                ik_loader_->createUnmanagedInstance(plugin_name));
-    }
+  void SetUp()
+  {
+    // init ros
+    rclcpp::init(0, nullptr);
+    node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test_node");
+    std::string plugin_name = "kinematics_interface_kdl/KDLKinematics";
+    ik_loader_ =
+      std::make_shared<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>>(
+        "kinematics_interface_kdl", "kinematics_interface::KinematicsBaseClass");
+    ik_ = std::unique_ptr<kinematics_interface::KinematicsBaseClass>(
+      ik_loader_->createUnmanagedInstance(plugin_name));
+  }
 
-    void TearDown() {
-        // shutdown ros
-        rclcpp::shutdown();
-    }
+  void TearDown()
+  {
+    // shutdown ros
+    rclcpp::shutdown();
+  }
 
-    void loadURDFParameter() {
-        auto urdf = std::string(ros2_control_test_assets::urdf_head) +
-                    std::string(ros2_control_test_assets::urdf_tail);
-        rclcpp::Parameter param("robot_description", urdf);
-        node_->declare_parameter("robot_description", "");
-        node_->set_parameter(param);
-    }
+  void loadURDFParameter()
+  {
+    auto urdf = std::string(ros2_control_test_assets::urdf_head) +
+                std::string(ros2_control_test_assets::urdf_tail);
+    rclcpp::Parameter param("robot_description", urdf);
+    node_->declare_parameter("robot_description", "");
+    node_->set_parameter(param);
+  }
 
-    void loadAlphaParameter() {
-        rclcpp::Parameter param("alpha", 0.005);
-        node_->declare_parameter("alpha", 0.005);
-        node_->set_parameter(param);
-    }
+  void loadAlphaParameter()
+  {
+    rclcpp::Parameter param("alpha", 0.005);
+    node_->declare_parameter("alpha", 0.005);
+    node_->set_parameter(param);
+  }
 };
 
-TEST_F(TestKDLPlugin, KDL_plugin_function) {
-    // load robot description and alpha to parameter server
-    loadURDFParameter();
-    loadAlphaParameter();
+TEST_F(TestKDLPlugin, KDL_plugin_function)
+{
+  // load robot description and alpha to parameter server
+  loadURDFParameter();
+  loadAlphaParameter();
 
-    // initialize the  plugin
-    ASSERT_TRUE(ik_->initialize(node_, end_effector_));
+  // initialize the  plugin
+  ASSERT_TRUE(ik_->initialize(node_, end_effector_));
 
     // calculate end effector transform
     Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double,2,1>::Zero();
@@ -89,15 +95,21 @@ TEST_F(TestKDLPlugin, KDL_plugin_function) {
         ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
     }
 
+  // Ensure kinematics math is correct
+  for (auto i = 0ul; i < delta_x.size(); i++)
+  {
+    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.01);
+  }
 }
 
-TEST_F(TestKDLPlugin, incorrect_input_sizes) {
-    // load robot description and alpha to parameter server
-    loadURDFParameter();
-    loadAlphaParameter();
+TEST_F(TestKDLPlugin, incorrect_input_sizes)
+{
+  // load robot description and alpha to parameter server
+  loadURDFParameter();
+  loadAlphaParameter();
 
-    // initialize the  plugin
-    ASSERT_TRUE(ik_->initialize(node_, end_effector_));
+  // initialize the  plugin
+  ASSERT_TRUE(ik_->initialize(node_, end_effector_));
 
     // define correct values
     Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double,2,1>::Zero();
@@ -130,8 +142,9 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes) {
             pos, delta_theta, "link_not_in_model", delta_x_est));
 }
 
-TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description) {
-    // load alpha to parameter server
-    loadAlphaParameter();
-    ASSERT_FALSE(ik_->initialize(node_, end_effector_));
+TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description)
+{
+  // load alpha to parameter server
+  loadAlphaParameter();
+  ASSERT_FALSE(ik_->initialize(node_, end_effector_));
 }
