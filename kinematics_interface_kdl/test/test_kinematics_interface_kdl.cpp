@@ -98,6 +98,39 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
   }
 }
 
+TEST_F(TestKDLPlugin, KDL_plugin_function_std_vector)
+{
+  // load robot description and alpha to parameter server
+  loadURDFParameter();
+  loadAlphaParameter();
+
+  // initialize the  plugin
+  ASSERT_TRUE(ik_->initialize(node_->get_node_parameters_interface(), end_effector_));
+
+  // calculate end effector transform
+  std::vector<double> pos = {0, 0};
+  Eigen::Isometry3d end_effector_transform;
+  ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
+
+  // convert cartesian delta to joint delta
+  std::vector<double> delta_x = {0, 0, 0, 0, 0, 0};
+  delta_x[2] = 1;
+  std::vector<double> delta_theta = {0, 0};
+  ASSERT_TRUE(
+    ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
+
+  // convert joint delta to cartesian delta
+  std::vector<double> delta_x_est(6);
+  ASSERT_TRUE(
+    ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
+
+  // Ensure kinematics math is correct
+  for (auto i = 0l; i < delta_x.size(); i++)
+  {
+    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
+  }
+}
+
 TEST_F(TestKDLPlugin, incorrect_input_sizes)
 {
   // load robot description and alpha to parameter server
