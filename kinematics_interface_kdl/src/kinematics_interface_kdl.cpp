@@ -145,7 +145,7 @@ bool KDLKinematics::calculate_jacobian(
 
 bool KDLKinematics::calculate_link_transform(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos, const std::string & link_name,
-  Eigen::Matrix<double, 4, 4> & transform)
+  Eigen::Isometry3d & transform)
 {
   // verify inputs
   if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name))
@@ -167,16 +167,7 @@ bool KDLKinematics::calculate_link_transform(
 
   // create forward kinematics solver
   fk_pos_solver_->JntToCart(q_, frame_, link_name_map_[link_name]);
-  double tmp[] = {frame_.p.x(), frame_.p.y(), frame_.p.z()};
-  // KDL::Rotation stores data in row-major format. e.g Xx, Yx, Zx, Xy... = data index at 0, 1, 2, 3, 4...
-  for (int r = 0; r < 3; r++)
-  {
-    for (int c = 0; c < 3; c++)
-    {
-      transform(r + 4 * c) = frame_.M.data[3 * r + c];
-    }
-    transform(4 * 3 + r) = tmp[r];
-  }
+  tf2::transformKDLToEigen(frame_, transform);
   return true;
 }
 

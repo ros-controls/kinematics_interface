@@ -11,6 +11,7 @@ find_package(kdl_parser REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(kinematics_interface REQUIRED)
+find_package(tf2_eigen_kdl REQUIRED)
 
 add_library(kinematics_interface_kdl SHARED
         src/kinematics_interface_kdl.cpp
@@ -21,6 +22,7 @@ ament_target_dependencies(kinematics_interface_kdl
         pluginlib
         Eigen3
         kinematics_interface
+        tf2_eigen_kdl
 )
 
 target_include_directories(

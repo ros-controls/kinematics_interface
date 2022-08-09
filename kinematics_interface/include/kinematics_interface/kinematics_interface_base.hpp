@@ -19,6 +19,7 @@
 #define IK_PLUGIN_BASE__IK_PLUGIN_BASE_HPP_
 
 #include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
 #include <eigen3/Eigen/LU>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 
@@ -62,7 +63,6 @@ public:
     const Eigen::VectorXd & joint_pos, const Eigen::VectorXd & delta_theta,
     const std::string & link_name, Eigen::Matrix<double, 6, 1> & delta_x) = 0;
 
-
   /**
     * \brief Calculates the joint transform for a specified link using provided joint positions.
     * \param[in] joint_pos joint positions of the robot in radians
@@ -72,7 +72,7 @@ public:
     */
   virtual bool calculate_link_transform(
     const Eigen::VectorXd & joint_pos, const std::string & link_name,
-    Eigen::Matrix<double, 4, 4> & transform) = 0;
+    Eigen::Isometry3d & transform) = 0;
 
   /**
     * \brief Calculates the jacobian for a specified link using provided joint positions.

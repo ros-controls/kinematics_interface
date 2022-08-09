@@ -17,6 +17,7 @@
 
 #pragma once
 
+#include <kdl/frames.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include "kdl/chainfksolverpos_recursive.hpp"
 #include "kdl/chainfksolvervel_recursive.hpp"
@@ -24,6 +25,7 @@
 #include "kdl/treejnttojacsolver.hpp"
 #include "kdl_parser/kdl_parser.hpp"
 #include "kinematics_interface/kinematics_interface_base.hpp"
+#include "tf2_eigen_kdl/tf2_eigen_kdl.hpp"
 
 namespace kinematics_interface_kdl
 {
@@ -70,7 +72,7 @@ public:
     */
   bool calculate_link_transform(
     const Eigen::VectorXd & joint_pos, const std::string & link_name,
-    Eigen::Matrix<double, 4, 4> & transform) override;
+    Eigen::Isometry3d & transform) override;
 
   /**
     * \brief Calculates the jacobian for a specified link using provided joint positions.
@@ -89,7 +91,6 @@ private:
   bool verify_link_name(const std::string & link_name);
   bool verify_joint_vector(const Eigen::VectorXd & joint_vector);
   bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian);
-
 
   bool initialized = false;
   std::string root_name_;

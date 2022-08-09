@@ -75,7 +75,7 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
 
   // calculate end effector transform
   Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
-  Eigen::Matrix<double, 4, 4> end_effector_transform;
+  Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
@@ -108,7 +108,7 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes)
 
   // define correct values
   Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
-  Eigen::Matrix<double, 4, 4> end_effector_transform;
+  Eigen::Isometry3d end_effector_transform;
   Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
   delta_x[2] = 1;
   Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
