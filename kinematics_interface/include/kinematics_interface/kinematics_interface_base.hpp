@@ -25,12 +25,12 @@
 
 namespace kinematics_interface
 {
-class KinematicsBaseClass
+class KinematicsInterfaceBase
 {
 public:
-  KinematicsBaseClass() = default;
+  KinematicsInterfaceBase() = default;
 
-  virtual ~KinematicsBaseClass() = default;
+  virtual ~KinematicsInterfaceBase() = default;
 
   /**
      * \brief Initialize plugin. This method must be called before any other.

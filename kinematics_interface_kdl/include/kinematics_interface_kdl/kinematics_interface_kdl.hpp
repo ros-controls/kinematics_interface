@@ -29,7 +29,7 @@
 
 namespace kinematics_interface_kdl
 {
-class KDLKinematics : public kinematics_interface::KinematicsBaseClass
+class KinematicsInterfaceKDL : public kinematics_interface::KinematicsInterfaceBase
 {
 public:
   /**

@@ -20,7 +20,7 @@ namespace kinematics_interface_kdl
 {
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_kdl");
 
-bool KDLKinematics::initialize(
+bool KinematicsInterfaceKDL::initialize(
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node, const std::string & end_effector_name)
 {
   // track initialization plugin
@@ -70,7 +70,7 @@ bool KDLKinematics::initialize(
   return true;
 }
 
-bool KDLKinematics::convert_joint_deltas_to_cartesian_deltas(
+bool KinematicsInterfaceKDL::convert_joint_deltas_to_cartesian_deltas(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos,
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & delta_theta, const std::string & link_name,
   Eigen::Matrix<double, 6, 1> & delta_x)
@@ -93,7 +93,7 @@ bool KDLKinematics::convert_joint_deltas_to_cartesian_deltas(
   return true;
 }
 
-bool KDLKinematics::convert_cartesian_deltas_to_joint_deltas(
+bool KinematicsInterfaceKDL::convert_cartesian_deltas_to_joint_deltas(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos,
   const Eigen::Matrix<double, 6, 1> & delta_x, const std::string & link_name,
   Eigen::Matrix<double, Eigen::Dynamic, 1> & delta_theta)
@@ -121,7 +121,7 @@ bool KDLKinematics::convert_cartesian_deltas_to_joint_deltas(
   return true;
 }
 
-bool KDLKinematics::calculate_jacobian(
+bool KinematicsInterfaceKDL::calculate_jacobian(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos, const std::string & link_name,
   Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian)
 {
@@ -143,7 +143,7 @@ bool KDLKinematics::calculate_jacobian(
   return true;
 }
 
-bool KDLKinematics::calculate_link_transform(
+bool KinematicsInterfaceKDL::calculate_link_transform(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos, const std::string & link_name,
   Eigen::Isometry3d & transform)
 {
@@ -171,7 +171,7 @@ bool KDLKinematics::calculate_link_transform(
   return true;
 }
 
-bool KDLKinematics::verify_link_name(const std::string & link_name)
+bool KinematicsInterfaceKDL::verify_link_name(const std::string & link_name)
 {
   if (link_name == root_name_)
   {
@@ -192,8 +192,7 @@ bool KDLKinematics::verify_link_name(const std::string & link_name)
   return true;
 }
 
-bool KDLKinematics::verify_joint_vector(const Eigen::VectorXd & joint_vector)
-
+bool KinematicsInterfaceKDL::verify_joint_vector(const Eigen::VectorXd & joint_vector)
 {
   if (joint_vector.size() != num_joints_)
   {
@@ -205,7 +204,7 @@ bool KDLKinematics::verify_joint_vector(const Eigen::VectorXd & joint_vector)
   return true;
 }
 
-bool KDLKinematics::verify_initialized()
+bool KinematicsInterfaceKDL::verify_initialized()
 {
   // check if interface is initialized
   if (!initialized)
@@ -218,7 +217,8 @@ bool KDLKinematics::verify_initialized()
   return true;
 }
 
-bool KDLKinematics::verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian)
+bool KinematicsInterfaceKDL::verify_jacobian(
+  const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian)
 {
   if (jacobian.rows() != jacobian_->rows() || jacobian.cols() != jacobian_->columns())
   {
@@ -235,4 +235,4 @@ bool KDLKinematics::verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynami
 #include "pluginlib/class_list_macros.hpp"
 
 PLUGINLIB_EXPORT_CLASS(
-  kinematics_interface_kdl::KDLKinematics, kinematics_interface::KinematicsBaseClass)
+  kinematics_interface_kdl::KinematicsInterfaceKDL, kinematics_interface::KinematicsInterfaceBase)

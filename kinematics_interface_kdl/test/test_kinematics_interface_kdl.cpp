@@ -23,8 +23,8 @@
 class TestKDLPlugin : public ::testing::Test
 {
 public:
-  std::shared_ptr<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>> ik_loader_;
-  std::shared_ptr<kinematics_interface::KinematicsBaseClass> ik_;
+  std::shared_ptr<pluginlib::ClassLoader<kinematics_interface::KinematicsInterfaceBase>> ik_loader_;
+  std::shared_ptr<kinematics_interface::KinematicsInterfaceBase> ik_;
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
   std::string end_effector_ = "link2";
 
@@ -33,11 +33,11 @@ public:
     // init ros
     rclcpp::init(0, nullptr);
     node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test_node");
-    std::string plugin_name = "kinematics_interface_kdl/KDLKinematics";
+    std::string plugin_name = "kinematics_interface_kdl/KinematicsInterfaceKDL";
     ik_loader_ =
-      std::make_shared<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>>(
-        "kinematics_interface_kdl", "kinematics_interface::KinematicsBaseClass");
-    ik_ = std::unique_ptr<kinematics_interface::KinematicsBaseClass>(
+      std::make_shared<pluginlib::ClassLoader<kinematics_interface::KinematicsInterfaceBase>>(
+        "kinematics_interface_kdl", "kinematics_interface::KinematicsInterfaceBase");
+    ik_ = std::unique_ptr<kinematics_interface::KinematicsInterfaceBase>(
       ik_loader_->createUnmanagedInstance(plugin_name));
   }
 
