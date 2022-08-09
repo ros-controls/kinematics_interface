@@ -18,7 +18,8 @@
 #pragma once
 
 #include <kdl/frames.hpp>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <rclcpp/logging.hpp>
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
 #include "kdl/chainfksolverpos_recursive.hpp"
 #include "kdl/chainfksolvervel_recursive.hpp"
 #include "kdl/chainjnttojacsolver.hpp"
@@ -36,7 +37,7 @@ public:
      * \brief Initialize plugin. This method must be called before any other.
      */
   bool initialize(
-    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+    std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
     const std::string & end_effector_name) override;
 
   /**
@@ -101,7 +102,7 @@ private:
   KDL::Frame frame_;
   std::shared_ptr<KDL::Jacobian> jacobian_;
   std::shared_ptr<KDL::ChainJntToJacSolver> jac_solver_;
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
+  std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface_;
   std::unordered_map<std::string, int> link_name_map_;
   double alpha;  // damping term for Jacobian inverse
   Eigen::MatrixXd I;

@@ -16,6 +16,7 @@
 
 #include <gmock/gmock.h>
 #include <memory>
+#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include "kinematics_interface/kinematics_interface_base.hpp"
 #include "pluginlib/class_loader.hpp"
 #include "ros2_control_test_assets/descriptions.hpp"
@@ -71,7 +72,7 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
   loadAlphaParameter();
 
   // initialize the  plugin
-  ASSERT_TRUE(ik_->initialize(node_, end_effector_));
+  ASSERT_TRUE(ik_->initialize(node_->get_node_parameters_interface(), end_effector_));
 
   // calculate end effector transform
   Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
@@ -104,7 +105,7 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes)
   loadAlphaParameter();
 
   // initialize the  plugin
-  ASSERT_TRUE(ik_->initialize(node_, end_effector_));
+  ASSERT_TRUE(ik_->initialize(node_->get_node_parameters_interface(), end_effector_));
 
   // define correct values
   Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
@@ -141,5 +142,5 @@ TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description)
 {
   // load alpha to parameter server
   loadAlphaParameter();
-  ASSERT_FALSE(ik_->initialize(node_, end_effector_));
+  ASSERT_FALSE(ik_->initialize(node_->get_node_parameters_interface(), end_effector_));
 }

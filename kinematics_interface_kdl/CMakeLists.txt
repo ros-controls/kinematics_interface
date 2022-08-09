@@ -49,6 +49,7 @@ install(
 if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
   find_package(ros2_control_test_assets REQUIRED)
+  find_package(rclcpp_lifecycle REQUIRED)
 
   ament_add_gmock(
           test_kinematics_interface_kdl
@@ -60,6 +61,7 @@ if(BUILD_TESTING)
           ros2_control_test_assets
           pluginlib
           ros2_control_test_assets
+          rclcpp_lifecycle
   )
 
 endif()

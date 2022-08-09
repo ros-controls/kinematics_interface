@@ -21,14 +21,15 @@ namespace kinematics_interface_kdl
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_kdl");
 
 bool KinematicsInterfaceKDL::initialize(
-  std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node, const std::string & end_effector_name)
+  std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
+  const std::string & end_effector_name)
 {
   // track initialization plugin
   initialized = true;
 
   // get robot description
   auto robot_param = rclcpp::Parameter();
-  if (!node->get_parameter("robot_description", robot_param))
+  if (!parameters_interface->get_parameter("robot_description", robot_param))
   {
     RCLCPP_ERROR(LOGGER, "parameter robot_description not set");
     return false;
@@ -36,9 +37,9 @@ bool KinematicsInterfaceKDL::initialize(
   auto robot_description = robot_param.as_string();
   // get alpha damping term
   auto alpha_param = rclcpp::Parameter("alpha", 0.000005);
-  if (node->has_parameter("alpha"))
+  if (parameters_interface->has_parameter("alpha"))
   {
-    node->get_parameter("alpha", alpha_param);
+    parameters_interface->get_parameter("alpha", alpha_param);
   }
   alpha = alpha_param.as_double();
   // create kinematic chain

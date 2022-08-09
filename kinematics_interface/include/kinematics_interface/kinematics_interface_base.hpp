@@ -21,7 +21,7 @@
 #include <eigen3/Eigen/Core>
 #include <eigen3/Eigen/Geometry>
 #include <eigen3/Eigen/LU>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
 
 namespace kinematics_interface
 {
@@ -36,7 +36,7 @@ public:
      * \brief Initialize plugin. This method must be called before any other.
      */
   virtual bool initialize(
-    std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node,
+    std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
     const std::string & end_effector_name) = 0;
 
   /**

@@ -12,7 +12,7 @@ endif ()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(geometry_msgs REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
+find_package(rclcpp REQUIRED)
 find_package(Eigen3 REQUIRED)
 
 # Create interface library for kinematics base class
@@ -30,7 +30,7 @@ ament_target_dependencies(
     kinematics_interface
     INTERFACE
     Eigen3
-    rclcpp_lifecycle
+    rclcpp
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,
@@ -42,8 +42,8 @@ install(DIRECTORY include/
 )
 
 ament_export_dependencies(
-    rclcpp_lifecycle
     Eigen3
+    rclcpp
 )
 
 ament_export_include_directories(
