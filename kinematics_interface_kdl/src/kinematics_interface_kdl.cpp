@@ -52,7 +52,7 @@ bool KDLKinematics::initialize(
       end_effector_name.c_str());
     return false;
   }
-  //create map from link names to their index
+  // create map from link names to their index
   for (auto i = 0u; i < chain_.getNrOfSegments(); i++)
   {
     link_name_map_[chain_.getSegment(i).getName()] = i + 1;
@@ -115,7 +115,7 @@ bool KDLKinematics::convert_cartesian_deltas_to_joint_deltas(
   memcpy(delta_x.data(), delta_x_vec.data(), delta_x_vec.size() * sizeof(double));
   // calculate Jacobian
   jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
-  // TODO this dynamic allocation needs to be replaced
+  // TODO(anyone): this dynamic allocation needs to be replaced
   Eigen::Matrix<double, 6, Eigen::Dynamic> J = jacobian_->data;
   // damped inverse
   Eigen::Matrix<double, Eigen::Dynamic, 6> J_inverse =
@@ -180,7 +180,8 @@ bool KDLKinematics::calculate_link_transform(
   // create forward kinematics solver
   fk_pos_solver_->JntToCart(q_, frame_, link_name_map_[link_name]);
   double tmp[] = {frame_.p.x(), frame_.p.y(), frame_.p.z()};
-  // KDL::Rotation stores data in row-major format. e.g Xx, Yx, Zx, Xy... = data index at 0, 1, 2, 3, 4...
+  // KDL::Rotation stores data in row-major format.
+  //      e.g Xx, Yx, Zx, Xy... = data index at 0, 1, 2, 3, 4...
   for (int r = 0; r < 3; r++)
   {
     for (int c = 0; c < 3; c++)
