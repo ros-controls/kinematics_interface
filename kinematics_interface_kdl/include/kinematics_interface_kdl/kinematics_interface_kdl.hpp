@@ -18,13 +18,12 @@
 #ifndef KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
 #define KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
 
-#include "kinematics_interface/kinematics_interface_base.hpp"
-
 #include <memory>
 #include <string>
 #include <unordered_map>
 #include <vector>
 
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
 #include "kdl/chainfksolverpos_recursive.hpp"
@@ -32,13 +31,12 @@
 #include "kdl/chainjnttojacsolver.hpp"
 #include "kdl/treejnttojacsolver.hpp"
 #include "kdl_parser/kdl_parser.hpp"
-#include "kinematics_interface/kinematics_interface_base.hpp"
+#include "kinematics_interface/kinematics_interface.hpp"
 #include "tf2_eigen_kdl/tf2_eigen_kdl.hpp"
-#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
 
 namespace kinematics_interface_kdl
 {
-class KinematicsInterfaceKDL : public kinematics_interface::KinematicsInterfaceBase
+class KinematicsInterfaceKDL : public kinematics_interface::KinematicsInterface
 {
 public:
   /**

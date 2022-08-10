@@ -11,6 +11,7 @@ endif()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
     rclcpp_lifecycle
+    rclcpp
 )
 
 # find dependencies

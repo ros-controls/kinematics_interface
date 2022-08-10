@@ -236,4 +236,4 @@ bool KinematicsInterfaceKDL::verify_jacobian(
 #include "pluginlib/class_list_macros.hpp"
 
 PLUGINLIB_EXPORT_CLASS(
-  kinematics_interface_kdl::KinematicsInterfaceKDL, kinematics_interface::KinematicsInterfaceBase)
+  kinematics_interface_kdl::KinematicsInterfaceKDL, kinematics_interface::KinematicsInterface)

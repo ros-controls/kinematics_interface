@@ -22,18 +22,22 @@
 #include <string>
 #include <vector>
 
-#include "rclcpp/node_interfaces/node_parameters_interface.hpp"
+#include <eigen3/Eigen/Core>
+#include <eigen3/Eigen/Geometry>
+#include <eigen3/Eigen/LU>
+#include <rclcpp/logging.hpp>
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
 
 namespace kinematics_interface
 {
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface");
 
-class KinematicsInterfaceBase
+class KinematicsInterface
 {
 public:
-  KinematicsInterfaceBase() = default;
+  KinematicsInterface() = default;
 
-  virtual ~KinematicsInterfaceBase() = default;
+  virtual ~KinematicsInterface() = default;
 
   /**
      * \brief Initialize plugin. This method must be called before any other.
