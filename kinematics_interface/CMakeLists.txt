@@ -1,35 +1,28 @@
 cmake_minimum_required(VERSION 3.5)
 project(kinematics_interface)
 
-if (NOT CMAKE_CXX_STANDARD)
+if(NOT CMAKE_CXX_STANDARD)
   set(CMAKE_CXX_STANDARD 14)
-endif ()
+endif()
 
-if (CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
-endif ()
+endif()
+
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+    rclcpp_lifecycle
+)
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(geometry_msgs REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
+foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
 
 # Create interface library for kinematics base class
-add_library(kinematics_interface
-    INTERFACE
-)
-
-target_include_directories(
-    kinematics_interface
-    INTERFACE
-    include
-)
-
-ament_target_dependencies(
-    kinematics_interface
-    INTERFACE
-    rclcpp_lifecycle
-)
+add_library(kinematics_interface INTERFACE)
+target_include_directories(kinematics_interface INTERFACE include)
+ament_target_dependencies(kinematics_interface INTERFACE ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
@@ -40,7 +33,7 @@ install(DIRECTORY include/
 )
 
 ament_export_dependencies(
-    rclcpp_lifecycle
+    ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
 ament_export_include_directories(

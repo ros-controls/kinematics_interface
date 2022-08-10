@@ -15,10 +15,14 @@
 /// \author: Andy Zelenak, Paul Gesel
 /// \description: Base class for kinematics interface
 
-#ifndef IK_PLUGIN_BASE__IK_PLUGIN_BASE_HPP_
-#define IK_PLUGIN_BASE__IK_PLUGIN_BASE_HPP_
+#ifndef KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_BASE_HPP_
+#define KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_BASE_HPP_
 
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace kinematics_interface
 {
@@ -83,4 +87,4 @@ public:
 
 }  // namespace kinematics_interface
 
-#endif  // IK_PLUGIN_BASE__IK_PLUGIN_BASE_HPP_
+#endif  // KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_BASE_HPP_

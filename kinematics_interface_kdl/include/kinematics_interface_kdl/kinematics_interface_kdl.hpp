@@ -15,9 +15,16 @@
 /// \author: Andy Zelenak, Paul Gesel
 /// \description: KDL plugin for kinematics interface
 
-#pragma once
+#ifndef KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
+#define KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
 
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
+#include "kinematics_interface/kinematics_interface_base.hpp"
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
 #include "kdl/chainfksolverpos_recursive.hpp"
@@ -25,7 +32,7 @@
 #include "kdl/chainjnttojacsolver.hpp"
 #include "kdl/treejnttojacsolver.hpp"
 #include "kdl_parser/kdl_parser.hpp"
-#include "kinematics_interface/kinematics_interface_base.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 
 namespace kinematics_interface_kdl
 {
@@ -88,7 +95,7 @@ public:
 private:
   bool update_joint_array(const std::vector<double> & joint_pos);
 
-  //verification methods
+  // verification methods
   bool verify_initialized();
   bool verify_link_name(const std::string & link_name);
   bool verify_transform_vector(const std::vector<double> & transform);
@@ -114,3 +121,5 @@ private:
 };
 
 }  // namespace kinematics_interface_kdl
+
+#endif  // KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
