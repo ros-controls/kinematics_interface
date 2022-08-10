@@ -5,65 +5,67 @@ if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+  Eigen3
+  kdl_parser
+  kinematics_interface
+  pluginlib
+)
+
 # find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(kdl_parser REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(kinematics_interface REQUIRED)
-find_package(tf2_eigen_kdl REQUIRED)
+foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
 
-add_library(kinematics_interface_kdl SHARED
-        src/kinematics_interface_kdl.cpp
+
+add_library(
+  ${PROJECT_NAME}
+  SHARED
+  src/kinematics_interface_kdl.cpp
 )
+target_include_directories(${PROJECT_NAME} PRIVATE include)
+ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_INCLUDE_DEPENDS})
 
-ament_target_dependencies(kinematics_interface_kdl
-        kdl_parser
-        pluginlib
-        Eigen3
-        kinematics_interface
-        tf2_eigen_kdl
-)
-
-target_include_directories(
-        kinematics_interface_kdl
-        PRIVATE
-        include
-)
-
-pluginlib_export_plugin_description_file(kinematics_interface_kdl kinematics_interface_kdl.xml)
+pluginlib_export_plugin_description_file(kinematics_interface kinematics_interface_kdl.xml)
 
 install(
-        TARGETS kinematics_interface_kdl
-        RUNTIME DESTINATION bin
-        ARCHIVE DESTINATION lib
-        LIBRARY DESTINATION lib
+  TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
 )
 
 install(
-        DIRECTORY include/
-        DESTINATION include
+  DIRECTORY include/
+  DESTINATION include
 )
 
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
   find_package(ros2_control_test_assets REQUIRED)
-  find_package(rclcpp_lifecycle REQUIRED)
 
   ament_add_gmock(
-          test_kinematics_interface_kdl
-          test/test_kinematics_interface_kdl.cpp
+    test_${PROJECT_NAME}
+    test/test_kinematics_interface_kdl.cpp
   )
-  target_include_directories(test_kinematics_interface_kdl PRIVATE include)
-  ament_target_dependencies(test_kinematics_interface_kdl
-          kinematics_interface
-          ros2_control_test_assets
-          pluginlib
-          ros2_control_test_assets
-          rclcpp_lifecycle
+  target_include_directories(test_${PROJECT_NAME} PRIVATE include)
+  target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
+  ament_target_dependencies(test_${PROJECT_NAME}
+    ${THIS_PACKAGE_INCLUDE_DEPENDS}
+    ros2_control_test_assets
   )
-
 endif()
+
+ament_export_libraries(
+  ${PROJECT_NAME}
+)
+ament_export_include_directories(
+  include
+)
+ament_export_dependencies(
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
 
 ament_package()

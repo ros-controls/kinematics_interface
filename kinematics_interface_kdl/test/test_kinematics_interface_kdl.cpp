@@ -36,8 +36,8 @@ public:
     node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test_node");
     std::string plugin_name = "kinematics_interface_kdl/KinematicsInterfaceKDL";
     ik_loader_ =
-      std::make_shared<pluginlib::ClassLoader<kinematics_interface::KinematicsInterfaceBase>>(
-        "kinematics_interface_kdl", "kinematics_interface::KinematicsInterfaceBase");
+        std::make_shared<pluginlib::ClassLoader<kinematics_interface::KinematicsInterfaceBase>>(
+        "kinematics_interface", "kinematics_interface::KinematicsInterfaceBase");
     ik_ = std::unique_ptr<kinematics_interface::KinematicsInterfaceBase>(
       ik_loader_->createUnmanagedInstance(plugin_name));
   }

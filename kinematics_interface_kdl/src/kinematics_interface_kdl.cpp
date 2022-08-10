@@ -53,7 +53,7 @@ bool KinematicsInterfaceKDL::initialize(
       end_effector_name.c_str());
     return false;
   }
-  //create map from link names to their index
+  // create map from link names to their index
   for (auto i = 0u; i < chain_.getNrOfSegments(); i++)
   {
     link_name_map_[chain_.getSegment(i).getName()] = i + 1;
@@ -112,7 +112,7 @@ bool KinematicsInterfaceKDL::convert_cartesian_deltas_to_joint_deltas(
 
   // calculate Jacobian
   jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
-  // TODO this dynamic allocation needs to be replaced
+  // TODO(anyone): this dynamic allocation needs to be replaced
   Eigen::Matrix<double, 6, Eigen::Dynamic> J = jacobian_->data;
   // damped inverse
   Eigen::Matrix<double, Eigen::Dynamic, 6> J_inverse =

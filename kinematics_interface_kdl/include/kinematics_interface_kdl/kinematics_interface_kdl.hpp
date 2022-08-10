@@ -15,11 +15,18 @@
 /// \author: Andy Zelenak, Paul Gesel
 /// \description: KDL plugin for kinematics interface
 
-#pragma once
+#ifndef KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
+#define KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
 
-#include <kdl/frames.hpp>
-#include <rclcpp/logging.hpp>
-#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
+#include "kinematics_interface/kinematics_interface_base.hpp"
+
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
+
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/LU"
 #include "kdl/chainfksolverpos_recursive.hpp"
 #include "kdl/chainfksolvervel_recursive.hpp"
 #include "kdl/chainjnttojacsolver.hpp"
@@ -27,6 +34,7 @@
 #include "kdl_parser/kdl_parser.hpp"
 #include "kinematics_interface/kinematics_interface_base.hpp"
 #include "tf2_eigen_kdl/tf2_eigen_kdl.hpp"
+#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
 
 namespace kinematics_interface_kdl
 {
@@ -109,3 +117,5 @@ private:
 };
 
 }  // namespace kinematics_interface_kdl
+
+#endif  // KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
