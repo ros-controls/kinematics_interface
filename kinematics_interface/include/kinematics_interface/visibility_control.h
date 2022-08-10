@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef IK_PLUGIN_BASE__VISIBILITY_CONTROL_H_
-#define IK_PLUGIN_BASE__VISIBILITY_CONTROL_H_
+#ifndef KINEMATICS_INTERFACE__VISIBILITY_CONTROL_H_
+#define KINEMATICS_INTERFACE__VISIBILITY_CONTROL_H_
 
 // This logic was borrowed (then namespaced) from the examples on the gcc wiki:
 //     https://gcc.gnu.org/wiki/Visibility
@@ -46,4 +46,4 @@
 #define IK_PLUGIN_BASE_PUBLIC_TYPE
 #endif
 
-#endif  // IK_PLUGIN_BASE__VISIBILITY_CONTROL_H_
+#endif  // KINEMATICS_INTERFACE__VISIBILITY_CONTROL_H_
