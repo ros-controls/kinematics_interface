@@ -15,18 +15,18 @@
 /// \author: Andy Zelenak, Paul Gesel
 /// \description: Base class for kinematics interface
 
-#ifndef KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_BASE_HPP_
-#define KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_BASE_HPP_
+#ifndef KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_HPP_
+#define KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_HPP_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <eigen3/Eigen/Core>
-#include <eigen3/Eigen/Geometry>
-#include <eigen3/Eigen/LU>
-#include <rclcpp/logging.hpp>
-#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
+#include "eigen3/Eigen/Core"
+#include "eigen3/Eigen/Geometry"
+#include "eigen3/Eigen/LU"
+#include "rclcpp/logging.hpp"
+#include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 
 namespace kinematics_interface
 {
@@ -98,7 +98,7 @@ public:
   {
     auto joint_pos = Eigen::Map<const Eigen::VectorXd>(joint_pos_vec.data(), joint_pos_vec.size());
     auto delta_x = Eigen::Map<const Eigen::VectorXd>(delta_x_vec.data(), delta_x_vec.size());
-    // TODO heap allocation should be removed for realtime use
+    // TODO(anyone): heap allocation should be removed for realtime use
     Eigen::VectorXd delta_theta =
       Eigen::Map<Eigen::VectorXd>(delta_theta_vec.data(), delta_theta_vec.size());
 
@@ -153,4 +153,4 @@ public:
 
 }  // namespace kinematics_interface
 
-#endif  // KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_BASE_HPP_
+#endif  // KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_HPP_

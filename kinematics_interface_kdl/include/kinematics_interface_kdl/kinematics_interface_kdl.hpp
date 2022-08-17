@@ -60,7 +60,7 @@ public:
     Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian) override;
 
 private:
-  //verification methods
+  // verification methods
   bool verify_initialized();
   bool verify_link_name(const std::string & link_name);
   bool verify_joint_vector(const Eigen::VectorXd & joint_vector);
