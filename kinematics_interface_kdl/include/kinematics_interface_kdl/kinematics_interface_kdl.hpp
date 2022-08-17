@@ -23,7 +23,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include <rclcpp/node_interfaces/node_parameters_interface.hpp>
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/LU"
 #include "kdl/chainfksolverpos_recursive.hpp"
@@ -32,6 +31,7 @@
 #include "kdl/treejnttojacsolver.hpp"
 #include "kdl_parser/kdl_parser.hpp"
 #include "kinematics_interface/kinematics_interface.hpp"
+#include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 #include "tf2_eigen_kdl/tf2_eigen_kdl.hpp"
 
 namespace kinematics_interface_kdl

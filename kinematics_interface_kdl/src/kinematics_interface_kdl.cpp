@@ -181,7 +181,7 @@ bool KinematicsInterfaceKDL::verify_link_name(const std::string & link_name)
   if (link_name_map_.find(link_name) == link_name_map_.end())
   {
     std::string links;
-    for (auto i = 0u; i < chain_.getNrOfSegments(); ++i)
+    for (size_t i = 0; i < chain_.getNrOfSegments(); ++i)
     {
       links += "\n" + chain_.getSegment(i).getName();
     }

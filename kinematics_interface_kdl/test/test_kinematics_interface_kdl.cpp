@@ -16,9 +16,9 @@
 
 #include <gmock/gmock.h>
 #include <memory>
-#include <rclcpp_lifecycle/lifecycle_node.hpp>
 #include "kinematics_interface/kinematics_interface.hpp"
 #include "pluginlib/class_loader.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "ros2_control_test_assets/descriptions.hpp"
 
 class TestKDLPlugin : public ::testing::Test
