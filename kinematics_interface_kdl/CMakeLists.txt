@@ -10,6 +10,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
   kdl_parser
   kinematics_interface
   pluginlib
+  tf2_eigen_kdl
 )
 
 # find dependencies

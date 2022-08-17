@@ -16,15 +16,16 @@
 
 #include <gmock/gmock.h>
 #include <memory>
-#include "kinematics_interface/kinematics_interface_base.hpp"
+#include "kinematics_interface/kinematics_interface.hpp"
 #include "pluginlib/class_loader.hpp"
+#include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "ros2_control_test_assets/descriptions.hpp"
 
 class TestKDLPlugin : public ::testing::Test
 {
 public:
-  std::shared_ptr<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>> ik_loader_;
-  std::shared_ptr<kinematics_interface::KinematicsBaseClass> ik_;
+  std::shared_ptr<pluginlib::ClassLoader<kinematics_interface::KinematicsInterface>> ik_loader_;
+  std::shared_ptr<kinematics_interface::KinematicsInterface> ik_;
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
   std::string end_effector_ = "link2";
 
@@ -33,11 +34,11 @@ public:
     // init ros
     rclcpp::init(0, nullptr);
     node_ = std::make_shared<rclcpp_lifecycle::LifecycleNode>("test_node");
-    std::string plugin_name = "kinematics_interface_kdl/KDLKinematics";
+    std::string plugin_name = "kinematics_interface_kdl/KinematicsInterfaceKDL";
     ik_loader_ =
-      std::make_shared<pluginlib::ClassLoader<kinematics_interface::KinematicsBaseClass>>(
-        "kinematics_interface", "kinematics_interface::KinematicsBaseClass");
-    ik_ = std::unique_ptr<kinematics_interface::KinematicsBaseClass>(
+      std::make_shared<pluginlib::ClassLoader<kinematics_interface::KinematicsInterface>>(
+        "kinematics_interface", "kinematics_interface::KinematicsInterface");
+    ik_ = std::unique_ptr<kinematics_interface::KinematicsInterface>(
       ik_loader_->createUnmanagedInstance(plugin_name));
   }
 
@@ -71,16 +72,50 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
   loadAlphaParameter();
 
   // initialize the  plugin
-  ASSERT_TRUE(ik_->initialize(node_, end_effector_));
+  ASSERT_TRUE(ik_->initialize(node_->get_node_parameters_interface(), end_effector_));
 
   // calculate end effector transform
-  std::vector<double> pos = {0, 0};
-  std::vector<double> end_effector_transform(16);
+  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
-  std::vector<double> delta_x = {0, 0, .5, 0, 0, 0};
-  std::vector<double> delta_theta(2);
+  Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+  delta_x[2] = 1;
+  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
+  ASSERT_TRUE(
+    ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
+
+  // convert joint delta to cartesian delta
+  Eigen::Matrix<double, 6, 1> delta_x_est;
+  ASSERT_TRUE(
+    ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
+
+  // Ensure kinematics math is correct
+  for (auto i = 0l; i < delta_x.size(); i++)
+  {
+    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
+  }
+}
+
+TEST_F(TestKDLPlugin, KDL_plugin_function_std_vector)
+{
+  // load robot description and alpha to parameter server
+  loadURDFParameter();
+  loadAlphaParameter();
+
+  // initialize the  plugin
+  ASSERT_TRUE(ik_->initialize(node_->get_node_parameters_interface(), end_effector_));
+
+  // calculate end effector transform
+  std::vector<double> pos = {0, 0};
+  Eigen::Isometry3d end_effector_transform;
+  ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
+
+  // convert cartesian delta to joint delta
+  std::vector<double> delta_x = {0, 0, 0, 0, 0, 0};
+  delta_x[2] = 1;
+  std::vector<double> delta_theta = {0, 0};
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
 
@@ -90,9 +125,9 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
   // Ensure kinematics math is correct
-  for (auto i = 0ul; i < delta_x.size(); i++)
+  for (auto i = 0l; i < delta_x.size(); i++)
   {
-    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.01);
+    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
   }
 }
 
@@ -103,28 +138,26 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes)
   loadAlphaParameter();
 
   // initialize the  plugin
-  ASSERT_TRUE(ik_->initialize(node_, end_effector_));
+  ASSERT_TRUE(ik_->initialize(node_->get_node_parameters_interface(), end_effector_));
 
   // define correct values
-  std::vector<double> pos = {0, 0};
-  std::vector<double> end_effector_transform(16);
-  std::vector<double> delta_x = {0, 0, 1, 0, 0, 0};
-  std::vector<double> delta_theta(2);
-  std::vector<double> delta_x_est(6);
+  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::Isometry3d end_effector_transform;
+  Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+  delta_x[2] = 1;
+  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::Matrix<double, 6, 1> delta_x_est;
 
   // wrong size input vector
-  std::vector<double> vec_5 = {1.0, 2.0, 3.0, 4.0, 5.0};
+  Eigen::Matrix<double, Eigen::Dynamic, 1> vec_5 = Eigen::Matrix<double, 5, 1>::Zero();
 
   // calculate transform
   ASSERT_FALSE(ik_->calculate_link_transform(vec_5, end_effector_, end_effector_transform));
   ASSERT_FALSE(ik_->calculate_link_transform(pos, "link_not_in_model", end_effector_transform));
-  ASSERT_FALSE(ik_->calculate_link_transform(pos, end_effector_, vec_5));
 
   // convert cartesian delta to joint delta
   ASSERT_FALSE(
     ik_->convert_cartesian_deltas_to_joint_deltas(vec_5, delta_x, end_effector_, delta_theta));
-  ASSERT_FALSE(
-    ik_->convert_cartesian_deltas_to_joint_deltas(pos, vec_5, end_effector_, delta_theta));
   ASSERT_FALSE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, "link_not_in_model", delta_theta));
   ASSERT_FALSE(ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, vec_5));
@@ -136,13 +169,11 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, vec_5, end_effector_, delta_x_est));
   ASSERT_FALSE(ik_->convert_joint_deltas_to_cartesian_deltas(
     pos, delta_theta, "link_not_in_model", delta_x_est));
-  ASSERT_FALSE(
-    ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, vec_5));
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description)
 {
   // load alpha to parameter server
   loadAlphaParameter();
-  ASSERT_FALSE(ik_->initialize(node_, end_effector_));
+  ASSERT_FALSE(ik_->initialize(node_->get_node_parameters_interface(), end_effector_));
 }
