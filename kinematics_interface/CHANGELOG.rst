@@ -23,4 +23,3 @@ Changelog for package kinematics_interface
 * updated README and cleaned up code
 * added KDL plugin for kinematics interface
 * Contributors: Paul Gesel, Andy Zelenak, Bence Magyar, Denis Štogl
-
