@@ -5,12 +5,19 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+  Eigen3
+  kdl_parser
+  kinematics_interface
+  pluginlib
+  tf2_eigen_kdl
+)
+
+# find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(kdl_parser REQUIRED)
-find_package(kinematics_interface REQUIRED)
-find_package(pluginlib REQUIRED)
-find_package(tf2_eigen_kdl REQUIRED)
+foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
 
 add_library(
   kinematics_interface_kdl
@@ -22,12 +29,8 @@ target_include_directories(kinematics_interface_kdl PUBLIC
   $<INSTALL_INTERFACE:include/kinematics_interface_kdl>
 )
 target_compile_features(kinematics_interface_kdl PUBLIC cxx_std_17)
-target_link_libraries(kinematics_interface_kdl PUBLIC
-  Eigen3::Eigen
-  kdl_parser::kdl_parser
-  kinematics_interface::kinematics_interface
-  pluginlib::pluginlib
-  tf2_eigen_kdl::tf2_eigen_kdl
+ament_target_dependencies(kinematics_interface_kdl PUBLIC
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
 pluginlib_export_plugin_description_file(kinematics_interface kinematics_interface_kdl.xml)
@@ -60,11 +63,5 @@ install(
 )
 
 ament_export_targets(export_kinematics_interface_kdl HAS_LIBRARY_TARGET)
-ament_export_dependencies(
-  Eigen3
-  kdl_parser
-  kinematics_interface
-  pluginlib
-  tf2_eigen_kdl
-)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()

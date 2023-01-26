@@ -5,10 +5,17 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
+set(THIS_PACKAGE_INCLUDE_DEPENDS
+  Eigen3
+  rclcpp
+  rclcpp_lifecycle
+)
+
+# find dependencies
 find_package(ament_cmake REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(rclcpp REQUIRED)
-find_package(rclcpp_lifecycle REQUIRED)
+foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
+  find_package(${Dependency} REQUIRED)
+endforeach()
 
 # Create interface library for kinematics base class
 add_library(kinematics_interface INTERFACE)
@@ -17,10 +24,8 @@ target_include_directories(kinematics_interface INTERFACE
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/kinematics_interface>
 )
-target_link_libraries(kinematics_interface INTERFACE
-  Eigen3::Eigen
-  rclcpp::rclcpp
-  rclcpp_lifecycle::rclcpp_lifecycle
+ament_target_dependencies(kinematics_interface INTERFACE
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,
@@ -40,9 +45,5 @@ install(
 )
 
 ament_export_targets(export_kinematics_interface HAS_LIBRARY_TARGET)
-ament_export_dependencies(
-  Eigen3
-  rclcpp
-  rclcpp_lifecycle
-)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()
