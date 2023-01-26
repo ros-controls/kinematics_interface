@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.8)
-project(kinematics_interface_kdl)
+cmake_minimum_required(VERSION 3.16)
+project(kinematics_interface_kdl LANGUAGES CXX)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
@@ -19,54 +19,49 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
-
 add_library(
-  ${PROJECT_NAME}
+  kinematics_interface_kdl
   SHARED
   src/kinematics_interface_kdl.cpp
 )
-target_include_directories(${PROJECT_NAME} PRIVATE include)
-ament_target_dependencies(${PROJECT_NAME} ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_include_directories(kinematics_interface_kdl PUBLIC
+  $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include/kinematics_interface_kdl>
+)
+target_compile_features(kinematics_interface_kdl PUBLIC cxx_std_17)
+ament_target_dependencies(kinematics_interface_kdl PUBLIC
+  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
 
 pluginlib_export_plugin_description_file(kinematics_interface kinematics_interface_kdl.xml)
-
-install(
-  TARGETS ${PROJECT_NAME}
-  RUNTIME DESTINATION bin
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-)
-
-install(
-  DIRECTORY include/
-  DESTINATION include
-)
-
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
   find_package(ros2_control_test_assets REQUIRED)
 
   ament_add_gmock(
-    test_${PROJECT_NAME}
+    test_kinematics_interface_kdl
     test/test_kinematics_interface_kdl.cpp
   )
-  target_include_directories(test_${PROJECT_NAME} PRIVATE include)
-  target_link_libraries(test_${PROJECT_NAME} ${PROJECT_NAME})
-  ament_target_dependencies(test_${PROJECT_NAME}
-    ${THIS_PACKAGE_INCLUDE_DEPENDS}
-    ros2_control_test_assets
-  )
+  target_link_libraries(test_kinematics_interface_kdl kinematics_interface_kdl)
+
+  # TODO: Use target_link_libraries once ros2_control_test_assets'
+  #       CMake include export is fixed
+  ament_target_dependencies(test_kinematics_interface_kdl ros2_control_test_assets)
 endif()
 
-ament_export_libraries(
-  ${PROJECT_NAME}
+install(
+  DIRECTORY include/
+  DESTINATION include/kinematics_interface_kdl
 )
-ament_export_include_directories(
-  include
-)
-ament_export_dependencies(
-  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+install(
+  TARGETS kinematics_interface_kdl
+  EXPORT export_kinematics_interface_kdl
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
 
+ament_export_targets(export_kinematics_interface_kdl HAS_LIBRARY_TARGET)
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 ament_package()
