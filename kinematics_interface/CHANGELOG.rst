@@ -2,6 +2,12 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix overriding of install (`#13 <https://github.com/ros-controls/kinematics_interface/issues/13>`_)
+* [CI] Fix and update formatting workflow and hooks (`#14 <https://github.com/ros-controls/kinematics_interface/issues/14>`_)
+* Contributors: Dr. Denis, Tyler Weaver
+
 0.0.2 (2022-10-21)
 ------------------
 
