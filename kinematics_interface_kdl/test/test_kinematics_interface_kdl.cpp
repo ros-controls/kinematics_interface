@@ -92,7 +92,7 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
   // Ensure kinematics math is correct
-  for (auto i = 0l; i < delta_x.size(); i++)
+  for (size_t i = 0; i < std::static_cast<size_t>(delta_x.size()); ++i)
   {
     ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
   }
@@ -125,7 +125,7 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_std_vector)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
   // Ensure kinematics math is correct
-  for (auto i = 0l; i < delta_x.size(); i++)
+  for (size_t i = 0; i < std::static_cast<size_t>(delta_x.size()); ++i)
   {
     ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
   }
