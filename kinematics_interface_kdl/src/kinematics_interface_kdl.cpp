@@ -195,7 +195,7 @@ bool KinematicsInterfaceKDL::verify_link_name(const std::string & link_name)
 
 bool KinematicsInterfaceKDL::verify_joint_vector(const Eigen::VectorXd & joint_vector)
 {
-  if (std::static_cast<size_t>(joint_vector.size()) != num_joints_)
+  if (static_cast<size_t>(joint_vector.size()) != num_joints_)
   {
     RCLCPP_ERROR(
       LOGGER, "Invalid joint vector size (%zu). Expected size is %zu.", joint_vector.size(),
