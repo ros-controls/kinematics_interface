@@ -54,7 +54,7 @@ bool KinematicsInterfaceKDL::initialize(
     return false;
   }
   // create map from link names to their index
-  for (auto i = 0u; i < chain_.getNrOfSegments(); i++)
+  for (size_t i = 0; i < chain_.getNrOfSegments(); ++i)
   {
     link_name_map_[chain_.getSegment(i).getName()] = i + 1;
   }
@@ -195,7 +195,7 @@ bool KinematicsInterfaceKDL::verify_link_name(const std::string & link_name)
 
 bool KinematicsInterfaceKDL::verify_joint_vector(const Eigen::VectorXd & joint_vector)
 {
-  if (joint_vector.size() != num_joints_)
+  if (static_cast<size_t>(joint_vector.size()) != num_joints_)
   {
     RCLCPP_ERROR(
       LOGGER, "Invalid joint vector size (%zu). Expected size is %zu.", joint_vector.size(),
