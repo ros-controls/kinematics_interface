@@ -22,7 +22,6 @@ namespace kinematics_interface
 
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface");
 
-
 bool KinematicsInterface::convert_cartesian_deltas_to_joint_deltas(
   std::vector<double> & joint_pos_vec, const std::vector<double> & delta_x_vec,
   const std::string & link_name, std::vector<double> & delta_theta_vec)
