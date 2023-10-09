@@ -30,8 +30,6 @@
 
 namespace kinematics_interface
 {
-rclcpp::Logger LOGGER;
-
 class KinematicsInterface
 {
 public:
