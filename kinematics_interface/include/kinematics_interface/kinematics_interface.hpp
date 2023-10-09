@@ -30,7 +30,7 @@
 
 namespace kinematics_interface
 {
-extern rclcpp::Logger LOGGER;
+rclcpp::Logger LOGGER;
 
 class KinematicsInterface
 {
