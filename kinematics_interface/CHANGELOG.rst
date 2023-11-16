@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use a dynamic library instead of header-only (`#21 <https://github.com/ros-controls/kinematics_interface/issues/21>`_)
+* Contributors: Thibault Poignonec
+
 0.1.0 (2023-01-27)
 ------------------
 * Fix overriding of install (`#13 <https://github.com/ros-controls/kinematics_interface/issues/13>`_)

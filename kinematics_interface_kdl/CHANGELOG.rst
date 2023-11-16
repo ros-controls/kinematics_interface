@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* 🤔 Remove compile warnings and unify for-loop syntax. (`#15 <https://github.com/ros-controls/kinematics_interface/issues/15>`_)
+* Contributors: Dr. Denis, Bence Magyar, Paul Gesel
+
 0.1.0 (2023-01-27)
 ------------------
 * Fix overriding of install (`#13 <https://github.com/ros-controls/kinematics_interface/issues/13>`_)
