@@ -14,6 +14,7 @@
   <buildtool_depend>eigen3_cmake_module</buildtool_depend>
 
   <depend>eigen</depend>
+  <depend>orocos_kdl_vendor</depend>
   <depend>kdl_parser</depend>
   <depend>kinematics_interface</depend>
   <depend>pluginlib</depend>

@@ -7,6 +7,7 @@ endif()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   Eigen3
+  orocos_kdl_vendor
   kdl_parser
   kinematics_interface
   pluginlib
