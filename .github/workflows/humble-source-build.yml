@@ -10,8 +10,12 @@ on:
 
 jobs:
   source:
-    uses: ./.github/workflows/reusable-ros-tooling-source-build.yml
+    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-source-build.yml@master
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [humble]
     with:
-      ros_distro: humble
-      ref: humble
-      ros2_repo_branch: humble
+      ros_distro: ${{ matrix.ROS_DISTRO }}
+      ref: master
+      ros2_repo_branch: ${{ matrix.ROS_DISTRO }}

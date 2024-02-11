@@ -1,4 +1,4 @@
-name: Rolling Source Build
+name: Source Build
 on:
   workflow_dispatch:
   push:
@@ -10,8 +10,12 @@ on:
 
 jobs:
   source:
-    uses: ./.github/workflows/reusable-ros-tooling-source-build.yml
+    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-source-build.yml@master
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [rolling, iron]
     with:
-      ros_distro: rolling
+      ros_distro: ${{ matrix.ROS_DISTRO }}
       ref: master
-      ros2_repo_branch: master
+      ros2_repo_branch: ${{ matrix.ROS_DISTRO }}
