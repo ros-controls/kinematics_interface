@@ -1,10 +1,8 @@
-name: Rolling Semi-Binary Build - main
+name: Humble Semi-Binary Build
 # description: 'Build & test that compiles the main dependencies from source.'
 
 on:
   workflow_dispatch:
-    branches:
-      - master
   pull_request:
     branches:
       - master
@@ -18,8 +16,11 @@ on:
 jobs:
   semi_binary:
     uses: ./.github/workflows/reusable-industrial-ci-with-cache.yml
+    strategy:
+      matrix:
+        ROS_REPO: [main, testing]
     with:
-      ros_distro: rolling
-      ros_repo: main
-      upstream_workspace: kinematics_interface.rolling.repos
+      ros_distro: humble
+      ros_repo: ${{ matrix.ROS_REPO }}
+      upstream_workspace: kinematics_interface.humble.repos
       ref_for_scheduled_build: master
