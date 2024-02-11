@@ -25,6 +25,6 @@ jobs:
         run: |
           source /opt/ros2_ws/install/setup.bash
           vcs import src < src/kinematics_interface/kinematics_interface.${{ env.ROS_DISTRO }}.repos
-          colcon build
-          colcon test
+          colcon build --packages-up-to kinematics_interface kinematics_interface_kdl
+          colcon test --packages-select kinematics_interface kinematics_interface_kdl
           colcon test-result --verbose
