@@ -10,6 +10,8 @@ jobs:
       fail-fast: false
       matrix:
           linter: [cppcheck, copyright, lint_cmake]
+    env:
+      AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS: true
     steps:
     - uses: actions/checkout@v4
     - uses: ros-tooling/setup-ros@v0.7
@@ -19,6 +21,7 @@ jobs:
         linter: ${{ matrix.linter }}
         package-name:
           kinematics_interface_kdl
+          kinematics_interface
 
 
   ament_lint_100:
