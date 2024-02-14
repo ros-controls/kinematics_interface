@@ -1,19 +1,21 @@
 name: Humble Source Build
 on:
   workflow_dispatch:
-    branches:
-      - master
   push:
     branches:
-      - master
+      - humble
   schedule:
     # Run every day to detect flakiness and broken dependencies
     - cron: '03 3 * * *'
 
 jobs:
   source:
-    uses: ./.github/workflows/reusable-ros-tooling-source-build.yml
+    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-source-build.yml@master
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [humble]
     with:
-      ros_distro: humble
+      ros_distro: ${{ matrix.ROS_DISTRO }}
       ref: master
-      ros2_repo_branch: master-humble
+      ros2_repo_branch: ${{ matrix.ROS_DISTRO }}
