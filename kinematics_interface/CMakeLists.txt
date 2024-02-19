@@ -18,19 +18,19 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
 endforeach()
 
 # Create interface library for kinematics base class
-add_library(kinematics_interface INTERFACE)
-target_compile_features(kinematics_interface INTERFACE cxx_std_17)
-target_include_directories(kinematics_interface INTERFACE
+add_library(kinematics_interface SHARED src/kinematics_interface.cpp)
+target_compile_features(kinematics_interface PUBLIC cxx_std_17)
+target_include_directories(kinematics_interface PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/kinematics_interface>
 )
-ament_target_dependencies(kinematics_interface INTERFACE
+ament_target_dependencies(kinematics_interface PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,
 # which is appropriate when building the dll but not consuming it.
-target_compile_definitions(kinematics_interface INTERFACE "KINEMATICS_INTERFACE_BUILDING_DLL")
+target_compile_definitions(kinematics_interface PUBLIC "KINEMATICS_INTERFACE_BUILDING_DLL")
 
 install(
   DIRECTORY include/
