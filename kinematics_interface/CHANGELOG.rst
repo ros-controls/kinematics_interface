@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.3.0 (2024-02-19)
+------------------
 * Move definition logger to cpp to avoid "multiple definition" linker error (backport `#21 <https://github.com/ros-controls/kinematics_interface/issues/21>`_) (`#32 <https://github.com/ros-controls/kinematics_interface/issues/32>`_)
 * Contributors: mergify[bot]
 
