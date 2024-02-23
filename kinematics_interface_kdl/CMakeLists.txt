@@ -6,7 +6,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
 endif()
 
 set(THIS_PACKAGE_INCLUDE_DEPENDS
-  Eigen3
   kdl_parser
   kinematics_interface
   pluginlib
@@ -18,6 +17,7 @@ find_package(ament_cmake REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
+find_package(Eigen3 REQUIRED NO_MODULE)
 
 add_library(
   kinematics_interface_kdl
@@ -31,6 +31,9 @@ target_include_directories(kinematics_interface_kdl PUBLIC
 target_compile_features(kinematics_interface_kdl PUBLIC cxx_std_17)
 ament_target_dependencies(kinematics_interface_kdl PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
+)
+target_link_libraries(kinematics_interface_kdl PUBLIC
+  Eigen3::Eigen
 )
 
 pluginlib_export_plugin_description_file(kinematics_interface kinematics_interface_kdl.xml)
