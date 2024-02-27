@@ -8,7 +8,7 @@ coverage:
         informational: true
     patch: off
 fixes:
-  - "ros_ws/src/kinematics_interface/::"
+  - "ros_ws/src/*/kinematics_interface/::"
 ignore:
   - "**/test"
   - "test"
