@@ -45,7 +45,19 @@ bool KinematicsInterfaceKDL::initialize(
   // create kinematic chain
   KDL::Tree robot_tree;
   kdl_parser::treeFromString(robot_description, robot_tree);
-  root_name_ = robot_tree.getRootSegment()->first;
+
+  // get root name
+  auto base_param = rclcpp::Parameter();
+  if (parameters_interface->has_parameter("base"))
+  {
+    parameters_interface->get_parameter("base", base_param);
+    root_name_ = base_param.as_string();
+  }
+  else
+  {
+    root_name_ = robot_tree.getRootSegment()->first;
+  }
+
   if (!robot_tree.getChain(root_name_, end_effector_name, chain_))
   {
     RCLCPP_ERROR(
