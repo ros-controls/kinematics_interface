@@ -131,11 +131,7 @@ repos:
         exclude: CHANGELOG\.rst|\.(svg|pyc)$
 
   - repo: https://github.com/python-jsonschema/check-jsonschema
-<<<<<<< HEAD
-    rev: 0.28.0
-=======
     rev: 0.28.2
->>>>>>> 6a70ff0 (Bump version of pre-commit hooks (#67))
     hooks:
       - id: check-github-workflows
         args: ["--verbose"]
