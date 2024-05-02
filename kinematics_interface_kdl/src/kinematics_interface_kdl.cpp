@@ -22,19 +22,29 @@ rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_kdl");
 
 bool KinematicsInterfaceKDL::initialize(
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
-  const std::string & end_effector_name)
+  const std::string & end_effector_name,
+  const std::string & robot_description)
 {
   // track initialization plugin
   initialized = true;
 
-  // get robot description
-  auto robot_param = rclcpp::Parameter();
-  if (!parameters_interface->get_parameter("robot_description", robot_param))
+  std::string robot_description_local;
+  if (robot_description.empty())
   {
-    RCLCPP_ERROR(LOGGER, "parameter robot_description not set");
-    return false;
+    // If the robot_description input argument is empty, try to get the
+    // robot_description from the node's parameters.
+    auto robot_param = rclcpp::Parameter();
+    if (!parameters_interface->get_parameter("robot_description", robot_param))
+    {
+      RCLCPP_ERROR(LOGGER, "parameter robot_description not set in kinematics_interface_kdl");
+      return false;
+    }
+    robot_description_local = robot_param.as_string();
   }
-  auto robot_description = robot_param.as_string();
+  else
+  {
+    robot_description_local = robot_description;
+  }
   // get alpha damping term
   auto alpha_param = rclcpp::Parameter("alpha", 0.000005);
   if (parameters_interface->has_parameter("alpha"))
@@ -44,7 +54,7 @@ bool KinematicsInterfaceKDL::initialize(
   alpha = alpha_param.as_double();
   // create kinematic chain
   KDL::Tree robot_tree;
-  kdl_parser::treeFromString(robot_description, robot_tree);
+  kdl_parser::treeFromString(robot_description_local, robot_tree);
   root_name_ = robot_tree.getRootSegment()->first;
   if (!robot_tree.getChain(root_name_, end_effector_name, chain_))
   {

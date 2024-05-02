@@ -41,7 +41,8 @@ class KinematicsInterfaceKDL : public kinematics_interface::KinematicsInterface
 public:
   bool initialize(
     std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
-    const std::string & end_effector_name) override;
+    const std::string & end_effector_name,
+    const std::string & robot_description = "") override;
 
   bool convert_cartesian_deltas_to_joint_deltas(
     const Eigen::VectorXd & joint_pos, const Eigen::Matrix<double, 6, 1> & delta_x,
