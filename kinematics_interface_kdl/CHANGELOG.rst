@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.1.0 (2024-05-20)
+------------------
 * Read base parameter in initialize function (`#73 <https://github.com/ros-controls/kinematics_interface/issues/73>`_)
 * Use CMake targets for eigen (`#50 <https://github.com/ros-controls/kinematics_interface/issues/50>`_)
 * Contributors: Bence Magyar, Christoph Fröhlich
