@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use CMake targets for eigen (`#50 <https://github.com/ros-controls/kinematics_interface/issues/50>`_)
+* Contributors: Christoph Fröhlich
+
 1.0.0 (2023-11-16)
 ------------------
 * Use a dynamic library instead of header-only (`#21 <https://github.com/ros-controls/kinematics_interface/issues/21>`_)
