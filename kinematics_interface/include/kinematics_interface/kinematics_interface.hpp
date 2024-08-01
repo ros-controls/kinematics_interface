@@ -39,11 +39,15 @@ public:
 
   /**
    * \brief Initialize plugin. This method must be called before any other.
+   * \param[in] robot_description robot URDF in string format
+   * \param[in] parameters_interface 
+   * \param[in] param_namespace namespace for kinematics parameters - defaults to "kinematics"
+   * \return true if successful
    */
   virtual bool initialize(
+    const std::string & robot_description,
     std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
-    const std::string & end_effector_name,
-    const std::string & robot_description = "") = 0;
+    const std::string & param_namespace = "kinematics") = 0;
 
   /**
    * \brief Convert Cartesian delta-x to joint delta-theta, using the Jacobian.

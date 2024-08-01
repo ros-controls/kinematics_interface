@@ -21,9 +21,9 @@ namespace kinematics_interface_kdl
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_kdl");
 
 bool KinematicsInterfaceKDL::initialize(
+  const std::string & robot_description,
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
-  const std::string & end_effector_name,
-  const std::string & robot_description)
+  const std::string & param_namespace)
 {
   // track initialization plugin
   initialized = true;
@@ -34,7 +34,7 @@ bool KinematicsInterfaceKDL::initialize(
     // If the robot_description input argument is empty, try to get the
     // robot_description from the node's parameters.
     auto robot_param = rclcpp::Parameter();
-    if (!parameters_interface->get_parameter("robot_description", robot_param))
+    if (!parameters_interface->get_parameter(param_namespace + "robot_description", robot_param))
     {
       RCLCPP_ERROR(LOGGER, "parameter robot_description not set in kinematics_interface_kdl");
       return false;
@@ -45,22 +45,32 @@ bool KinematicsInterfaceKDL::initialize(
   {
     robot_description_local = robot_description;
   }
+
+  // get parameters
+  std::string ns = !param_namespace.empty() ? param_namespace + "." : "";
   // get alpha damping term
   auto alpha_param = rclcpp::Parameter("alpha", 0.000005);
-  if (parameters_interface->has_parameter("alpha"))
+  if (parameters_interface->has_parameter(ns + "alpha"))
   {
-    parameters_interface->get_parameter("alpha", alpha_param);
+    parameters_interface->get_parameter(ns + "alpha", alpha_param);
   }
   alpha = alpha_param.as_double();
+  // get end-effector name
+  auto end_effector_name = rclcpp::Parameter("tip", "MISSING_END_EFFECTOR_NAME");
+  if (parameters_interface->has_parameter(ns + "tip"))
+  {
+    parameters_interface->get_parameter(ns + "tip", end_effector_name);
+  }
+
   // create kinematic chain
   KDL::Tree robot_tree;
   kdl_parser::treeFromString(robot_description_local, robot_tree);
   root_name_ = robot_tree.getRootSegment()->first;
-  if (!robot_tree.getChain(root_name_, end_effector_name, chain_))
+  if (!robot_tree.getChain(root_name_, end_effector_name.as_string(), chain_))
   {
     RCLCPP_ERROR(
       LOGGER, "failed to find chain from robot root %s to end effector %s", root_name_.c_str(),
-      end_effector_name.c_str());
+      end_effector_name.as_string().c_str());
     return false;
   }
   // create map from link names to their index
