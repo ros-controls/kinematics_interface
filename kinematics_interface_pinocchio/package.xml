@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>kinematics_interface_pinocchio</name>
+  <version>1.1.0</version>
+  <description>Pinocchio-based implementation of ros2_control kinematics interface</description>
+  <maintainer email="mail@saifsidhik.page">Saif Sidhik</maintainer>
+  <license>Apache License 2.0</license>
+  <author email="mail@saifsidhik.page">Saif Sidhik</author>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <depend>eigen</depend>
+  <depend>kinematics_interface</depend>
+  <depend>eigen3_cmake_module</depend>
+  <depend>pinocchio</depend>
+  <depend>pluginlib</depend>
+
+  <test_depend>ament_cmake_gmock</test_depend>
+  <test_depend>ros2_control_test_assets</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

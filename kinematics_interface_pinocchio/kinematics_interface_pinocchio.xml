@@ -1,0 +1,9 @@
+<library path="kinematics_interface_pinocchio">
+  <class name="kinematics_interface_pinocchio/KinematicsInterfacePinocchio"
+    type="kinematics_interface_pinocchio::KinematicsInterfacePinocchio"
+    base_class_type="kinematics_interface::KinematicsInterface">
+    <description>
+      Pinocchio plugin for ros2_control kinematics interface
+    </description>
+  </class>
+</library>
