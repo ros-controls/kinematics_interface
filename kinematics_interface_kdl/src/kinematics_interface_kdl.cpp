@@ -27,6 +27,9 @@ bool KinematicsInterfaceKDL::initialize(
 {
   // track initialization plugin
   initialized = true;
+  
+  // get parameters
+  std::string ns = !param_namespace.empty() ? param_namespace + "." : "";
 
   std::string robot_description_local;
   if (robot_description.empty())
@@ -34,7 +37,7 @@ bool KinematicsInterfaceKDL::initialize(
     // If the robot_description input argument is empty, try to get the
     // robot_description from the node's parameters.
     auto robot_param = rclcpp::Parameter();
-    if (!parameters_interface->get_parameter(param_namespace + "robot_description", robot_param))
+    if (!parameters_interface->get_parameter(ns + "robot_description", robot_param))
     {
       RCLCPP_ERROR(LOGGER, "parameter robot_description not set in kinematics_interface_kdl");
       return false;
@@ -46,8 +49,6 @@ bool KinematicsInterfaceKDL::initialize(
     robot_description_local = robot_description;
   }
 
-  // get parameters
-  std::string ns = !param_namespace.empty() ? param_namespace + "." : "";
   // get alpha damping term
   auto alpha_param = rclcpp::Parameter("alpha", 0.000005);
   if (parameters_interface->has_parameter(ns + "alpha"))
@@ -57,7 +58,7 @@ bool KinematicsInterfaceKDL::initialize(
   alpha = alpha_param.as_double();
   // get end-effector name
   auto end_effector_name = rclcpp::Parameter("tip", "MISSING_END_EFFECTOR_NAME");
-  if (parameters_interface->has_parameter(ns + "tip"))
+  if (parameters_interface->has_parameter(param_namespace + "tip"))
   {
     parameters_interface->get_parameter(ns + "tip", end_effector_name);
   }
@@ -65,8 +66,20 @@ bool KinematicsInterfaceKDL::initialize(
   // create kinematic chain
   KDL::Tree robot_tree;
   kdl_parser::treeFromString(robot_description_local, robot_tree);
-  root_name_ = robot_tree.getRootSegment()->first;
-  if (!robot_tree.getChain(root_name_, end_effector_name.as_string(), chain_))
+  
+  // get root name
+  auto base_param = rclcpp::Parameter();
+  if (parameters_interface->has_parameter(ns + "base"))
+  {
+    parameters_interface->get_parameter(ns + "base", base_param);
+    root_name_ = base_param.as_string();
+  }
+  else
+  {
+    root_name_ = robot_tree.getRootSegment()->first;
+  }
+
+  if (!robot_tree.getChain(root_name_, end_effector_name, chain_))
   {
     RCLCPP_ERROR(
       LOGGER, "failed to find chain from robot root %s to end effector %s", root_name_.c_str(),
