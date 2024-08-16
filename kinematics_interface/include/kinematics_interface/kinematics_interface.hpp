@@ -47,7 +47,7 @@ public:
   virtual bool initialize(
     const std::string & robot_description,
     std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
-    const std::string & param_namespace = "kinematics") = 0;
+    const std::string & param_namespace) = 0;
 
   /**
    * \brief Convert Cartesian delta-x to joint delta-theta, using the Jacobian.
