@@ -58,7 +58,7 @@ bool KinematicsInterfaceKDL::initialize(
   alpha = alpha_param.as_double();
   // get end-effector name
   auto end_effector_name = rclcpp::Parameter("tip", "MISSING_END_EFFECTOR_NAME");
-  if (parameters_interface->has_parameter(param_namespace + "tip"))
+  if (parameters_interface->has_parameter(ns + "tip"))
   {
     parameters_interface->get_parameter(ns + "tip", end_effector_name);
   }
