@@ -42,7 +42,7 @@ public:
   bool initialize(
     const std::string & robot_description,
     std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
-    const std::string & param_namespace = "kinematics") override;
+    const std::string & param_namespace) override;
 
   bool convert_cartesian_deltas_to_joint_deltas(
     const Eigen::VectorXd & joint_pos, const Eigen::Matrix<double, 6, 1> & delta_x,
