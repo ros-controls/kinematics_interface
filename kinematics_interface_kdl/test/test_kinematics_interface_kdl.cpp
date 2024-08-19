@@ -193,3 +193,8 @@ TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description)
   loadTipParameter();
   ASSERT_FALSE(ik_->initialize("", node_->get_node_parameters_interface(), ""));
 }
+
+TEST_F(TestKDLPlugin, KDL_plugin_no_parameter_tip)
+{
+  ASSERT_FALSE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
+}

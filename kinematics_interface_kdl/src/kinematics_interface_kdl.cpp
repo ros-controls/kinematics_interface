@@ -57,11 +57,19 @@ bool KinematicsInterfaceKDL::initialize(
   }
   alpha = alpha_param.as_double();
   // get end-effector name
-  auto end_effector_name = rclcpp::Parameter("tip", "MISSING_END_EFFECTOR_NAME");
+  auto end_effector_name_param = rclcpp::Parameter("tip");
   if (parameters_interface->has_parameter(ns + "tip"))
   {
-    parameters_interface->get_parameter(ns + "tip", end_effector_name);
+    parameters_interface->get_parameter(ns + "tip", end_effector_name_param);
   }
+  else
+  {
+    RCLCPP_ERROR(
+      LOGGER, "Failed to find end effector name parameter [tip].");
+    return false;
+  }
+  std::string end_effector_name = end_effector_name_param.as_string();
+
 
   // create kinematic chain
   KDL::Tree robot_tree;
@@ -82,7 +90,7 @@ bool KinematicsInterfaceKDL::initialize(
   {
     RCLCPP_ERROR(
       LOGGER, "failed to find chain from robot root %s to end effector %s", root_name_.c_str(),
-      end_effector_name.as_string().c_str());
+      end_effector_name.c_str());
     return false;
   }
   // create map from link names to their index
