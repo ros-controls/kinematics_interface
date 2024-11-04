@@ -27,7 +27,7 @@ bool KinematicsInterfaceKDL::initialize(
 {
   // track initialization plugin
   initialized = true;
-  
+
   // get parameters
   std::string ns = !param_namespace.empty() ? param_namespace + "." : "";
 
@@ -64,12 +64,10 @@ bool KinematicsInterfaceKDL::initialize(
   }
   else
   {
-    RCLCPP_ERROR(
-      LOGGER, "Failed to find end effector name parameter [tip].");
+    RCLCPP_ERROR(LOGGER, "Failed to find end effector name parameter [tip].");
     return false;
   }
   std::string end_effector_name = end_effector_name_param.as_string();
-
 
   // create kinematic chain
   KDL::Tree robot_tree;

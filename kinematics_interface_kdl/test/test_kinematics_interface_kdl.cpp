@@ -69,8 +69,7 @@ public:
    * Elsewhere, `end_effector_` member is used.
   */
   void loadTipParameter()
-  { 
-    
+  {
     rclcpp::Parameter param("tip", "link2");
     node_->declare_parameter("tip", "link2");
     node_->set_parameter(param);

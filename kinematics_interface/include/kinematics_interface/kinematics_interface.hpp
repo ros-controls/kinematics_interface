@@ -40,7 +40,7 @@ public:
   /**
    * \brief Initialize plugin. This method must be called before any other.
    * \param[in] robot_description robot URDF in string format
-   * \param[in] parameters_interface 
+   * \param[in] parameters_interface
    * \param[in] param_namespace namespace for kinematics parameters - defaults to "kinematics"
    * \return true if successful
    */
