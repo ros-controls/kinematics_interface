@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* API changes to support robot description (`#83 <https://github.com/ros-controls/kinematics_interface/issues/83>`_)
+* Contributors: Dr. Denis
+
 1.1.0 (2024-05-20)
 ------------------
 * Read base parameter in initialize function (`#73 <https://github.com/ros-controls/kinematics_interface/issues/73>`_)
