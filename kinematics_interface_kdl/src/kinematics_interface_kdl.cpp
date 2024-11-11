@@ -37,7 +37,7 @@ bool KinematicsInterfaceKDL::initialize(
     // If the robot_description input argument is empty, try to get the
     // robot_description from the node's parameters.
     auto robot_param = rclcpp::Parameter();
-    if (!parameters_interface->get_parameter(ns + "robot_description", robot_param))
+    if (!parameters_interface->get_parameter("robot_description", robot_param))
     {
       RCLCPP_ERROR(LOGGER, "parameter robot_description not set in kinematics_interface_kdl");
       return false;
