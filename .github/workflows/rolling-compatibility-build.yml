@@ -1,0 +1,26 @@
+name: Check Rolling Compatibility
+# author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
+# description: 'Build & test the rolling version on earlier distros.'
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-industrial-ci-with-cache.yml@master
+    strategy:
+      fail-fast: false
+      matrix:
+        ROS_DISTRO: [humble]
+        ROS_REPO: [testing]
+    with:
+      ros_distro: ${{ matrix.ROS_DISTRO }}
+      ros_repo: ${{ matrix.ROS_REPO }}
+      upstream_workspace: kinematics_interface.rolling.repos
+      ref_for_scheduled_build: master
