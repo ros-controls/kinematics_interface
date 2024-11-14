@@ -108,6 +108,21 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
   {
     ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
   }
+
+  // compute the difference between two cartesian frames
+  Eigen::Matrix<double, 7, 1> x_a, x_b;
+  x_a << 0, 1, 0, 0, 0, 0, 1;
+  x_b << 2, 3, 0, 0, 1, 0, 0;
+  double dt = 1.0;
+  delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+  delta_x_est << 2, 2, 0, 0, 3.14, 0;
+  ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
+
+  // ensure that difference math is correct
+  for (size_t i = 0; i < static_cast<size_t>(delta_x.size()); ++i)
+  {
+    ASSERT_NEAR(delta_x(i), delta_x_est(i), 0.02);
+  }
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_function_std_vector)
@@ -142,6 +157,21 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_std_vector)
   {
     ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
   }
+
+  // compute the difference between two cartesian frames
+  std::vector<double> x_a(7), x_b(7);
+  x_a = {0, 1, 0, 0, 0, 0, 1};
+  x_b = {2, 3, 0, 0, 1, 0, 0};
+  double dt = 1.0;
+  delta_x = {0, 0, 0, 0, 0, 0};
+  delta_x_est = {2, 2, 0, 0, 3.14, 0};
+  ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
+
+  // ensure that difference math is correct
+  for (size_t i = 0; i < static_cast<size_t>(delta_x.size()); ++i)
+  {
+    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
+  }
 }
 
 TEST_F(TestKDLPlugin, incorrect_input_sizes)
@@ -161,9 +191,13 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes)
   delta_x[2] = 1;
   Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
   Eigen::Matrix<double, 6, 1> delta_x_est;
+  Eigen::Matrix<double, 7, 1> x_a, x_b;
 
   // wrong size input vector
   Eigen::Matrix<double, Eigen::Dynamic, 1> vec_5 = Eigen::Matrix<double, 5, 1>::Zero();
+
+  // wrong value for period
+  double dt = -0.1;
 
   // calculate transform
   ASSERT_FALSE(ik_->calculate_link_transform(vec_5, end_effector_, end_effector_transform));
@@ -183,6 +217,9 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, vec_5, end_effector_, delta_x_est));
   ASSERT_FALSE(ik_->convert_joint_deltas_to_cartesian_deltas(
     pos, delta_theta, "link_not_in_model", delta_x_est));
+
+  // compute the difference between two cartesian frames
+  ASSERT_FALSE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_no_robot_description)
