@@ -80,4 +80,37 @@ bool KinematicsInterface::calculate_jacobian(
   return calculate_jacobian(joint_pos, link_name, jacobian);
 }
 
+bool KinematicsInterface::calculate_frame_difference(
+  std::vector<double> & x_a_vec, std::vector<double> & x_b_vec, double dt,
+  std::vector<double> & delta_x_vec)
+{
+  if (x_a_vec.size() != 7)
+  {
+    RCLCPP_ERROR(
+      LOGGER, "The length of the first cartesian vector (%zu) must be 7.", x_a_vec.size());
+    return false;
+  }
+  Eigen::Matrix<double, 7, 1> x_a(x_a_vec.data());
+  if (x_b_vec.size() != 7)
+  {
+    RCLCPP_ERROR(
+      LOGGER, "The length of the second cartesian vector (%zu) must be 7.", x_b_vec.size());
+    return false;
+  }
+  Eigen::Matrix<double, 7, 1> x_b(x_b_vec.data());
+  if (delta_x_vec.size() != 6)
+  {
+    RCLCPP_ERROR(
+      LOGGER, "The length of the cartesian delta vector (%zu) must be 6.", delta_x_vec.size());
+    return false;
+  }
+  Eigen::Matrix<double, 6, 1> delta_x(delta_x_vec.data());
+  bool ret = calculate_frame_difference(x_a, x_b, dt, delta_x);
+  for (auto i = 0ul; i < delta_x_vec.size(); i++)
+  {
+    delta_x_vec[i] = delta_x[i];
+  }
+  return ret;
+}
+
 }  // namespace kinematics_interface
