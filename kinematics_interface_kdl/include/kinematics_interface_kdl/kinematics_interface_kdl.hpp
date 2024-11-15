@@ -80,6 +80,7 @@ private:
   KDL::JntArray q_;
   KDL::Frame frame_;
   std::shared_ptr<KDL::Jacobian> jacobian_;
+  std::shared_ptr<Eigen::Matrix<double, Eigen::Dynamic, 6>> jacobian_inverse_;
   std::shared_ptr<KDL::ChainJntToJacSolver> jac_solver_;
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface_;
   std::unordered_map<std::string, int> link_name_map_;
