@@ -183,7 +183,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian(
 }
 
 bool KinematicsInterfaceKDL::calculate_jacobian_inverse(
-  const Eigen::VectorXd & joint_pos, const std::string & link_name,
+  const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos, const std::string & link_name,
   Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse)
 {
   // verify inputs
