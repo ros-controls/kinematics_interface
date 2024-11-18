@@ -2,6 +2,14 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+1.2.1 (2024-11-11)
+------------------
+
+1.2.0 (2024-11-05)
+------------------
+* API changes to support robot description (`#83 <https://github.com/ros-controls/kinematics_interface/issues/83>`_)
+* Contributors: Dr. Denis
+
 1.1.0 (2024-05-20)
 ------------------
 * Use CMake targets for eigen (`#50 <https://github.com/ros-controls/kinematics_interface/issues/50>`_)
