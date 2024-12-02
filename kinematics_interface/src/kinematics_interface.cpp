@@ -80,4 +80,13 @@ bool KinematicsInterface::calculate_jacobian(
   return calculate_jacobian(joint_pos, link_name, jacobian);
 }
 
+bool KinematicsInterface::calculate_jacobian_inverse(
+  const std::vector<double> & joint_pos_vec, const std::string & link_name,
+  Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse)
+{
+  auto joint_pos = Eigen::Map<const Eigen::VectorXd>(joint_pos_vec.data(), joint_pos_vec.size());
+
+  return calculate_jacobian_inverse(joint_pos, link_name, jacobian_inverse);
+}
+
 }  // namespace kinematics_interface
