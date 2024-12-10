@@ -8,14 +8,15 @@ on:
     # Run every day to detect flakiness and broken dependencies
     - cron: '42 4 * * *'
 
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on humble branch
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, '/refs/heads') }}
+
 jobs:
   rhel_semi_binary_build:
     uses: ros-controls/ros2_control_ci/.github/workflows/reusable-rhel-binary-build.yml@master
-    strategy:
-      fail-fast: false
-      matrix:
-        ROS_DISTRO: [humble]
     with:
-      ros_distro: ${{ matrix.ROS_DISTRO }}
-      upstream_workspace: kinematics_interface.${{ matrix.ROS_DISTRO }}.repos
+      ros_distro: humble
+      upstream_workspace: kinematics_interface.humble.repos
       ref_for_scheduled_build: master

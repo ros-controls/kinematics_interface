@@ -8,15 +8,16 @@ on:
     # Run every day to detect flakiness and broken dependencies
     - cron: '03 3 * * *'
 
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on humble branch
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, '/refs/heads') }}
+
 jobs:
   source:
     uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-source-build.yml@master
-    strategy:
-      fail-fast: false
-      matrix:
-        ROS_DISTRO: [humble]
     with:
-      ros_distro: ${{ matrix.ROS_DISTRO }}
+      ros_distro: humble
       ref: master
-      ros2_repo_branch: ${{ matrix.ROS_DISTRO }}
+      ros2_repo_branch: humble
       os_name: ubuntu-22.04
