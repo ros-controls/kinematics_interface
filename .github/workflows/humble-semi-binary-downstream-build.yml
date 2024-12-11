@@ -25,5 +25,6 @@ jobs:
       ref_for_scheduled_build: master
       not_test_build: true
       upstream_workspace: kinematics_interface.humble.repos
+      # we test the downstream packages, which are part of our organization
       downstream_workspace: ros_controls.humble.repos
-      not_test_downstream: true
+      not_test_downstream: false

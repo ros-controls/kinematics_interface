@@ -30,5 +30,6 @@ jobs:
       ref_for_scheduled_build: master
       not_test_build: true
       upstream_workspace: kinematics_interface.${{ matrix.ROS_DISTRO }}.repos
+      # we test the downstream packages, which are part of our organization
       downstream_workspace: ros_controls.${{ matrix.ROS_DISTRO }}.repos
-      not_test_downstream: true
+      not_test_downstream: false
