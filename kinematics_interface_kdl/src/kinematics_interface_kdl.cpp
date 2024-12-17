@@ -205,8 +205,34 @@ bool KinematicsInterfaceKDL::calculate_link_transform(
   }
 
   // create forward kinematics solver
-  fk_pos_solver_->JntToCart(q_, frame_, link_name_map_[link_name]);
-  tf2::transformKDLToEigen(frame_, transform);
+  fk_pos_solver_->JntToCart(q_, frames_(0), link_name_map_[link_name]);
+  tf2::transformKDLToEigen(frames_(0), transform);
+  return true;
+}
+
+bool KinematicsInterfaceKDL::calculate_frame_difference(
+  Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+  Eigen::Matrix<double, 6, 1> & delta_x)
+{
+  // verify inputs
+  if (!verify_initialized() || !verify_period(dt))
+  {
+    return false;
+  }
+
+  // get frames
+  frames_(0) = KDL::Frame(
+    KDL::Rotation::Quaternion(x_a(3), x_a(4), x_a(5), x_a(6)), KDL::Vector(x_a(0), x_a(1), x_a(2)));
+  frames_(1) = KDL::Frame(
+    KDL::Rotation::Quaternion(x_b(3), x_b(4), x_b(5), x_b(6)), KDL::Vector(x_b(0), x_b(1), x_b(2)));
+
+  // compute the difference
+  delta_x_ = KDL::diff(frames_(0), frames_(1), dt);
+  for (size_t i = 0; i < 6; ++i)
+  {
+    delta_x(i) = delta_x_[i];
+  }
+
   return true;
 }
 
@@ -264,6 +290,16 @@ bool KinematicsInterfaceKDL::verify_jacobian(
     RCLCPP_ERROR(
       LOGGER, "The size of the jacobian (%zu, %zu) does not match the required size of (%u, %u)",
       jacobian.rows(), jacobian.cols(), jacobian_->rows(), jacobian_->columns());
+    return false;
+  }
+  return true;
+}
+
+bool KinematicsInterfaceKDL::verify_period(const double dt)
+{
+  if (dt < 0)
+  {
+    RCLCPP_ERROR(LOGGER, "The period (%f) must be a non-negative number", dt);
     return false;
   }
   return true;
