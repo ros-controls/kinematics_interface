@@ -13,6 +13,11 @@ on:
     # Run every morning to detect flakiness and broken dependencies
     - cron: '33 1 * * *'
 
+concurrency:
+  # cancel previous runs of the same workflow, except for pushes on humble branch
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ !startsWith(github.ref, '/refs/heads') }}
+
 jobs:
   semi_binary:
     uses: ros-controls/ros2_control_ci/.github/workflows/reusable-industrial-ci-with-cache.yml@master
@@ -20,9 +25,21 @@ jobs:
       fail-fast: false
       matrix:
         ROS_DISTRO: [rolling, jazzy]
-        ROS_REPO: [main, testing]
+        ROS_REPO: [testing]
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ros_repo: ${{ matrix.ROS_REPO }}
       upstream_workspace: kinematics_interface.${{ matrix.ROS_DISTRO }}.repos
       ref_for_scheduled_build: master
+  semi_binary_clang:
+    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-industrial-ci-with-cache.yml@master
+    with:
+      # job for building only, no tests -> one distro is enough
+      ros_distro: rolling
+      ros_repo: testing
+      upstream_workspace: kinematics_interface.rolling.repos
+      ref_for_scheduled_build: master
+      additional_debs: clang
+      c_compiler: clang
+      cxx_compiler: clang++
+      not_test_build: true
