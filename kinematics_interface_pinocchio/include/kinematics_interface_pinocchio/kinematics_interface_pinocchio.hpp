@@ -39,49 +39,53 @@ namespace kinematics_interface_pinocchio
 class KinematicsInterfacePinocchio : public kinematics_interface::KinematicsInterface
 {
 public:
-  bool initialize(
-    std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
-    const std::string & end_effector_name) override;
+    bool initialize(
+        std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
+        const std::string& end_effector_name
+    ) override;
 
-  bool convert_cartesian_deltas_to_joint_deltas(
-    const Eigen::VectorXd & joint_pos, const Eigen::Matrix<double, 6, 1> & delta_x,
-    const std::string & link_name, Eigen::VectorXd & delta_theta) override;
+    bool convert_cartesian_deltas_to_joint_deltas(
+        const Eigen::VectorXd& joint_pos, const Eigen::Matrix<double, 6, 1>& delta_x, const std::string& link_name,
+        Eigen::VectorXd& delta_theta
+    ) override;
 
-  bool convert_joint_deltas_to_cartesian_deltas(
-    const Eigen::VectorXd & joint_pos, const Eigen::VectorXd & delta_theta,
-    const std::string & link_name, Eigen::Matrix<double, 6, 1> & delta_x) override;
+    bool convert_joint_deltas_to_cartesian_deltas(
+        const Eigen::VectorXd& joint_pos, const Eigen::VectorXd& delta_theta, const std::string& link_name,
+        Eigen::Matrix<double, 6, 1>& delta_x
+    ) override;
 
-  bool calculate_link_transform(
-    const Eigen::VectorXd & joint_pos, const std::string & link_name,
-    Eigen::Isometry3d & transform) override;
+    bool calculate_link_transform(
+        const Eigen::VectorXd& joint_pos, const std::string& link_name, Eigen::Isometry3d& transform
+    ) override;
 
-  bool calculate_jacobian(
-    const Eigen::VectorXd & joint_pos, const std::string & link_name,
-    Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian) override;
+    bool calculate_jacobian(
+        const Eigen::VectorXd& joint_pos, const std::string& link_name,
+        Eigen::Matrix<double, 6, Eigen::Dynamic>& jacobian
+    ) override;
 
 private:
-  // verification methods
-  bool verify_initialized();
-  bool verify_link_name(const std::string & link_name);
-  bool verify_joint_vector(const Eigen::VectorXd & joint_vector);
-  bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian);
+    // verification methods
+    bool verify_initialized();
+    bool verify_link_name(const std::string& link_name);
+    bool verify_joint_vector(const Eigen::VectorXd& joint_vector);
+    bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic>& jacobian);
 
-  bool initialized = false;
-  std::string root_name_;
-  size_t num_joints_;
-  
-  pinocchio::Model model_;
-  std::shared_ptr<pinocchio::Data> data_;
-  Eigen::VectorXd q_;
-  Eigen::MatrixXd jacobian_;
-  Eigen::MatrixXd frame_tf_;
+    bool initialized = false;
+    std::string root_name_;
+    size_t num_joints_;
 
-  std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface_;
-  std::unordered_map<std::string, int> link_name_map_;
-  double alpha;  // damping term for Jacobian inverse
-  Eigen::MatrixXd I;
+    pinocchio::Model model_;
+    std::shared_ptr<pinocchio::Data> data_;
+    Eigen::VectorXd q_;
+    Eigen::MatrixXd jacobian_;
+    Eigen::MatrixXd frame_tf_;
+
+    std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface_;
+    std::unordered_map<std::string, int> link_name_map_;
+    double alpha; // damping term for Jacobian inverse
+    Eigen::MatrixXd I;
 };
 
-}  // namespace kinematics_interface_pinocchio
+} // namespace kinematics_interface_pinocchio
 
-#endif  // kinematics_interface_pinocchio__kinematics_interface_pinocchio_HPP_
+#endif // kinematics_interface_pinocchio__kinematics_interface_pinocchio_HPP_

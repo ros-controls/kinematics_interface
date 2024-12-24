@@ -6,6 +6,8 @@ A [Pinocchio](https://github.com/stack-of-tasks/pinocchio)-based [ROS2 Kinematic
 
 Requires pinocchio to be installed: `apt install ros-humble-pinocchio`.
 
+This package can now be installed directly from ros-distro for humble: `apt install ros-humble-kinematics-interface-pinocchio`.
+
 ## Roadmap
 
 - [x] Replicate KDL implemenations and capabilities with Pinocchio
