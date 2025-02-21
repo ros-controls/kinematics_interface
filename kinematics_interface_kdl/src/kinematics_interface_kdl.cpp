@@ -105,6 +105,7 @@ bool KinematicsInterfaceKDL::initialize(
   fk_pos_solver_ = std::make_shared<KDL::ChainFkSolverPos_recursive>(chain_);
   jac_solver_ = std::make_shared<KDL::ChainJntToJacSolver>(chain_);
   jacobian_ = std::make_shared<KDL::Jacobian>(num_joints_);
+  jacobian_inverse_ = std::make_shared<Eigen::Matrix<double, Eigen::Dynamic, 6>>(num_joints_, 6);
 
   return true;
 }
@@ -145,17 +146,13 @@ bool KinematicsInterfaceKDL::convert_cartesian_deltas_to_joint_deltas(
     return false;
   }
 
-  // get joint array
-  q_.data = joint_pos;
+  // calculate Jacobian inverse
+  if (!calculate_jacobian_inverse(joint_pos, link_name, *jacobian_inverse_))
+  {
+    return false;
+  }
 
-  // calculate Jacobian
-  jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
-  // TODO(anyone): this dynamic allocation needs to be replaced
-  Eigen::Matrix<double, 6, Eigen::Dynamic> J = jacobian_->data;
-  // damped inverse
-  Eigen::Matrix<double, Eigen::Dynamic, 6> J_inverse =
-    (J.transpose() * J + alpha * I).inverse() * J.transpose();
-  delta_theta = J_inverse * delta_x;
+  delta_theta = *jacobian_inverse_ * delta_x;
 
   return true;
 }
@@ -178,6 +175,34 @@ bool KinematicsInterfaceKDL::calculate_jacobian(
   // calculate Jacobian
   jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
   jacobian = jacobian_->data;
+
+  return true;
+}
+
+bool KinematicsInterfaceKDL::calculate_jacobian_inverse(
+  const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos, const std::string & link_name,
+  Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse)
+{
+  // verify inputs
+  if (
+    !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
+    !verify_jacobian_inverse(jacobian_inverse))
+  {
+    return false;
+  }
+
+  // get joint array
+  q_.data = joint_pos;
+
+  // calculate Jacobian
+  jac_solver_->JntToJac(q_, *jacobian_, link_name_map_[link_name]);
+  Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = jacobian_->data;
+
+  // damped inverse
+  *jacobian_inverse_ =
+    (jacobian.transpose() * jacobian + alpha * I).inverse() * jacobian.transpose();
+
+  jacobian_inverse = *jacobian_inverse_;
 
   return true;
 }
@@ -290,6 +315,20 @@ bool KinematicsInterfaceKDL::verify_jacobian(
     RCLCPP_ERROR(
       LOGGER, "The size of the jacobian (%zu, %zu) does not match the required size of (%u, %u)",
       jacobian.rows(), jacobian.cols(), jacobian_->rows(), jacobian_->columns());
+    return false;
+  }
+  return true;
+}
+
+bool KinematicsInterfaceKDL::verify_jacobian_inverse(
+  const Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse)
+{
+  if (
+    jacobian_inverse.rows() != jacobian_->columns() || jacobian_inverse.cols() != jacobian_->rows())
+  {
+    RCLCPP_ERROR(
+      LOGGER, "The size of the jacobian (%zu, %zu) does not match the required size of (%u, %u)",
+      jacobian_inverse.rows(), jacobian_inverse.cols(), jacobian_->columns(), jacobian_->rows());
     return false;
   }
   return true;

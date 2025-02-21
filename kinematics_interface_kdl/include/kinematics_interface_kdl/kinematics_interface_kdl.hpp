@@ -60,6 +60,10 @@ public:
     const Eigen::VectorXd & joint_pos, const std::string & link_name,
     Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian) override;
 
+  bool calculate_jacobian_inverse(
+    const Eigen::VectorXd & joint_pos, const std::string & link_name,
+    Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse) override;
+
   bool calculate_frame_difference(
     Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
     Eigen::Matrix<double, 6, 1> & delta_x) override;
@@ -70,6 +74,7 @@ private:
   bool verify_link_name(const std::string & link_name);
   bool verify_joint_vector(const Eigen::VectorXd & joint_vector);
   bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian);
+  bool verify_jacobian_inverse(const Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian);
   bool verify_period(const double dt);
 
   bool initialized = false;
@@ -81,6 +86,7 @@ private:
   Eigen::Matrix<KDL::Frame, 2, 1> frames_;
   KDL::Twist delta_x_;
   std::shared_ptr<KDL::Jacobian> jacobian_;
+  std::shared_ptr<Eigen::Matrix<double, Eigen::Dynamic, 6>> jacobian_inverse_;
   std::shared_ptr<KDL::ChainJntToJacSolver> jac_solver_;
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface_;
   std::unordered_map<std::string, int> link_name_map_;

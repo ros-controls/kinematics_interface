@@ -96,6 +96,17 @@ public:
     Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian) = 0;
 
   /**
+   * \brief Calculates the jacobian inverse for a specified link using provided joint positions.
+   * \param[in] joint_pos joint positions of the robot in radians
+   * \param[in] link_name the name of the link to find the transform for
+   * \param[out] jacobian_inverse Jacobian inverse matrix of the specified link in row major format.
+   * \return true if successful
+   */
+  virtual bool calculate_jacobian_inverse(
+    const Eigen::VectorXd & joint_pos, const std::string & link_name,
+    Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse) = 0;
+
+  /**
    * \brief Calculates the difference between two Cartesian frames
    * \param[in] x_a first Cartesian frame (x, y, z, wx, wy, wz, ww)
    * \param[in] x_b second Cartesian frame (x, y, z, wx, wy, wz, ww)
@@ -122,6 +133,10 @@ public:
   bool calculate_jacobian(
     const std::vector<double> & joint_pos_vec, const std::string & link_name,
     Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian);
+
+  bool calculate_jacobian_inverse(
+    const std::vector<double> & joint_pos_vec, const std::string & link_name,
+    Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse);
 
   bool calculate_frame_difference(
     std::vector<double> & x_a_vec, std::vector<double> & x_b_vec, double dt,
