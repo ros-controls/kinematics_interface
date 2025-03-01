@@ -106,6 +106,18 @@ public:
     const Eigen::VectorXd & joint_pos, const std::string & link_name,
     Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse) = 0;
 
+  /**
+   * \brief Calculates the difference between two Cartesian frames
+   * \param[in] x_a first Cartesian frame (x, y, z, wx, wy, wz, ww)
+   * \param[in] x_b second Cartesian frame (x, y, z, wx, wy, wz, ww)
+   * \param[in] dt time interval over which the numerical differentiation takes place
+   * \param[out] delta_x  Cartesian deltas (x, y, z, wx, wy, wz)
+   * \return true if successful
+   */
+  virtual bool calculate_frame_difference(
+    Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+    Eigen::Matrix<double, 6, 1> & delta_x) = 0;
+
   bool convert_cartesian_deltas_to_joint_deltas(
     std::vector<double> & joint_pos_vec, const std::vector<double> & delta_x_vec,
     const std::string & link_name, std::vector<double> & delta_theta_vec);
@@ -125,6 +137,10 @@ public:
   bool calculate_jacobian_inverse(
     const std::vector<double> & joint_pos_vec, const std::string & link_name,
     Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse);
+
+  bool calculate_frame_difference(
+    std::vector<double> & x_a_vec, std::vector<double> & x_b_vec, double dt,
+    std::vector<double> & delta_x_vec);
 };
 
 }  // namespace kinematics_interface
