@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add methods for computing frame differences (`#93 <https://github.com/ros-controls/kinematics_interface/issues/93>`_)
+* Contributors: francesco-donofrio
+
 1.3.0 (2025-03-11)
 ------------------
 * Remove visibility boilerplate code (`#101 <https://github.com/ros-controls/kinematics_interface/issues/101>`_)
