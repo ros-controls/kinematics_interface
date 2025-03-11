@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.3.0 (2025-03-11)
+------------------
 * Remove visibility boilerplate code (`#101 <https://github.com/ros-controls/kinematics_interface/issues/101>`_)
 * Calculate Jacobian Inverse (`#92 <https://github.com/ros-controls/kinematics_interface/issues/92>`_)
 * Contributors: Christoph Fröhlich, francesco-donofrio
