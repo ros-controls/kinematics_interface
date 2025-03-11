@@ -1,9 +1,9 @@
-name: Rolling - ABI Compatibility Check
+name: Jazzy - ABI Compatibility Check
 on:
   workflow_dispatch:
   pull_request:
     branches:
-      - master
+      - jazzy
 
 concurrency:
   # cancel previous runs of the same workflow, except for pushes on humble branch
@@ -12,10 +12,6 @@ concurrency:
 
 jobs:
   abi_check:
-    strategy:
-      fail-fast: false
-      matrix:
-        ROS_DISTRO: [rolling]
     uses: ros-controls/ros2_control_ci/.github/workflows/reusable-abi-check.yml@master
     with:
-      ros_distro: ${{ matrix.ROS_DISTRO }}
+      ros_distro: jazzy

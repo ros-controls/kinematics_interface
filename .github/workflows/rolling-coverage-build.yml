@@ -1,4 +1,4 @@
-name: Coverage Build - Rolling
+name: Rolling - Coverage Build
 on:
   workflow_dispatch:
   push:
