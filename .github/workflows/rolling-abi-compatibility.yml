@@ -15,19 +15,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-<<<<<<< HEAD
-        ROS_DISTRO: [rolling, jazzy]
-    steps:
-      - uses: actions/checkout@v3
-      - uses: ros-industrial/industrial_ci@master
-        env:
-          ROS_DISTRO: ${{ matrix.ROS_DISTRO }}
-          ROS_REPO: main
-          ABICHECK_URL: github:${{ github.repository }}#${{ github.base_ref }}
-          NOT_TEST_BUILD: true
-=======
         ROS_DISTRO: [jazzy, rolling]
     uses: ros-controls/ros2_control_ci/.github/workflows/reusable-abi-check.yml@master
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
->>>>>>> 0bc9d32 (Use ABI workflow from ros2_control_ci (#106))
