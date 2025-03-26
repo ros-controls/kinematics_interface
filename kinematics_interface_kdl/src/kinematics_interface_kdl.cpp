@@ -94,11 +94,12 @@ bool KinematicsInterfaceKDL::initialize(
   // create map from link names to their index
   for (size_t i = 0; i < chain_.getNrOfSegments(); ++i)
   {
-    link_name_map_[chain_.getSegment(i).getName()] = i + 1;
+    link_name_map_[chain_.getSegment(static_cast<unsigned int>(i)).getName()] =
+      static_cast<int>(i) + 1;
   }
   // allocate dynamics memory
   num_joints_ = chain_.getNrOfJoints();
-  q_ = KDL::JntArray(num_joints_);
+  q_ = KDL::JntArray(static_cast<unsigned int>(num_joints_));
   I = Eigen::MatrixXd(num_joints_, num_joints_);
   I.setIdentity();
   // create KDL solvers
@@ -255,7 +256,7 @@ bool KinematicsInterfaceKDL::calculate_frame_difference(
   delta_x_ = KDL::diff(frames_(0), frames_(1), dt);
   for (size_t i = 0; i < 6; ++i)
   {
-    delta_x(i) = delta_x_[i];
+    delta_x(static_cast<Eigen::Index>(i)) = delta_x_[static_cast<int>(i)];
   }
 
   return true;
@@ -270,7 +271,7 @@ bool KinematicsInterfaceKDL::verify_link_name(const std::string & link_name)
   if (link_name_map_.find(link_name) == link_name_map_.end())
   {
     std::string links;
-    for (size_t i = 0; i < chain_.getNrOfSegments(); ++i)
+    for (unsigned int i = 0; i < static_cast<unsigned int>(chain_.getNrOfSegments()); ++i)
     {
       links += "\n" + chain_.getSegment(i).getName();
     }
