@@ -104,7 +104,7 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
   // Ensure kinematics math is correct
-  for (size_t i = 0; i < static_cast<size_t>(delta_x.size()); ++i)
+  for (Eigen::Index i = 0; i < delta_x.size(); ++i)
   {
     ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
   }
@@ -121,9 +121,9 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
 
   // ensure jacobian inverse math is correct
-  for (size_t i = 0; i < static_cast<size_t>(jacobian_inverse.rows()); ++i)
+  for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
   {
-    for (size_t j = 0; j < static_cast<size_t>(jacobian_inverse.cols()); ++j)
+    for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
     {
       ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
     }
@@ -175,9 +175,9 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_std_vector)
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
 
   // ensure jacobian inverse math is correct
-  for (size_t i = 0; i < static_cast<size_t>(jacobian_inverse.rows()); ++i)
+  for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
   {
-    for (size_t j = 0; j < static_cast<size_t>(jacobian_inverse.cols()); ++j)
+    for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
     {
       ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
     }
