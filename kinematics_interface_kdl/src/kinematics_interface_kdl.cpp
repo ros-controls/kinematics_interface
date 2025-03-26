@@ -256,7 +256,7 @@ bool KinematicsInterfaceKDL::calculate_frame_difference(
   delta_x_ = KDL::diff(frames_(0), frames_(1), dt);
   for (size_t i = 0; i < 6; ++i)
   {
-    delta_x(i) = delta_x_[static_cast<int>(i)];
+    delta_x(static_cast<Eigen::Index>(i)) = delta_x_[static_cast<int>(i)];
   }
 
   return true;
