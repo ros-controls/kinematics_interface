@@ -271,9 +271,9 @@ bool KinematicsInterfaceKDL::verify_link_name(const std::string & link_name)
   if (link_name_map_.find(link_name) == link_name_map_.end())
   {
     std::string links;
-    for (size_t i = 0; i < chain_.getNrOfSegments(); ++i)
+    for (unsigned int i = 0; i < static_cast<unsigned int>(chain_.getNrOfSegments()); ++i)
     {
-      links += "\n" + chain_.getSegment(static_cast<unsigned int>(i)).getName();
+      links += "\n" + chain_.getSegment(i).getName();
     }
     RCLCPP_ERROR(
       LOGGER, "The link %s was not found in the robot chain. Available links are: %s",
