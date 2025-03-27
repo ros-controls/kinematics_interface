@@ -18,7 +18,7 @@ jobs:
     with:
       ros_distro: humble
       ros_repo: testing
-      ref_for_scheduled_build: master
+      ref_for_scheduled_build: humble
       not_test_build: true
       upstream_workspace: kinematics_interface.humble.repos
       # we test the downstream packages, which are part of our organization
