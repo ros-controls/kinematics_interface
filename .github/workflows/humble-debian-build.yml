@@ -19,4 +19,4 @@ jobs:
     with:
       ros_distro: humble
       upstream_workspace: kinematics_interface.humble.repos
-      ref_for_scheduled_build: master
+      ref_for_scheduled_build: humble
