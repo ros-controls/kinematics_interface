@@ -5,24 +5,11 @@
 This is a ROS 2 package for using C++ kinematics frameworks in the context of ROS 2 control. A kinematics interface is designed to allow ROS 2 controllers to control robots in Cartesian space. This package also contains a basic implementation of the interface using KDL.
 
 ## Build status
-
 ROS2 Distro | Branch | Build status | Documentation | Package Build |
 :---------: | :----: | :----------: | :-----------: | :---------------:
 **Rolling** | [`master`](https://github.com/ros-controls/kinematics_interface/tree/master) | [![Rolling Binary Build](https://github.com/ros-controls/kinematics_interface/actions/workflows/rolling-binary-build.yml/badge.svg?branch=master)](https://github.com/ros-controls/kinematics_interface/actions/workflows/rolling-binary-build.yml) <br> [![Rolling Semi-Binary Build](https://github.com/ros-controls/kinematics_interface/actions/workflows/rolling-semi-binary-build.yml/badge.svg?branch=master)](https://github.com/ros-controls/kinematics_interface/actions/workflows/rolling-semi-binary-build.yml) <br> [![build.ros2.org](https://build.ros2.org/buildStatus/icon?job=Rdev__kinematics_interface__ubuntu_noble_amd64&subject=build.ros2.org)](https://build.ros2.org/job/Rdev__kinematics_interface__ubuntu_noble_amd64/) | [API](http://docs.ros.org/en/rolling/p/kinematics_interface/) <br> [API kdl](http://docs.ros.org/en/rolling/p/kinematics_interface_kdl/) | [![Build Status](https://build.ros2.org/buildStatus/icon?job=Rbin_uN64__kinematics_interface__ubuntu_noble_amd64__binary)](https://build.ros2.org/job/Rbin_uN64__kinematics_interface__ubuntu_noble_amd64__binary/)
 **Jazzy** | [`jazzy`](https://github.com/ros-controls/kinematics_interface/tree/jazzy) | [![Jazzy Binary Build](https://github.com/ros-controls/kinematics_interface/actions/workflows/jazzy-binary-build.yml/badge.svg?branch=master)](https://github.com/ros-controls/kinematics_interface/actions/workflows/jazzy-binary-build.yml) <br> [![Jazzy Semi-Binary Build](https://github.com/ros-controls/kinematics_interface/actions/workflows/jazzy-semi-binary-build.yml/badge.svg?branch=master)](https://github.com/ros-controls/kinematics_interface/actions/workflows/jazzy-semi-binary-build.yml) <br> [![build.ros2.org](https://build.ros2.org/buildStatus/icon?job=Jdev__kinematics_interface__ubuntu_noble_amd64&subject=build.ros2.org)](https://build.ros2.org/job/Jdev__kinematics_interface__ubuntu_noble_amd64/) | [API](http://docs.ros.org/en/jazzy/p/kinematics_interface/) <br> [API kdl](http://docs.ros.org/en/jazzy/p/kinematics_interface_kdl/) | [![Build Status](https://build.ros2.org/buildStatus/icon?job=Jbin_uN64__kinematics_interface__ubuntu_noble_amd64__binary)](https://build.ros2.org/job/Jbin_uN64__kinematics_interface__ubuntu_noble_amd64__binary/)
 **Humble** | [`humble`](https://github.com/ros-controls/kinematics_interface/tree/humble) | [![Humble Binary Build](https://github.com/ros-controls/kinematics_interface/actions/workflows/humble-binary-build.yml/badge.svg?branch=humble)](https://github.com/ros-controls/kinematics_interface/actions/workflows/humble-binary-build.yml) <br> [![Humble Semi-Binary Build](https://github.com/ros-controls/kinematics_interface/actions/workflows/humble-semi-binary-build.yml/badge.svg?branch=humble)](https://github.com/ros-controls/kinematics_interface/actions/workflows/humble-semi-binary-build.yml) <br> [![build.ros2.org](https://build.ros2.org/buildStatus/icon?job=Hdev__kinematics_interface__ubuntu_jammy_amd64&subject=build.ros2.org)](https://build.ros2.org/job/Hdev__kinematics_interface__ubuntu_jammy_amd64/) | [API](http://docs.ros.org/en/humble/p/kinematics_interface/) <br> [API kdl](http://docs.ros.org/en/humble/p/kinematics_interface_kdl/)  | [![Build Status](https://build.ros2.org/buildStatus/icon?job=Hbin_uJ64__kinematics_interface__ubuntu_jammy_amd64__binary)](https://build.ros2.org/job/Hbin_uJ64__kinematics_interface__ubuntu_jammy_amd64__binary/)
 
-### Explanation of different build types
-
-**NOTE**: There are three build stages checking current and future compatibility of the package.
-
-[Detailed build status](.github/workflows/README.md)
-
-1. Binary builds - against released packages (main and testing) in ROS distributions. Shows that direct local build is possible.
-
-   Uses repos file: `$NAME$-not-released.<ros-distro>.repos`
-
-1. Semi-binary builds - against released core ROS packages (main and testing), but the immediate dependencies are pulled from source.
-   Shows that local build with dependencies is possible and if fails there we can expect that after the next package sync we will not be able to build.
-
-   Uses repos file: `$NAME$.repos`
+## Acknowledgements
+The project has received major contributions from the following companies and institutions: [control.ros.org](https://control.ros.org/rolling/doc/acknowledgements/acknowledgements.html)
