@@ -4,6 +4,10 @@
 
 This is a ROS 2 package for using C++ kinematics frameworks in the context of ROS 2 control. A kinematics interface is designed to allow ROS 2 controllers to control robots in Cartesian space. This package also contains a basic implementation of the interface using KDL.
 
+## Contributing
+As an open-source project, we welcome each contributor, regardless of their background and experience. Pick a [PR](https://github.com/ros-controls/kinematics_interface/pulls) and review it, or [create your own](https://github.com/ros-controls/kinematics_interface/contribute)!
+If you are new to the project, please read the [contributing guide](https://control.ros.org/rolling/doc/contributing/contributing.html) for more information on how to get started. We are happy to help you with your first contribution.
+
 ## Build status
 ROS2 Distro | Branch | Build status | Documentation | Package Build |
 :---------: | :----: | :----------: | :-----------: | :---------------:
@@ -12,4 +16,4 @@ ROS2 Distro | Branch | Build status | Documentation | Package Build |
 **Humble** | [`humble`](https://github.com/ros-controls/kinematics_interface/tree/humble) | [![Humble Binary Build](https://github.com/ros-controls/kinematics_interface/actions/workflows/humble-binary-build.yml/badge.svg?branch=humble)](https://github.com/ros-controls/kinematics_interface/actions/workflows/humble-binary-build.yml) <br> [![Humble Semi-Binary Build](https://github.com/ros-controls/kinematics_interface/actions/workflows/humble-semi-binary-build.yml/badge.svg?branch=humble)](https://github.com/ros-controls/kinematics_interface/actions/workflows/humble-semi-binary-build.yml) <br> [![build.ros2.org](https://build.ros2.org/buildStatus/icon?job=Hdev__kinematics_interface__ubuntu_jammy_amd64&subject=build.ros2.org)](https://build.ros2.org/job/Hdev__kinematics_interface__ubuntu_jammy_amd64/) | [API](http://docs.ros.org/en/humble/p/kinematics_interface/) <br> [API kdl](http://docs.ros.org/en/humble/p/kinematics_interface_kdl/)  | [![Build Status](https://build.ros2.org/buildStatus/icon?job=Hbin_uJ64__kinematics_interface__ubuntu_jammy_amd64__binary)](https://build.ros2.org/job/Hbin_uJ64__kinematics_interface__ubuntu_jammy_amd64__binary/)
 
 ## Acknowledgements
-The project has received major contributions from the following companies and institutions: [control.ros.org](https://control.ros.org/rolling/doc/acknowledgements/acknowledgements.html)
+The project has received major contributions from companies and institutions [listed on control.ros.org](https://control.ros.org/rolling/doc/acknowledgements/acknowledgements.html)
