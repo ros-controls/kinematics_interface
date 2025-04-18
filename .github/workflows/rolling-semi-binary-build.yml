@@ -40,7 +40,7 @@ jobs:
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ros_repo: testing
-      upstream_workspace: kinematics_interface.rolling.repos
+      upstream_workspace: kinematics_interface.${{ matrix.ROS_DISTRO }}.repos
       ref_for_scheduled_build: master
       additional_debs: clang
       c_compiler: clang
