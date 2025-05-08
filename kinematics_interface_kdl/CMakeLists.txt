@@ -30,10 +30,7 @@ target_include_directories(kinematics_interface_kdl PUBLIC
 )
 target_compile_features(kinematics_interface_kdl PUBLIC cxx_std_17)
 target_link_libraries(kinematics_interface_kdl PUBLIC
-  ${THIS_PACKAGE_INCLUDE_DEPENDS}
-)
-target_link_libraries(kinematics_interface_kdl PUBLIC
-  Eigen3::Eigen
+  Eigen3::Eigen kdl_parser::kdl_parser kinematics_interface::kinematics_interface pluginlib::pluginlib tf2_eigen_kdl::tf2_eigen_kdl
 )
 
 pluginlib_export_plugin_description_file(kinematics_interface kinematics_interface_kdl.xml)
@@ -46,11 +43,10 @@ if(BUILD_TESTING)
     test_kinematics_interface_kdl
     test/test_kinematics_interface_kdl.cpp
   )
-  target_link_libraries(test_kinematics_interface_kdl kinematics_interface_kdl)
+  target_link_libraries(test_kinematics_interface_kdl kinematics_interface_kdl ros2_control_test_assets::ros2_control_test_assets)
 
   # TODO: Use target_link_libraries once ros2_control_test_assets'
   #       CMake include export is fixed
-  ament_target_dependencies(test_kinematics_interface_kdl ros2_control_test_assets)
 endif()
 
 install(

@@ -25,10 +25,7 @@ target_include_directories(kinematics_interface PUBLIC
   $<INSTALL_INTERFACE:include/kinematics_interface>
 )
 target_link_libraries(kinematics_interface PUBLIC
-  Eigen3::Eigen
-)
-target_link_libraries(kinematics_interface PUBLIC
-  ${THIS_PACKAGE_INCLUDE_DEPENDS}
+  Eigen3::Eigen rclcpp::rclcpp rclcpp_lifecycle::rclcpp_lifecycle
 )
 
 # Causes the visibility macros to use dllexport rather than dllimport,
