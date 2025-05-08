@@ -29,7 +29,7 @@ target_include_directories(kinematics_interface_kdl PUBLIC
   $<INSTALL_INTERFACE:include/kinematics_interface_kdl>
 )
 target_compile_features(kinematics_interface_kdl PUBLIC cxx_std_17)
-ament_target_dependencies(kinematics_interface_kdl PUBLIC
+target_link_libraries(kinematics_interface_kdl PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 target_link_libraries(kinematics_interface_kdl PUBLIC

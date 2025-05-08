@@ -27,7 +27,7 @@ target_include_directories(kinematics_interface PUBLIC
 target_link_libraries(kinematics_interface PUBLIC
   Eigen3::Eigen
 )
-ament_target_dependencies(kinematics_interface PUBLIC
+target_link_libraries(kinematics_interface PUBLIC
   ${THIS_PACKAGE_INCLUDE_DEPENDS}
 )
 
