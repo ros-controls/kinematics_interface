@@ -22,10 +22,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [humble, jazzy]
-        ROS_REPO: [testing]
+        ROS_DISTRO: [humble, jazzy, kilted]
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
-      ros_repo: ${{ matrix.ROS_REPO }}
+      ros_repo: testing
       upstream_workspace: kinematics_interface.rolling.repos
       ref_for_scheduled_build: master
