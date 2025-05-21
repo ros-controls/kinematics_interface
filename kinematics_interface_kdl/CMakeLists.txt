@@ -44,9 +44,6 @@ if(BUILD_TESTING)
     test/test_kinematics_interface_kdl.cpp
   )
   target_link_libraries(test_kinematics_interface_kdl kinematics_interface_kdl ros2_control_test_assets::ros2_control_test_assets)
-
-  # TODO: Use target_link_libraries once ros2_control_test_assets'
-  #       CMake include export is fixed
 endif()
 
 install(
