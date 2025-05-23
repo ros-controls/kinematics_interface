@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Use CMake targets for eigen (backport `#50 <https://github.com/ros-controls/kinematics_interface/issues/50>`_) (`#55 <https://github.com/ros-controls/kinematics_interface/issues/55>`_)
+* Contributors: mergify[bot]
+
 0.3.0 (2024-02-19)
 ------------------
 
