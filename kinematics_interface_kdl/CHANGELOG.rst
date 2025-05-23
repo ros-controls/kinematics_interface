@@ -2,6 +2,12 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [kilted] Update deprecated call to ament_target_dependencies (backport `#138 <https://github.com/ros-controls/kinematics_interface/issues/138>`_) (`#142 <https://github.com/ros-controls/kinematics_interface/issues/142>`_)
+* Use ros2_control_cmake (backport `#118 <https://github.com/ros-controls/kinematics_interface/issues/118>`_) (`#119 <https://github.com/ros-controls/kinematics_interface/issues/119>`_)
+* Contributors: mergify[bot]
+
 1.3.0 (2025-03-11)
 ------------------
 * Remove visibility boilerplate code (`#101 <https://github.com/ros-controls/kinematics_interface/issues/101>`_)
