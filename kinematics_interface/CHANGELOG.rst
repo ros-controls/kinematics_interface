@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.1.0 (2025-05-23)
+------------------
 * [kilted] Update deprecated call to ament_target_dependencies (`#138 <https://github.com/ros-controls/kinematics_interface/issues/138>`_)
 * Use ros2_control_cmake (`#118 <https://github.com/ros-controls/kinematics_interface/issues/118>`_)
 * Contributors: Christoph Fröhlich, David V. Lu!!
