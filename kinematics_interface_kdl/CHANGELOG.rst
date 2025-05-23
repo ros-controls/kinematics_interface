@@ -2,6 +2,7 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+<<<<<<< HEAD
 2.4.0 (2025-12-06)
 ------------------
 * Add a test template for plugin implementations (`#211 <https://github.com/ros-controls/kinematics_interface/issues/211>`_)
@@ -29,6 +30,13 @@ Changelog for package kinematics_interface_kdl
 ------------------
 * Add methods for computing frame differences (`#93 <https://github.com/ros-controls/kinematics_interface/issues/93>`_)
 * Contributors: francesco-donofrio
+=======
+Forthcoming
+-----------
+* [kilted] Update deprecated call to ament_target_dependencies (backport `#138 <https://github.com/ros-controls/kinematics_interface/issues/138>`_) (`#142 <https://github.com/ros-controls/kinematics_interface/issues/142>`_)
+* Use ros2_control_cmake (backport `#118 <https://github.com/ros-controls/kinematics_interface/issues/118>`_) (`#119 <https://github.com/ros-controls/kinematics_interface/issues/119>`_)
+* Contributors: mergify[bot]
+>>>>>>> 7fb1f13 (Update changelogs)
 
 1.3.0 (2025-03-11)
 ------------------
