@@ -2,6 +2,12 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* [kilted] Update deprecated call to ament_target_dependencies (`#138 <https://github.com/ros-controls/kinematics_interface/issues/138>`_)
+* Use ros2_control_cmake (`#118 <https://github.com/ros-controls/kinematics_interface/issues/118>`_)
+* Contributors: Christoph Fröhlich, David V. Lu!!
+
 2.0.0 (2025-03-11)
 ------------------
 * Add methods for computing frame differences (`#93 <https://github.com/ros-controls/kinematics_interface/issues/93>`_)
