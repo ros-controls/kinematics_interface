@@ -1,4 +1,4 @@
-name: Jazzy - Rolling Downstream Build
+name: Jazzy - Downstream Build
 # description: 'Build & test downstream packages from source.'
 # author: Christoph Froehlich <christoph.froehlich@ait.ac.at>
 
@@ -18,7 +18,7 @@ jobs:
     with:
       ros_distro: jazzy
       ros_repo: testing
-      ref_for_scheduled_build: master
+      ref_for_scheduled_build: jazzy
       not_test_build: true
       upstream_workspace: kinematics_interface.jazzy.repos
       # we test the downstream packages, which are part of our organization
