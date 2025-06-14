@@ -22,9 +22,9 @@
 #include <string>
 #include <vector>
 
-#include "eigen3/Eigen/Core"
-#include "eigen3/Eigen/Geometry"
-#include "eigen3/Eigen/LU"
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/LU>
 #include "rclcpp/logging.hpp"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 
