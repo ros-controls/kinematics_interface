@@ -18,13 +18,14 @@
 #ifndef KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_HPP_
 #define KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_HPP_
 
+#include <Eigen/Core>
+#include <Eigen/Geometry>
+#include <Eigen/LU>
+
 #include <memory>
 #include <string>
 #include <vector>
 
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <Eigen/LU>
 #include "rclcpp/logging.hpp"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 
