@@ -18,9 +18,9 @@
 #ifndef KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_HPP_
 #define KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_HPP_
 
-#include <Eigen/Core>
-#include <Eigen/Geometry>
-#include <Eigen/LU>
+#include "Eigen/Core"
+#include "Eigen/Geometry"
+#include "Eigen/LU"
 
 #include <memory>
 #include <string>
