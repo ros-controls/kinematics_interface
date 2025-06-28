@@ -21,21 +21,34 @@ namespace kinematics_interface_pinocchio
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_pinocchio");
 
 bool KinematicsInterfacePinocchio::initialize(
+    const std::string& robot_description,
     std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
-    const std::string& end_effector_name
+    const std::string& param_namespace
 )
 {
     // track initialization plugin
     initialized = true;
 
-    // get robot description
-    auto robot_param = rclcpp::Parameter();
-    if (!parameters_interface->get_parameter("robot_description", robot_param))
+    // get parameters
+    std::string ns = !param_namespace.empty() ? param_namespace + "." : "";
+
+    std::string robot_description_local;
+    if (robot_description.empty())
     {
-        RCLCPP_ERROR(LOGGER, "parameter robot_description not set");
-        return false;
+        // If the robot_description input argument is empty, try to get the
+        // robot_description from the node's parameters.
+        auto robot_param = rclcpp::Parameter();
+        if (!parameters_interface->get_parameter("robot_description", robot_param))
+        {
+            RCLCPP_ERROR(LOGGER, "parameter robot_description not set in kinematics_interface_pinocchio");
+            return false;
+        }
+        robot_description_local = robot_param.as_string();
     }
-    auto robot_description = robot_param.as_string();
+    else
+    {
+        robot_description_local = robot_description;
+    }
     // get alpha damping term
     auto alpha_param = rclcpp::Parameter("alpha", 0.000005);
     if (parameters_interface->has_parameter("alpha"))
@@ -56,7 +69,7 @@ bool KinematicsInterfacePinocchio::initialize(
         root_name_ = model_.frames[0].name;
     }
     // TODO: only handling fixed base now
-    model_ = pinocchio::urdf::buildModelFromXML(robot_description, /*root_name_,*/ model_, true);
+    model_ = pinocchio::urdf::buildModelFromXML(robot_description_local, /*root_name_,*/ model_, true);
 
     // allocate dynamics memory
     data_ = std::make_shared<pinocchio::Data>(model_);
@@ -65,6 +78,7 @@ bool KinematicsInterfacePinocchio::initialize(
     I = Eigen::MatrixXd(num_joints_, num_joints_);
     I.setIdentity();
     jacobian_.resize(6, num_joints_);
+    jacobian_inverse_.resize(num_joints_, 6);
 
     return true;
 }
@@ -105,16 +119,13 @@ bool KinematicsInterfacePinocchio::convert_cartesian_deltas_to_joint_deltas(
         return false;
     }
 
-    // get joint array
-    q_ = joint_pos;
+    // calculate Jacobian inverse
+    if (!calculate_jacobian_inverse(joint_pos, link_name, jacobian_inverse_))
+    {
+        return false;
+    }
 
-    // calculate Jacobian
-    const auto ee_frame_id = model_.getFrameId(link_name);
-    pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
-    // damped inverse
-    Eigen::Matrix<double, Eigen::Dynamic, 6> J_inverse =
-        (jacobian_.transpose() * jacobian_ + alpha * I).inverse() * jacobian_.transpose();
-    delta_theta = J_inverse * delta_x;
+    delta_theta = jacobian_inverse_ * delta_x;
 
     return true;
 }
@@ -142,6 +153,32 @@ bool KinematicsInterfacePinocchio::calculate_jacobian(
     return true;
 }
 
+bool KinematicsInterfacePinocchio::calculate_jacobian_inverse(
+    const Eigen::Matrix<double, Eigen::Dynamic, 1>& joint_pos, const std::string& link_name,
+    Eigen::Matrix<double, Eigen::Dynamic, 6>& jacobian_inverse
+)
+{
+    // verify inputs
+    if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
+        !verify_jacobian_inverse(jacobian_inverse))
+    {
+        return false;
+    }
+
+    // get joint array
+    q_ = joint_pos;
+
+    // calculate Jacobian
+    const auto ee_frame_id = model_.getFrameId(link_name);
+    pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+    // damped inverse
+    jacobian_inverse_ = (jacobian_.transpose() * jacobian_ + alpha * I).inverse() * jacobian_.transpose();
+
+    jacobian_inverse = jacobian_inverse_;
+
+    return true;
+}
+
 bool KinematicsInterfacePinocchio::calculate_link_transform(
     const Eigen::Matrix<double, Eigen::Dynamic, 1>& joint_pos, const std::string& link_name,
     Eigen::Isometry3d& transform
@@ -150,6 +187,13 @@ bool KinematicsInterfacePinocchio::calculate_link_transform(
     // verify inputs
     if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name))
     {
+        RCLCPP_ERROR(
+            LOGGER, "Verification failed: %s",
+            !verify_initialized()             ? "Not initialized"
+            : !verify_joint_vector(joint_pos) ? "Invalid joint vector"
+            : !verify_link_name(link_name)    ? "Invalid link name"
+                                              : "Unknown error"
+        );
         return false;
     }
 
@@ -235,6 +279,20 @@ bool KinematicsInterfacePinocchio::verify_jacobian(const Eigen::Matrix<double, 6
         return false;
     }
     return true;
+}
+
+bool KinematicsInterfacePinocchio::verify_jacobian_inverse(
+  const Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse)
+{
+  if (
+    jacobian_inverse.rows() != jacobian_.cols() || jacobian_inverse.cols() != jacobian_.rows())
+  {
+    RCLCPP_ERROR(
+      LOGGER, "The size of the jacobian (%zu, %zu) does not match the required size of (%zu, %zu)",
+      jacobian_inverse.rows(), jacobian_inverse.cols(), jacobian_.cols(), jacobian_.rows());
+    return false;
+  }
+  return true;
 }
 
 } // namespace kinematics_interface_pinocchio
