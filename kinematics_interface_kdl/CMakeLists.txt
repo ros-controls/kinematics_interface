@@ -59,5 +59,5 @@ install(
 )
 
 ament_export_targets(export_kinematics_interface_kdl HAS_LIBRARY_TARGET)
-ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS} Eigen3)
 ament_package()
