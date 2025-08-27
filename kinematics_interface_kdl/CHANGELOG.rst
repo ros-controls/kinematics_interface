@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2025-08-27)
+------------------
 * Pass Eigen3 to ament_export_dependencies (backport `#165 <https://github.com/ros-controls/kinematics_interface/issues/165>`_) (`#166 <https://github.com/ros-controls/kinematics_interface/issues/166>`_)
 * Contributors: Silvio Traversaro
 

@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.5.0 (2025-08-27)
+------------------
 * Remove remnant of visibility control (backport `#170 <https://github.com/ros-controls/kinematics_interface/issues/170>`_) (`#171 <https://github.com/ros-controls/kinematics_interface/issues/171>`_)
 * Pass Eigen3 to ament_export_dependencies (backport `#165 <https://github.com/ros-controls/kinematics_interface/issues/165>`_) (`#166 <https://github.com/ros-controls/kinematics_interface/issues/166>`_)
 * Contributors: Silvio Traversaro
