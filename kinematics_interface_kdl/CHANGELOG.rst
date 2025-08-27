@@ -29,13 +29,6 @@ Changelog for package kinematics_interface_kdl
 ------------------
 * Add methods for computing frame differences (`#93 <https://github.com/ros-controls/kinematics_interface/issues/93>`_)
 * Contributors: francesco-donofrio
-=======
-Forthcoming
------------
-=======
-=======
-Forthcoming
------------
 * Pass Eigen3 to ament_export_dependencies (backport `#165 <https://github.com/ros-controls/kinematics_interface/issues/165>`_) (`#166 <https://github.com/ros-controls/kinematics_interface/issues/166>`_)
 * Contributors: Silvio Traversaro
 
