@@ -18,3 +18,4 @@ jobs:
       ros_distro: rolling
       ref_for_scheduled_build: master
       pixi_dependencies: boost compilers
+      windows_dependencies: kinematics_interface.windows.rolling.repos
