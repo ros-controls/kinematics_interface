@@ -13,9 +13,8 @@ on:
 
 jobs:
   binary-windows:
-    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-win-build.yml@master
+    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-win-build.yml@win/rosinstall_generator
     with:
       ros_distro: rolling
-      ref_for_scheduled_build: master
-      pixi_dependencies: boost compilers
-      windows_dependencies: kinematics_interface.windows.rolling.repos
+      pixi_dependencies: typeguard jinja2 boost compilers
+      ninja_packages: rsl
