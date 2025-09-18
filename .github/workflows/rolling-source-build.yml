@@ -22,12 +22,9 @@ jobs:
         include:
         - ROS_DISTRO: rolling
           CONTAINER: ubuntu:24.04
-          OS_NAME: ubuntu-latest
         - ROS_DISTRO: kilted
           CONTAINER: ubuntu:24.04
-          OS_NAME: ubuntu-latest
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ref: master
-      os_name: ${{ matrix.OS_NAME }}
       container: ${{ matrix.CONTAINER }}
