@@ -114,6 +114,21 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function)
             ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
         }
     }
+
+    // compute the difference between two cartesian frames
+    Eigen::Matrix<double, 7, 1> x_a, x_b;
+    x_a << 0, 1, 0, 0, 0, 0, 1;
+    x_b << 2, 3, 0, 0, 1, 0, 0;
+    double dt = 1.0;
+    delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+    delta_x_est << 2, 2, 0, 0, 3.14, 0;
+    ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
+
+    // ensure that difference math is correct
+    for (Eigen::Index i = 0; i < delta_x.size(); ++i)
+    {
+      EXPECT_NEAR(delta_x(i), delta_x_est(i), 0.02) << " for index " << i;
+    }
 }
 
 TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_std_vector)

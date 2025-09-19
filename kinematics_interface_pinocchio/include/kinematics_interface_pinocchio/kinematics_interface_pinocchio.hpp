@@ -69,6 +69,11 @@ public:
         Eigen::Matrix<double, Eigen::Dynamic, 6>& jacobian_inverse
     ) override;
 
+    bool calculate_frame_difference(
+      Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+      Eigen::Matrix<double, 6, 1> & delta_x
+    ) override;
+
 private:
     // verification methods
     bool verify_initialized();
@@ -76,6 +81,7 @@ private:
     bool verify_joint_vector(const Eigen::VectorXd& joint_vector);
     bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic>& jacobian);
     bool verify_jacobian_inverse(const Eigen::Matrix<double, Eigen::Dynamic, 6>& jacobian_inverse);
+    bool verify_period(const double dt);
 
     bool initialized = false;
     std::string root_name_;
