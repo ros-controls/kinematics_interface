@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add backward_ros (backport `#190 <https://github.com/ros-controls/kinematics_interface/issues/190>`_) (`#193 <https://github.com/ros-controls/kinematics_interface/issues/193>`_)
+* Contributors: mergify[bot]
+
 1.5.0 (2025-08-27)
 ------------------
 * Remove remnant of visibility control (backport `#170 <https://github.com/ros-controls/kinematics_interface/issues/170>`_) (`#171 <https://github.com/ros-controls/kinematics_interface/issues/171>`_)
