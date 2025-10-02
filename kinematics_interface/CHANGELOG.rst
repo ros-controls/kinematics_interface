@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+0.4.1 (2025-10-02)
+------------------
 * Add windows CI workflow (backport `#153 <https://github.com/ros-controls/kinematics_interface/issues/153>`_) (`#157 <https://github.com/ros-controls/kinematics_interface/issues/157>`_)
 * Contributors: mergify[bot]
 
