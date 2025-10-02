@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.3.0 (2025-10-02)
+------------------
 * Add backward_ros (`#190 <https://github.com/ros-controls/kinematics_interface/issues/190>`_)
 * Contributors: Christoph Fröhlich
 
