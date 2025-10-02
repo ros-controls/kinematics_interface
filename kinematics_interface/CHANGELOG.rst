@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add windows CI workflow (backport `#153 <https://github.com/ros-controls/kinematics_interface/issues/153>`_) (`#157 <https://github.com/ros-controls/kinematics_interface/issues/157>`_)
+* Contributors: mergify[bot]
+
 0.4.0 (2025-05-23)
 ------------------
 * Use CMake targets for eigen (backport `#50 <https://github.com/ros-controls/kinematics_interface/issues/50>`_) (`#55 <https://github.com/ros-controls/kinematics_interface/issues/55>`_)
