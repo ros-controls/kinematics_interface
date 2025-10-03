@@ -73,7 +73,7 @@ bool KinematicsInterfacePinocchio::initialize(
 
   // allocate dynamics memory
   data_ = std::make_shared<pinocchio::Data>(model_);
-  num_joints_ = model_.nq;  // TODO(anyone): handle floating base
+  num_joints_ = static_cast<Eigen::Index>(model_.nq);  // TODO(anyone): handle floating base
   q_.resize(num_joints_);
   I = Eigen::MatrixXd(num_joints_, num_joints_);
   I.setIdentity();
@@ -281,7 +281,7 @@ bool KinematicsInterfacePinocchio::verify_link_name(const std::string & link_nam
 
 bool KinematicsInterfacePinocchio::verify_joint_vector(const Eigen::VectorXd & joint_vector)
 {
-  if (static_cast<size_t>(joint_vector.size()) != num_joints_)
+  if (joint_vector.size() != num_joints_)
   {
     RCLCPP_ERROR(
       LOGGER, "Invalid joint vector size (%zu). Expected size is %zu.", joint_vector.size(),

@@ -79,7 +79,7 @@ private:
 
   bool initialized = false;
   std::string root_name_;
-  size_t num_joints_;
+  Eigen::Index num_joints_;
 
   pinocchio::Model model_;
   std::shared_ptr<pinocchio::Data> data_;
