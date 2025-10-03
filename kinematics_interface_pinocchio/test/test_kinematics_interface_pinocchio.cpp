@@ -46,6 +46,7 @@ public:
 
   void TearDown()
   {
+    node_->shutdown();
     // shutdown ros
     rclcpp::shutdown();
   }
