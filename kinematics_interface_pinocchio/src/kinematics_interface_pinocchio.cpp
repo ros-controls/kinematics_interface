@@ -73,8 +73,9 @@ bool KinematicsInterfacePinocchio::initialize(
 
   // allocate dynamics memory
   data_ = std::make_shared<pinocchio::Data>(model_);
-  num_joints_ = static_cast<Eigen::Index>(model_.nq);  // TODO(anyone): handle floating base
+  num_joints_ = static_cast<Eigen::Index>(model_.nq);
   q_.resize(num_joints_);
+  // TODO(anyone): fix sizes of jabian if tool frame is not the last one
   I = Eigen::MatrixXd(num_joints_, num_joints_);
   I.setIdentity();
   jacobian_.resize(6, num_joints_);
@@ -149,6 +150,7 @@ bool KinematicsInterfacePinocchio::calculate_jacobian(
   // calculate Jacobian
   const auto ee_frame_id = model_.getFrameId(link_name);
   pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+  // TODO(anyone): fix sizes of jacobian
   jacobian = jacobian_;
 
   return true;
@@ -176,6 +178,7 @@ bool KinematicsInterfacePinocchio::calculate_jacobian_inverse(
   jacobian_inverse_ =
     (jacobian_.transpose() * jacobian_ + alpha * I).inverse() * jacobian_.transpose();
 
+  // TODO(anyone): fix sizes of jacobian inverse
   jacobian_inverse = jacobian_inverse_;
 
   return true;

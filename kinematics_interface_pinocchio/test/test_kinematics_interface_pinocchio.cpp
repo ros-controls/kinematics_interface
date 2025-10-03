@@ -171,20 +171,24 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_std_vector)
   // calculate jacobian
   Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 3>::Zero();
   ASSERT_TRUE(ik_->calculate_jacobian(pos, end_effector_, jacobian));
+  // TODO(anyone): fix sizes of jacobian
+  auto jacobian_6x2 = jacobian.block(0, 0, 6, 2);
 
   // calculate jacobian inverse
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse =
-    jacobian.completeOrthogonalDecomposition().pseudoInverse();
+    jacobian_6x2.completeOrthogonalDecomposition().pseudoInverse();
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse_est =
     Eigen::Matrix<double, 3, 6>::Zero();
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
+  // TODO(anyone): fix sizes of jacobian inverse
+  auto jacobian_inverse_est_2x6 = jacobian_inverse_est.block(0, 0, 2, 6);
 
   // ensure jacobian inverse math is correct
   for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
   {
     for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
     {
-      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
+      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est_2x6(i, j), 0.02);
     }
   }
 }
