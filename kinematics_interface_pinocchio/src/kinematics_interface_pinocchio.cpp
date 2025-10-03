@@ -103,6 +103,8 @@ bool KinematicsInterfacePinocchio::convert_joint_deltas_to_cartesian_deltas(
   // calculate Jacobian
   const auto ee_frame_id = model_.getFrameId(link_name);
   pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+  // TODO(anyone): fix sizes of jacobian
+  jacobian_.col(jacobian_.cols() - 1).setZero();
   delta_x = jacobian_ * delta_theta;
 
   return true;
