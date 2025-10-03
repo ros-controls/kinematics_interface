@@ -1,0 +1,21 @@
+name: Build and Test (ROS 2 Rolling)
+
+on:
+  pull_request:
+    branches: [ros-rolling]
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        env:
+          - { ROS_DISTRO: rolling, ROS_REPO: main }
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ros-${{ matrix.env.ROS_DISTRO }}
+      - uses: "ros-industrial/industrial_ci@master"
+        env: ${{matrix.env}}
