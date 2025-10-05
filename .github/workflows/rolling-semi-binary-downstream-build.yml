@@ -16,10 +16,10 @@ on:
       - '.github/workflows/rolling-semi-binary-downstream-build.yml'
       - '**/package.xml'
       - '**/CMakeLists.txt'
-      - 'ros_controls.rolling.repos'
-      - 'ros_controls.kilted.repos'
-      - 'kinematics_interface.rolling.repos'
       - 'kinematics_interface.kilted.repos'
+      - 'kinematics_interface.rolling.repos'
+      - 'ros_controls.kilted.repos'
+      - 'ros_controls.rolling.repos'
       - '**.xml'
 
 concurrency:
