@@ -7,9 +7,33 @@ on:
   pull_request:
     branches:
       - master
+    paths:
+      - '**.hpp'
+      - '**.h'
+      - '**.cpp'
+      - '**.py'
+      - '**.yaml'
+      - '.github/workflows/rolling-compatibility-build.yml'
+      - '**/package.xml'
+      - '**/CMakeLists.txt'
+      - 'kinematics_interface.rolling.repos'
+      - 'kinematics_interface.kilted.repos'
+      - '**.xml'
   push:
     branches:
       - master
+    paths:
+      - '**.hpp'
+      - '**.h'
+      - '**.cpp'
+      - '**.py'
+      - '**.yaml'
+      - '.github/workflows/rolling-compatibility-build.yml'
+      - '**/package.xml'
+      - '**/CMakeLists.txt'
+      - 'kinematics_interface.rolling.repos'
+      - 'kinematics_interface.kilted.repos'
+      - '**.xml'
 
 concurrency:
   # cancel previous runs of the same workflow, except for pushes on given branches
