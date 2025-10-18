@@ -7,6 +7,18 @@ on:
   pull_request:
     branches:
       - humble
+    paths:
+      - '**.hpp'
+      - '**.h'
+      - '**.cpp'
+      - '**.py'
+      - '**.yaml'
+      - '.github/workflows/humble-semi-binary-downstream-build.yml'
+      - '**/package.xml'
+      - '**/CMakeLists.txt'
+      - 'ros_controls.humble.repos'
+      - 'kinematics_interface.humble.repos'
+      - '**.xml'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
