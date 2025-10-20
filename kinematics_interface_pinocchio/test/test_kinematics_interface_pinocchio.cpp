@@ -21,6 +21,11 @@
 #include "rclcpp_lifecycle/lifecycle_node.hpp"
 #include "ros2_control_test_assets/descriptions.hpp"
 
+MATCHER_P2(MatrixNear, expected, tol, "Two matrices are approximately equal")
+{
+  return arg.isApprox(expected, tol);
+}
+
 class TestPinocchioPlugin : public ::testing::Test
 {
 public:
@@ -47,6 +52,7 @@ public:
     node_->declare_parameter("alpha", 0.005);
     node_->declare_parameter("robot_description", urdf_);
     node_->declare_parameter("tip", end_effector_);
+    node_->declare_parameter("base", std::string(""));
   }
 
   void TearDown()
@@ -82,6 +88,16 @@ public:
     rclcpp::Parameter param("tip", tip);
     node_->set_parameter(param);
   }
+
+  /**
+   * \brief Used for testing initialization from parameters.
+   * Elsewhere, `""` is used.
+  */
+  void loadBaseParameter(std::string base)
+  {
+    rclcpp::Parameter param("base", base);
+    node_->set_parameter(param);
+  }
 };
 
 TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function)
@@ -109,10 +125,7 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
   // Ensure kinematics math is correct
-  for (Eigen::Index i = 0; i < delta_x.size(); ++i)
-  {
-    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
-  }
+  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
 
   // calculate jacobian
   Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 3>::Zero();
@@ -126,13 +139,7 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function)
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
 
   // ensure jacobian inverse math is correct
-  for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
-  {
-    for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
-    {
-      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
-    }
-  }
+  EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
 
   // compute the difference between two cartesian frames
   Eigen::Matrix<double, 7, 1> x_a, x_b;
@@ -144,15 +151,12 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function)
   ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
 
   // ensure that difference math is correct
-  for (Eigen::Index i = 0; i < delta_x.size(); ++i)
-  {
-    EXPECT_NEAR(delta_x(i), delta_x_est(i), 0.02) << " for index " << i;
-  }
+  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
 }
 
 TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_reduced_model_tip)
 {
-  // initialize the  plugin
+  // initialize the plugin
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
@@ -173,10 +177,7 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_reduced_model_tip)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
   // Ensure kinematics math is correct
-  for (Eigen::Index i = 0; i < delta_x.size(); ++i)
-  {
-    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
-  }
+  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
 
   // calculate jacobian
   Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
@@ -190,13 +191,7 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_reduced_model_tip)
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
 
   // ensure jacobian inverse math is correct
-  for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
-  {
-    for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
-    {
-      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
-    }
-  }
+  EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
 
   // compute the difference between two cartesian frames
   Eigen::Matrix<double, 7, 1> x_a, x_b;
@@ -208,6 +203,7 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_reduced_model_tip)
   ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
 
   // ensure that difference math is correct
+  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
   for (Eigen::Index i = 0; i < delta_x.size(); ++i)
   {
     EXPECT_NEAR(delta_x(i), delta_x_est(i), 0.02) << " for index " << i;
@@ -237,10 +233,7 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_std_vector)
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
   // Ensure kinematics math is correct
-  for (size_t i = 0; i < static_cast<size_t>(delta_x.size()); ++i)
-  {
-    ASSERT_NEAR(delta_x[i], delta_x_est[i], 0.02);
-  }
+  EXPECT_THAT(delta_x, ::testing::Pointwise(::testing::DoubleNear(0.02), delta_x_est));
 
   // calculate jacobian
   Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
@@ -254,13 +247,19 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_std_vector)
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
 
   // ensure jacobian inverse math is correct
-  for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
-  {
-    for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
-    {
-      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
-    }
-  }
+  EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
+
+  // compute the difference between two cartesian frames
+  std::vector<double> x_a(7), x_b(7);
+  x_a = {0, 1, 0, 0, 0, 0, 1};
+  x_b = {2, 3, 0, 0, 1, 0, 0};
+  double dt = 1.0;
+  delta_x = {0, 0, 0, 0, 0, 0};
+  delta_x_est = {2, 2, 0, 0, 3.14, 0};
+  ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
+
+  // ensure that difference math is correct
+  EXPECT_THAT(delta_x, ::testing::Pointwise(::testing::DoubleNear(0.02), delta_x_est));
 }
 
 TEST_F(TestPinocchioPlugin, incorrect_input_sizes)
