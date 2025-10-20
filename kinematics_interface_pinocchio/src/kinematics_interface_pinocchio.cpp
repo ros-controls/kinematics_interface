@@ -175,6 +175,7 @@ bool KinematicsInterfacePinocchio::convert_joint_deltas_to_cartesian_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in convert_joint_deltas_to_cartesian_deltas");
     return false;
   }
 
@@ -199,6 +200,7 @@ bool KinematicsInterfacePinocchio::convert_cartesian_deltas_to_joint_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in convert_cartesian_deltas_to_joint_deltas");
     return false;
   }
 
@@ -222,6 +224,7 @@ bool KinematicsInterfacePinocchio::calculate_jacobian(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian(jacobian))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_jacobian");
     return false;
   }
 
@@ -245,6 +248,7 @@ bool KinematicsInterfacePinocchio::calculate_jacobian_inverse(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian_inverse(jacobian_inverse))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_jacobian_inverse");
     return false;
   }
 
@@ -309,8 +313,9 @@ bool KinematicsInterfacePinocchio::calculate_frame_difference(
   Eigen::Matrix<double, 6, 1> & delta_x)
 {
   // verify inputs
-  if (!verify_initialized() || !verify_period(dt))
+  if (!verify_period(dt))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_frame_difference");
     return false;
   }
 
