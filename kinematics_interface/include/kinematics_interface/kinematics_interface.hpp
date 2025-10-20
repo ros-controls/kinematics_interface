@@ -38,6 +38,9 @@
 
 namespace kinematics_interface
 {
+
+using Vector6d = Eigen::Matrix<double, 6, 1>;
+
 class KinematicsInterface
 {
 public:

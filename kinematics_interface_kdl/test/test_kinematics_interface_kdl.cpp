@@ -65,7 +65,7 @@ public:
    * Elsewhere, `urdf_` member is used.
   */
 
-  void loadURDFParameter(const std::string &urdf)
+  void loadURDFParameter(const std::string & urdf)
   {
     rclcpp::Parameter param("robot_description", urdf);
     node_->set_parameter(param);
@@ -86,7 +86,7 @@ public:
    * \brief Used for testing initialization from parameters.
    * Elsewhere, `end_effector_` member is used.
   */
-  void loadTipParameter(const std::string &tip)
+  void loadTipParameter(const std::string & tip)
   {
     rclcpp::Parameter param("tip", tip);
     node_->set_parameter(param);
@@ -96,7 +96,7 @@ public:
    * \brief Used for testing initialization from parameters.
    * Elsewhere, `""` is used.
   */
-  void loadBaseParameter(const std::string &base)
+  void loadBaseParameter(const std::string & base)
   {
     rclcpp::Parameter param("base", base);
     node_->set_parameter(param);
@@ -116,14 +116,14 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
-  Eigen::Vector6d delta_x = Eigen::Vector6d::Zero();
+  kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
   delta_x[2] = 1;  // vz
   Eigen::VectorXd delta_theta = Eigen::Vector3d::Zero();
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
 
   // convert joint delta to cartesian delta
-  Eigen::Vector6d delta_x_est;
+  kinematics_interface::Vector6d delta_x_est;
   ASSERT_TRUE(
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
@@ -151,14 +151,14 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_reduced_model_tip)
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Vector2d::Zero();
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
   Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
   delta_x[2] = 1;  // vz
-  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Vector2d::Zero();
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
 
@@ -194,25 +194,25 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_reduced_model_base)
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  Eigen::VectorXd pos = Eigen:: Vector2d::Zero();
+  Eigen::VectorXd pos = Eigen::Vector2d::Zero();
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
-  Eigen::Vector6d delta_x = Eigen::Vector6d::Zero();
+  kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
   delta_x[2] = 1;  // vz
   Eigen::VectorXd delta_theta = Eigen::Vector2d::Zero();
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
   // jacobian inverse for vz is singular in this configuration
-  EXPECT_THAT(delta_theta, MatrixNear(Eigen::Matrix<double, 2, 1>::Zero(), 0.02));
+  EXPECT_THAT(delta_theta, MatrixNear(Eigen::Vector2d::Zero(), 0.02));
 
   // convert joint delta to cartesian delta
-  Eigen::Vector6d delta_x_est;
+  kinematics_interface::Vector6d delta_x_est;
   ASSERT_TRUE(
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
   // joint deltas from zero should produce zero cartesian deltas
-  EXPECT_THAT(delta_x_est, MatrixNear(Eigen::Vector6d::Zero(), 0.02));
+  EXPECT_THAT(delta_x_est, MatrixNear(kinematics_interface::Vector6d::Zero(), 0.02));
 
   // calculate jacobian
   Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
@@ -276,8 +276,8 @@ TEST_F(TestKDLPlugin, KDL_plugin_calculate_frame_difference)
   x_a << 0, 1, 0, 0, 0, 0, 1;
   x_b << 2, 3, 0, 0, 1, 0, 0;
   double dt = 1.0;
-  Eigen::Vector6d delta_x = Eigen::Vector6d::Zero();
-  Eigen::Vector6d delta_x_est;
+  kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
+  kinematics_interface::Vector6d delta_x_est;
   delta_x_est << 2, 2, 0, 0, 3.14, 0;
   ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
 
@@ -306,11 +306,11 @@ TEST_F(TestKDLPlugin, incorrect_input_sizes)
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
 
   // define correct values
-  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Vector2d::Zero();
   Eigen::Isometry3d end_effector_transform;
   Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
   delta_x[2] = 1;
-  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Vector2d::Zero();
   Eigen::Matrix<double, 6, 1> delta_x_est;
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian = Eigen::Matrix<double, 2, 6>::Zero();
   Eigen::Matrix<double, 7, 1> x_a, x_b;
