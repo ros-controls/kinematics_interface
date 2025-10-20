@@ -121,7 +121,7 @@ bool KinematicsInterfaceKDL::convert_joint_deltas_to_cartesian_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in convert_joint_deltas_to_cartesian_deltas");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", std::source_location::function_name());
     return false;
   }
 
@@ -145,7 +145,7 @@ bool KinematicsInterfaceKDL::convert_cartesian_deltas_to_joint_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in convert_cartesian_deltas_to_joint_deltas");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", std::source_location::function_name());
     return false;
   }
 
@@ -169,7 +169,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian(jacobian))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_jacobian");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", std::source_location::function_name());
     return false;
   }
 
@@ -192,7 +192,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian_inverse(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian_inverse(jacobian_inverse))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_jacobian_inverse");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", std::source_location::function_name());
     return false;
   }
 
@@ -219,7 +219,7 @@ bool KinematicsInterfaceKDL::calculate_link_transform(
   // verify inputs
   if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_link_transform");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", std::source_location::function_name());
     return false;
   }
 
@@ -248,7 +248,7 @@ bool KinematicsInterfaceKDL::calculate_frame_difference(
   // verify inputs
   if (!verify_period(dt))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_frame_difference");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", std::source_location::function_name());
     return false;
   }
 
