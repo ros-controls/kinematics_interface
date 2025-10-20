@@ -180,22 +180,48 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_reduced_model_tip)
 
   // ensure jacobian inverse math is correct
   EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
+}
 
-  // compute the difference between two cartesian frames
-  Eigen::Matrix<double, 7, 1> x_a, x_b;
-  x_a << 0, 1, 0, 0, 0, 0, 1;
-  x_b << 2, 3, 0, 0, 1, 0, 0;
-  double dt = 1.0;
-  delta_x = Eigen::Matrix<double, 6, 1>::Zero();
-  delta_x_est << 2, 2, 0, 0, 3.14, 0;
-  ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
+TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_reduced_model_base)
+{
+  loadTipParameter("link3");
+  loadBaseParameter("link1");
 
-  // ensure that difference math is correct
-  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
-  for (Eigen::Index i = 0; i < delta_x.size(); ++i)
-  {
-    EXPECT_NEAR(delta_x(i), delta_x_est(i), 0.02) << " for index " << i;
-  }
+  // initialize the plugin
+  ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
+
+  // calculate end effector transform
+  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::Isometry3d end_effector_transform;
+  ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
+
+  // convert cartesian delta to joint delta
+  Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+  delta_x[2] = 1;  // vz
+  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
+  ASSERT_TRUE(
+    ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
+  // jacobian inverse for vz is singular in this configuration
+  EXPECT_THAT(delta_theta, MatrixNear(Eigen::Matrix<double, 2, 1>::Zero(), 0.02));
+
+  // convert joint delta to cartesian delta
+  Eigen::Matrix<double, 6, 1> delta_x_est;
+  // joint deltas from zero should produce zero cartesian deltas
+  EXPECT_THAT(delta_x_est, MatrixNear(Eigen::Matrix<double, 6, 1>::Zero(), 0.02));
+
+  // calculate jacobian
+  Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
+  ASSERT_TRUE(ik_->calculate_jacobian(pos, end_effector_, jacobian));
+
+  // calculate jacobian inverse
+  Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse =
+    jacobian.completeOrthogonalDecomposition().pseudoInverse();
+  Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse_est =
+    Eigen::Matrix<double, 2, 6>::Zero();
+  ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
+
+  // ensure jacobian inverse math is correct
+  EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
 }
 
 TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_std_vector)
