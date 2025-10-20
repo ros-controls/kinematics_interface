@@ -65,7 +65,7 @@ public:
    * Elsewhere, `urdf_` member is used.
   */
 
-  void loadURDFParameter(std::string urdf)
+  void loadURDFParameter(const std::string &urdf)
   {
     rclcpp::Parameter param("robot_description", urdf);
     node_->set_parameter(param);
@@ -86,7 +86,7 @@ public:
    * \brief Used for testing initialization from parameters.
    * Elsewhere, `end_effector_` member is used.
   */
-  void loadTipParameter(std::string tip)
+  void loadTipParameter(const std::string &tip)
   {
     rclcpp::Parameter param("tip", tip);
     node_->set_parameter(param);
@@ -96,7 +96,7 @@ public:
    * \brief Used for testing initialization from parameters.
    * Elsewhere, `""` is used.
   */
-  void loadBaseParameter(std::string base)
+  void loadBaseParameter(const std::string &base)
   {
     rclcpp::Parameter param("base", base);
     node_->set_parameter(param);
