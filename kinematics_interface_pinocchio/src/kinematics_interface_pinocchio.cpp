@@ -85,13 +85,43 @@ bool KinematicsInterfacePinocchio::initialize(
   {
     parameters_interface->get_parameter(ns + "base", base_param);
     root_name_ = base_param.as_string();
+  }
+  if (!root_name_.empty())
+  {
     // TODO(anyone): fix root name usage
-    pinocchio::urdf::buildModelFromXML(
-      robot_description_local, /*root_name_,*/ full_model, verbose, true);
+    try
+    {
+      pinocchio::urdf::buildModelFromXML(
+        robot_description_local, /*root_name_,*/ full_model, verbose, true);
+    }
+    catch (const std::exception & e)
+    {
+      RCLCPP_ERROR(
+        LOGGER, "Error parsing URDF to build Pinocchio model from base '%s': %s",
+        root_name_.c_str(), e.what());
+      return false;
+    }
   }
   else
   {
-    pinocchio::urdf::buildModelFromXML(robot_description_local, full_model, verbose, true);
+    try
+    {
+      pinocchio::urdf::buildModelFromXML(robot_description_local, full_model, verbose, true);
+    }
+    catch (const std::exception & e)
+    {
+      RCLCPP_ERROR(LOGGER, "Error parsing URDF to build Pinocchio model: %s", e.what());
+      return false;
+    }
+    root_name_ = full_model.names[full_model.frames[0].parent];
+  }
+
+  if (!full_model.existFrame(end_effector_name))
+  {
+    RCLCPP_ERROR(
+      LOGGER, "failed to find chain from robot root '%s' to end effector '%s'", root_name_.c_str(),
+      end_effector_name.c_str());
+    return false;
   }
   // create reduced model by locking joints after end-effector
   pinocchio::FrameIndex frame_id = full_model.getFrameId(end_effector_name);
