@@ -276,8 +276,8 @@ TEST_F(TestKDLPlugin, KDL_plugin_calculate_frame_difference)
   x_a << 0, 1, 0, 0, 0, 0, 1;
   x_b << 2, 3, 0, 0, 1, 0, 0;
   double dt = 1.0;
-  Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
-  Eigen::Matrix<double, 6, 1> delta_x_est;
+  Eigen::Vector6d delta_x = Eigen::Vector6d::Zero();
+  Eigen::Vector6d delta_x_est;
   delta_x_est << 2, 2, 0, 0, 3.14, 0;
   ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
 
