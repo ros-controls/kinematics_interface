@@ -111,19 +111,19 @@ TEST_F(TestKDLPlugin, KDL_plugin_function)
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 3, 1>::Zero();
+  Eigen::VectorXd pos = Eigen::Vector3d::Zero();
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
-  Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+  Eigen::Vector6d delta_x = Eigen::Vector6d::Zero();
   delta_x[2] = 1;  // vz
-  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 3, 1>::Zero();
+  Eigen::VectorXd delta_theta = Eigen::Vector3d::Zero();
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
 
   // convert joint delta to cartesian delta
-  Eigen::Matrix<double, 6, 1> delta_x_est;
+  Eigen::Vector6d delta_x_est;
   ASSERT_TRUE(
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
 
@@ -194,25 +194,25 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_reduced_model_base)
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::VectorXd pos = Eigen:: Vector2d::Zero();
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
-  Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+  Eigen::Vector6d delta_x = Eigen::Vector6d::Zero();
   delta_x[2] = 1;  // vz
-  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
+  Eigen::VectorXd delta_theta = Eigen::Vector2d::Zero();
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
   // jacobian inverse for vz is singular in this configuration
   EXPECT_THAT(delta_theta, MatrixNear(Eigen::Matrix<double, 2, 1>::Zero(), 0.02));
 
   // convert joint delta to cartesian delta
-  Eigen::Matrix<double, 6, 1> delta_x_est;
+  Eigen::Vector6d delta_x_est;
   ASSERT_TRUE(
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
   // joint deltas from zero should produce zero cartesian deltas
-  EXPECT_THAT(delta_x_est, MatrixNear(Eigen::Matrix<double, 6, 1>::Zero(), 0.02));
+  EXPECT_THAT(delta_x_est, MatrixNear(Eigen::Vector6d::Zero(), 0.02));
 
   // calculate jacobian
   Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
