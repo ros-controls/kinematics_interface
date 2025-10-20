@@ -48,34 +48,85 @@ bool KinematicsInterfacePinocchio::initialize(
   {
     robot_description_local = robot_description;
   }
+  // get verbose flag
+  bool verbose = false;
+  auto verbose_param = rclcpp::Parameter("verbose", verbose);
+  if (parameters_interface->has_parameter(ns + "verbose"))
+  {
+    parameters_interface->get_parameter(ns + "verbose", verbose_param);
+  }
+  verbose = verbose_param.as_bool();
+
   // get alpha damping term
   auto alpha_param = rclcpp::Parameter("alpha", 0.000005);
-  if (parameters_interface->has_parameter("alpha"))
+  if (parameters_interface->has_parameter(ns + "alpha"))
   {
-    parameters_interface->get_parameter("alpha", alpha_param);
+    parameters_interface->get_parameter(ns + "alpha", alpha_param);
   }
   alpha = alpha_param.as_double();
 
-  // get root name
-  auto base_param = rclcpp::Parameter();
-  if (parameters_interface->has_parameter("base"))
+  // get end-effector name
+  auto end_effector_name_param = rclcpp::Parameter("tip");
+  if (parameters_interface->has_parameter(ns + "tip"))
   {
-    parameters_interface->get_parameter("base", base_param);
-    root_name_ = base_param.as_string();
+    parameters_interface->get_parameter(ns + "tip", end_effector_name_param);
   }
   else
   {
-    root_name_ = model_.frames[0].name;
+    RCLCPP_ERROR(LOGGER, "Failed to find end effector name parameter [tip].");
+    return false;
   }
-  // TODO(anyone): only handling fixed base now
-  model_ =
-    pinocchio::urdf::buildModelFromXML(robot_description_local, /*root_name_,*/ model_, true);
+  std::string end_effector_name = end_effector_name_param.as_string();
+
+  // get model from parameter root name (if set)
+  pinocchio::Model full_model;
+  auto base_param = rclcpp::Parameter();
+  if (parameters_interface->has_parameter(ns + "base"))
+  {
+    parameters_interface->get_parameter(ns + "base", base_param);
+    root_name_ = base_param.as_string();
+    // TODO(anyone): fix root name usage
+    pinocchio::urdf::buildModelFromXML(
+      robot_description_local, /*root_name_,*/ full_model, verbose, true);
+  }
+  else
+  {
+    pinocchio::urdf::buildModelFromXML(robot_description_local, full_model, verbose, true);
+  }
+  // create reduced model by locking joints after end-effector
+  pinocchio::FrameIndex frame_id = full_model.getFrameId(end_effector_name);
+  const pinocchio::Frame & frame = full_model.frames[frame_id];
+  pinocchio::JointIndex tool_joint_id = frame.parent;  // the joint to which this frame is attached
+  auto const isChildOf = [](
+                           const pinocchio::Model & model, pinocchio::JointIndex ancestor,
+                           pinocchio::JointIndex descendant)
+  {
+    pinocchio::JointIndex current = descendant;
+    while (current > 0)
+    {
+      if (current == ancestor) return true;
+      current = model.parents[current];
+    }
+    return false;
+  };
+  std::vector<pinocchio::JointIndex> locked_joints;
+  for (pinocchio::JointIndex jid = 1; jid < static_cast<pinocchio::JointIndex>(full_model.njoints);
+       ++jid)
+  {
+    if (isChildOf(full_model, tool_joint_id, jid) && jid != tool_joint_id)
+      locked_joints.push_back(jid);
+  }
+  RCLCPP_INFO(
+    LOGGER, "Locked %zu joint(s) after tool frame %s", locked_joints.size(),
+    end_effector_name.c_str());
+  Eigen::VectorXd q_fixed =
+    Eigen::VectorXd::Zero(full_model.nq);  // actual value is not important for kinematics
+  model_ = pinocchio::buildReducedModel(full_model, locked_joints, q_fixed);
 
   // allocate dynamics memory
   data_ = std::make_shared<pinocchio::Data>(model_);
   num_joints_ = static_cast<Eigen::Index>(model_.nq);
   q_.resize(num_joints_);
-  // TODO(anyone): fix sizes of jabian if tool frame is not the last one
   I = Eigen::MatrixXd(num_joints_, num_joints_);
   I.setIdentity();
   jacobian_.resize(6, num_joints_);
@@ -103,8 +154,6 @@ bool KinematicsInterfacePinocchio::convert_joint_deltas_to_cartesian_deltas(
   // calculate Jacobian
   const auto ee_frame_id = model_.getFrameId(link_name);
   pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
-  // TODO(anyone): fix sizes of jacobian
-  jacobian_.col(jacobian_.cols() - 1).setZero();
   delta_x = jacobian_ * delta_theta;
 
   return true;
@@ -152,7 +201,6 @@ bool KinematicsInterfacePinocchio::calculate_jacobian(
   // calculate Jacobian
   const auto ee_frame_id = model_.getFrameId(link_name);
   pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
-  // TODO(anyone): fix sizes of jacobian
   jacobian = jacobian_;
 
   return true;

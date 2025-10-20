@@ -42,6 +42,8 @@ public:
         "kinematics_interface", "kinematics_interface::KinematicsInterface");
     ik_ = std::unique_ptr<kinematics_interface::KinematicsInterface>(
       ik_loader_->createUnmanagedInstance(plugin_name));
+
+    node_->declare_parameter("verbose", true);
   }
 
   void TearDown()
@@ -53,9 +55,7 @@ public:
 
   void loadURDFParameter()
   {
-    auto urdf = std::string(ros2_control_test_assets::urdf_head) +
-                std::string(ros2_control_test_assets::urdf_tail);
-    rclcpp::Parameter param("robot_description", urdf);
+    rclcpp::Parameter param("robot_description", urdf_);
     node_->declare_parameter("robot_description", "");
     node_->set_parameter(param);
   }
@@ -66,6 +66,13 @@ public:
     node_->declare_parameter("alpha", 0.005);
     node_->set_parameter(param);
   }
+
+  void loadTipParameter()
+  {
+    rclcpp::Parameter param("tip", end_effector_);
+    node_->declare_parameter("tip", end_effector_);
+    node_->set_parameter(param);
+  }
 };
 
 TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function)
@@ -73,19 +80,20 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function)
   // load robot description and alpha to parameter server
   loadURDFParameter();
   loadAlphaParameter();
+  loadTipParameter();
 
   // initialize the  plugin
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 3, 1>::Zero();
+  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Matrix<double, 2, 1>::Zero();
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
   Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
   delta_x[2] = 1;
-  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 3, 1>::Zero();
+  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Matrix<double, 2, 1>::Zero();
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
 
@@ -101,14 +109,14 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function)
   }
 
   // calculate jacobian
-  Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 3>::Zero();
+  Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
   ASSERT_TRUE(ik_->calculate_jacobian(pos, end_effector_, jacobian));
 
   // calculate jacobian inverse
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse =
     jacobian.completeOrthogonalDecomposition().pseudoInverse();
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse_est =
-    Eigen::Matrix<double, 3, 6>::Zero();
+    Eigen::Matrix<double, 2, 6>::Zero();
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
 
   // ensure jacobian inverse math is correct
@@ -141,19 +149,20 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_std_vector)
   // load robot description and alpha to parameter server
   loadURDFParameter();
   loadAlphaParameter();
+  loadTipParameter();
 
   // initialize the  plugin
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  std::vector<double> pos = {0, 0, 0};
+  std::vector<double> pos = {0, 0};
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(ik_->calculate_link_transform(pos, end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
   std::vector<double> delta_x = {0, 0, 0, 0, 0, 0};
   delta_x[2] = 1;
-  std::vector<double> delta_theta = {0, 0, 0};
+  std::vector<double> delta_theta = {0, 0};
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
 
@@ -169,26 +178,22 @@ TEST_F(TestPinocchioPlugin, Pinocchio_plugin_function_std_vector)
   }
 
   // calculate jacobian
-  Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 3>::Zero();
+  Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
   ASSERT_TRUE(ik_->calculate_jacobian(pos, end_effector_, jacobian));
-  // TODO(anyone): fix sizes of jacobian
-  auto jacobian_6x2 = jacobian.block(0, 0, 6, 2);
 
   // calculate jacobian inverse
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse =
-    jacobian_6x2.completeOrthogonalDecomposition().pseudoInverse();
+    jacobian.completeOrthogonalDecomposition().pseudoInverse();
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse_est =
-    Eigen::Matrix<double, 3, 6>::Zero();
+    Eigen::Matrix<double, 2, 6>::Zero();
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
-  // TODO(anyone): fix sizes of jacobian inverse
-  auto jacobian_inverse_est_2x6 = jacobian_inverse_est.block(0, 0, 2, 6);
 
   // ensure jacobian inverse math is correct
   for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
   {
     for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
     {
-      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est_2x6(i, j), 0.02);
+      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
     }
   }
 }
@@ -198,6 +203,7 @@ TEST_F(TestPinocchioPlugin, incorrect_input_sizes)
   // load robot description and alpha to parameter server
   loadURDFParameter();
   loadAlphaParameter();
+  loadTipParameter();
 
   // initialize the  plugin
   ASSERT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
