@@ -109,7 +109,6 @@ TYPED_TEST_SUITE_P(TestPlugin);
 TYPED_TEST_P(TestPlugin, basic_plugin_function)
 {
   this->loadTipParameter("link3");
-  this->end_effector_ = "link3";
 
   // initialize the plugin
   ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
