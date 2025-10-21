@@ -122,7 +122,7 @@ TYPED_TEST_P(TestPlugin, basic_plugin_function)
   ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  Eigen::VectorXd pos = Eigen::Vector3d::Zero();
+  auto pos = Eigen::VectorXd::Zero(3);
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(
     this->ik_->calculate_link_transform(pos, this->end_effector_, end_effector_transform));
@@ -130,7 +130,7 @@ TYPED_TEST_P(TestPlugin, basic_plugin_function)
   // convert cartesian delta to joint delta
   kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
   delta_x[2] = 1;  // vz
-  Eigen::VectorXd delta_theta = Eigen::Vector3d::Zero();
+  Eigen::VectorXd delta_theta = Eigen::VectorXd::Zero(3);
   ASSERT_TRUE(this->ik_->convert_cartesian_deltas_to_joint_deltas(
     pos, delta_x, this->end_effector_, delta_theta));
 
@@ -164,20 +164,20 @@ TYPED_TEST_P(TestPlugin, plugin_function_reduced_model_tip)
   ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Vector2d::Zero();
+  auto pos = Eigen::VectorXd::Zero(2);
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(
     this->ik_->calculate_link_transform(pos, this->end_effector_, end_effector_transform));
 
   // convert cartesian delta to joint delta
-  Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+  kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
   delta_x[2] = 1;  // vz
-  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Vector2d::Zero();
+  Eigen::VectorXd delta_theta = Eigen::VectorXd::Zero(2);
   ASSERT_TRUE(this->ik_->convert_cartesian_deltas_to_joint_deltas(
     pos, delta_x, this->end_effector_, delta_theta));
 
   // convert joint delta to cartesian delta
-  Eigen::Matrix<double, 6, 1> delta_x_est;
+  kinematics_interface::Vector6d delta_x_est;
   ASSERT_TRUE(this->ik_->convert_joint_deltas_to_cartesian_deltas(
     pos, delta_theta, this->end_effector_, delta_x_est));
 
@@ -209,7 +209,7 @@ TYPED_TEST_P(TestPlugin, plugin_function_reduced_model_base)
   ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
 
   // calculate end effector transform
-  Eigen::VectorXd pos = Eigen::Vector2d::Zero();
+  auto pos = Eigen::VectorXd::Zero(2);
   Eigen::Isometry3d end_effector_transform;
   ASSERT_TRUE(
     this->ik_->calculate_link_transform(pos, this->end_effector_, end_effector_transform));
@@ -217,7 +217,7 @@ TYPED_TEST_P(TestPlugin, plugin_function_reduced_model_base)
   // convert cartesian delta to joint delta
   kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
   delta_x[2] = 1;  // vz
-  Eigen::VectorXd delta_theta = Eigen::Vector2d::Zero();
+  Eigen::VectorXd delta_theta = Eigen::VectorXd::Zero(2);
   ASSERT_TRUE(this->ik_->convert_cartesian_deltas_to_joint_deltas(
     pos, delta_x, this->end_effector_, delta_theta));
   // jacobian inverse for vz is singular in this configuration
@@ -325,17 +325,17 @@ TYPED_TEST_P(TestPlugin, incorrect_input_sizes)
   ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
 
   // define correct values
-  Eigen::Matrix<double, Eigen::Dynamic, 1> pos = Eigen::Vector2d::Zero();
+  auto pos = Eigen::VectorXd::Zero(2);
   Eigen::Isometry3d end_effector_transform;
-  Eigen::Matrix<double, 6, 1> delta_x = Eigen::Matrix<double, 6, 1>::Zero();
+  kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
   delta_x[2] = 1;
-  Eigen::Matrix<double, Eigen::Dynamic, 1> delta_theta = Eigen::Vector2d::Zero();
-  Eigen::Matrix<double, 6, 1> delta_x_est;
+  Eigen::VectorXd delta_theta = Eigen::VectorXd::Zero(2);
+  kinematics_interface::Vector6d delta_x_est;
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian = Eigen::Matrix<double, 2, 6>::Zero();
   Eigen::Matrix<double, 7, 1> x_a, x_b;
 
   // wrong size input vector
-  Eigen::Matrix<double, Eigen::Dynamic, 1> vec_5 = Eigen::Matrix<double, 5, 1>::Zero();
+  Eigen::VectorXd vec_5 = Eigen::VectorXd::Zero(5);
 
   // wrong size input jacobian
   Eigen::Matrix<double, Eigen::Dynamic, 6> mat_5_6 = Eigen::Matrix<double, 5, 6>::Zero();
