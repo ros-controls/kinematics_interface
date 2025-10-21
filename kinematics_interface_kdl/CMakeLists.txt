@@ -43,8 +43,7 @@ if(BUILD_TESTING)
     test_kinematics_interface_kdl
     test/test_kinematics_interface_kdl.cpp
   )
-  # TODO(christophfroehlich): Remove dependency on ros2_control_test_assets
-  target_link_libraries(test_kinematics_interface_kdl kinematics_interface_kdl ros2_control_test_assets::ros2_control_test_assets)
+  target_link_libraries(test_kinematics_interface_kdl kinematics_interface::kinematics_interface_tests)
 endif()
 
 install(
