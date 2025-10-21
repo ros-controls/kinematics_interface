@@ -14,8 +14,8 @@
 //
 /// \author: Paul Gesel, Christoph Froehlich
 
-#ifndef KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
-#define KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
+#ifndef KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
+#define KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
 
 #include <gmock/gmock.h>
 #include <memory>
@@ -393,4 +393,4 @@ REGISTER_TYPED_TEST_SUITE_P(
   plugin_calculate_frame_difference_std_vector, incorrect_input_sizes, plugin_no_robot_description,
   plugin_no_parameter_tip);
 
-#endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
+#endif  // KINEMATICS_INTERFACE__KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
