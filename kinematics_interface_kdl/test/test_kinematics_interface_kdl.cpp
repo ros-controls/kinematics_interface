@@ -90,6 +90,7 @@ public:
   {
     rclcpp::Parameter param("tip", tip);
     node_->set_parameter(param);
+    this->end_effector_ = tip;
   }
 
   /**
@@ -204,15 +205,14 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_reduced_model_base)
   Eigen::VectorXd delta_theta = Eigen::VectorXd::Zero(2);
   ASSERT_TRUE(
     ik_->convert_cartesian_deltas_to_joint_deltas(pos, delta_x, end_effector_, delta_theta));
-  // jacobian inverse for vz is singular in this configuration
-  EXPECT_THAT(delta_theta, MatrixNear(Eigen::Vector2d::Zero(), 0.02));
 
   // convert joint delta to cartesian delta
   kinematics_interface::Vector6d delta_x_est;
   ASSERT_TRUE(
     ik_->convert_joint_deltas_to_cartesian_deltas(pos, delta_theta, end_effector_, delta_x_est));
-  // joint deltas from zero should produce zero cartesian deltas
-  EXPECT_THAT(delta_x_est, MatrixNear(kinematics_interface::Vector6d::Zero(), 0.02));
+
+  // Ensure kinematics math is correct
+  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
 
   // calculate jacobian
   Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
