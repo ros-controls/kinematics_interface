@@ -56,10 +56,11 @@ public:
       ik_loader_->createUnmanagedInstance(plugin_name));
 
     node_->declare_parameter("verbose", true);
-    node_->declare_parameter("alpha", 0.005);
     node_->declare_parameter("robot_description", urdf_);
     node_->declare_parameter("tip", end_effector_);
     node_->declare_parameter("base", std::string(""));
+
+    PluginUnderTest::set_custom_node_parameters(node_);
   }
 
   void TearDown()
@@ -77,17 +78,6 @@ public:
   void loadURDFParameter(const std::string & urdf)
   {
     rclcpp::Parameter param("robot_description", urdf);
-    node_->set_parameter(param);
-  }
-
-  /**
-   * \brief Used for testing initialization from parameters.
-   * Elsewhere, default 0.005 is used.
-  */
-
-  void loadAlphaParameter(double alpha)
-  {
-    rclcpp::Parameter param("alpha", alpha);
     node_->set_parameter(param);
   }
 
