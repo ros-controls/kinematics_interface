@@ -107,6 +107,7 @@ TYPED_TEST_SUITE_P(TestPlugin);
 TYPED_TEST_P(TestPlugin, basic_plugin_function)
 {
   this->loadTipParameter("link3");
+  this->end_effector_ = "link3";
 
   // initialize the plugin
   ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
@@ -192,8 +193,9 @@ TYPED_TEST_P(TestPlugin, plugin_function_reduced_model_tip)
 
 TYPED_TEST_P(TestPlugin, plugin_function_reduced_model_base)
 {
-  this->loadTipParameter("link3");
   this->loadBaseParameter("link1");
+  this->loadTipParameter("link3");
+  this->end_effector_ = "link3";
 
   // initialize the plugin
   ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
@@ -210,15 +212,14 @@ TYPED_TEST_P(TestPlugin, plugin_function_reduced_model_base)
   Eigen::VectorXd delta_theta = Eigen::VectorXd::Zero(2);
   ASSERT_TRUE(this->ik_->convert_cartesian_deltas_to_joint_deltas(
     pos, delta_x, this->end_effector_, delta_theta));
-  // jacobian inverse for vz is singular in this configuration
-  EXPECT_THAT(delta_theta, MatrixNear(Eigen::Vector2d::Zero(), 0.02));
 
   // convert joint delta to cartesian delta
   kinematics_interface::Vector6d delta_x_est;
   ASSERT_TRUE(this->ik_->convert_joint_deltas_to_cartesian_deltas(
     pos, delta_theta, this->end_effector_, delta_x_est));
-  // joint deltas from zero should produce zero cartesian deltas
-  EXPECT_THAT(delta_x_est, MatrixNear(kinematics_interface::Vector6d::Zero(), 0.02));
+
+  // Ensure kinematics math is correct
+  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
 
   // calculate jacobian
   Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
