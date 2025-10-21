@@ -90,6 +90,7 @@ public:
   {
     rclcpp::Parameter param("tip", tip);
     node_->set_parameter(param);
+    this->end_effector_ = tip;
   }
 
   /**
@@ -196,7 +197,6 @@ TYPED_TEST_P(TestPlugin, plugin_function_reduced_model_base)
 {
   this->loadBaseParameter("link1");
   this->loadTipParameter("link3");
-  this->end_effector_ = "link3";
 
   // initialize the plugin
   ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
