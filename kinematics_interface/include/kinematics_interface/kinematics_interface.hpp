@@ -29,8 +29,18 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 
+// TODO(anyone): Use std::source_location::function_name() once we require C++20
+#ifdef _MSC_VER
+#define FUNCTION_SIGNATURE __FUNCSIG__
+#else
+#define FUNCTION_SIGNATURE __PRETTY_FUNCTION__
+#endif
+
 namespace kinematics_interface
 {
+
+using Vector6d = Eigen::Matrix<double, 6, 1>;
+
 class KinematicsInterface
 {
 public:
