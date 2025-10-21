@@ -41,6 +41,17 @@ install(
   RUNTIME DESTINATION bin
 )
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gmock REQUIRED)
+  find_package(ros2_control_test_assets REQUIRED)
+
+  install(
+    DIRECTORY test/
+    DESTINATION include/kinematics_interface/kinematics_interface
+  )
+  ament_export_dependencies(ament_cmake_gmock ros2_control_test_assets)
+endif()
+
 ament_export_targets(export_kinematics_interface HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS} Eigen3)
 ament_package()
