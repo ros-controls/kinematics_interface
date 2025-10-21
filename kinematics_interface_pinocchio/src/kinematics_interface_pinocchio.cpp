@@ -86,47 +86,31 @@ bool KinematicsInterfacePinocchio::initialize(
     parameters_interface->get_parameter(ns + "base", base_param);
     root_name_ = base_param.as_string();
   }
-  if (!root_name_.empty())
+
+  // load the model
+  try
   {
-    // TODO(anyone): fix root name usage
-    try
-    {
-      pinocchio::urdf::buildModelFromXML(
-        robot_description_local, /*root_name_,*/ full_model, verbose, true);
-    }
-    catch (const std::exception & e)
-    {
-      RCLCPP_ERROR(
-        LOGGER, "Error parsing URDF to build Pinocchio model from base '%s': %s",
-        root_name_.c_str(), e.what());
-      return false;
-    }
+    pinocchio::urdf::buildModelFromXML(robot_description_local, full_model, verbose, true);
   }
-  else
+  catch (const std::exception & e)
   {
-    try
-    {
-      pinocchio::urdf::buildModelFromXML(robot_description_local, full_model, verbose, true);
-    }
-    catch (const std::exception & e)
-    {
-      RCLCPP_ERROR(LOGGER, "Error parsing URDF to build Pinocchio model: %s", e.what());
-      return false;
-    }
+    RCLCPP_ERROR(LOGGER, "Error parsing URDF to build Pinocchio model: %s", e.what());
+    return false;
+  }
+  if (root_name_.empty())
+  {
     root_name_ = full_model.names[full_model.frames[0].parent];
   }
 
-  if (!full_model.existFrame(end_effector_name))
+  if (!full_model.existFrame(root_name_) || !full_model.existFrame(end_effector_name))
   {
     RCLCPP_ERROR(
       LOGGER, "failed to find chain from robot root '%s' to end effector '%s'", root_name_.c_str(),
       end_effector_name.c_str());
     return false;
   }
-  // create reduced model by locking joints after end-effector
-  pinocchio::FrameIndex frame_id = full_model.getFrameId(end_effector_name);
-  const pinocchio::Frame & frame = full_model.frames[frame_id];
-  pinocchio::JointIndex tool_joint_id = frame.parent;  // the joint to which this frame is attached
+
+  // create reduced model by locking joints
   auto const isChildOf = [](
                            const pinocchio::Model & model, pinocchio::JointIndex ancestor,
                            pinocchio::JointIndex descendant)
@@ -139,18 +123,47 @@ bool KinematicsInterfacePinocchio::initialize(
     }
     return false;
   };
-  std::vector<pinocchio::JointIndex> locked_joints;
+  std::vector<pinocchio::JointIndex> locked_joints_base, locked_joints_tip;
+  if (root_name_ != "universe")
+  {
+    pinocchio::FrameIndex base_frame_id = full_model.getFrameId(root_name_);
+    const pinocchio::Frame & base_frame = full_model.frames[base_frame_id];
+    pinocchio::JointIndex base_joint_id =
+      base_frame.parent;  // the joint to which this frame is attached
+
+    // Lock all ancestors of base_joint
+    pinocchio::JointIndex current = base_joint_id;
+    while (current > 0)
+    {
+      locked_joints_base.push_back(current);
+      current = full_model.parents[current];
+    }
+    RCLCPP_INFO(
+      LOGGER, "Locked %zu joint(s) before root '%s'", locked_joints_base.size(),
+      root_name_.c_str());
+  }
+
+  pinocchio::FrameIndex end_effector_frame_id = full_model.getFrameId(end_effector_name);
+  const pinocchio::Frame & end_effector_frame = full_model.frames[end_effector_frame_id];
+  pinocchio::JointIndex tool_joint_id =
+    end_effector_frame.parent;  // the joint to which this frame is attached
   for (pinocchio::JointIndex jid = 1; jid < static_cast<pinocchio::JointIndex>(full_model.njoints);
        ++jid)
   {
+    // Lock all joints that are descendants of tool frame
     if (isChildOf(full_model, tool_joint_id, jid) && jid != tool_joint_id)
-      locked_joints.push_back(jid);
+    {
+      locked_joints_tip.push_back(jid);
+    }
   }
   RCLCPP_INFO(
-    LOGGER, "Locked %zu joint(s) after tool frame %s", locked_joints.size(),
+    LOGGER, "Locked %zu joint(s) after tool frame '%s'", locked_joints_tip.size(),
     end_effector_name.c_str());
   Eigen::VectorXd q_fixed =
     Eigen::VectorXd::Zero(full_model.nq);  // actual value is not important for kinematics
+
+  std::vector<pinocchio::JointIndex> locked_joints = locked_joints_base;
+  locked_joints.insert(locked_joints.end(), locked_joints_tip.begin(), locked_joints_tip.end());
   model_ = pinocchio::buildReducedModel(full_model, locked_joints, q_fixed);
 
   // allocate dynamics memory

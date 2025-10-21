@@ -40,6 +40,7 @@ public:
   std::shared_ptr<kinematics_interface::KinematicsInterface> ik_;
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
   std::string end_effector_ = "link2";
+  // base_link -> joint1 -> link1 -> joint2 -> link2 -> joint3 -> link3
   std::string urdf_ = std::string(ros2_control_test_assets::urdf_head) +
                       std::string(ros2_control_test_assets::urdf_tail);
 
