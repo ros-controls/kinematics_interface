@@ -16,7 +16,7 @@
 
 #include <gmock/gmock.h>
 
-#include "kinematics_interface/kinematics_interface_common_tests.hpp"
+#include "kinematics_interface_tests/kinematics_interface_common_tests.hpp"
 
 struct PluginKDL
 {

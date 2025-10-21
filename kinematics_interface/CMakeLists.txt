@@ -52,7 +52,7 @@ if(BUILD_TESTING)
 
   install(
     DIRECTORY test/
-    DESTINATION include/kinematics_interface/kinematics_interface
+    DESTINATION include/kinematics_interface/kinematics_interface_tests
   )
   ament_export_dependencies(ros2_control_test_assets pluginlib)
 install(
