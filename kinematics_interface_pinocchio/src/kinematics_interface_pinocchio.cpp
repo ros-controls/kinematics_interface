@@ -16,6 +16,9 @@
 
 #include "kinematics_interface_pinocchio/kinematics_interface_pinocchio.hpp"
 
+#include <queue>
+#include <unordered_set>
+
 namespace kinematics_interface_pinocchio
 {
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_pinocchio");
@@ -99,74 +102,129 @@ bool KinematicsInterfacePinocchio::initialize(
   }
   if (root_name_.empty())
   {
-    root_name_ = full_model.names[full_model.frames[0].parent];
-  }
+    // look for the first frame whose parent joint’s parent is universe (0)
+    for (const auto & frame : full_model.frames)
+    {
+      if (frame.parent == 0 && frame.type == pinocchio::FrameType::BODY)  // BODY frame = link frame
+      {
+        root_name_ = frame.name;
+        break;
+      }
+    }
 
-  if (!full_model.existFrame(root_name_) || !full_model.existFrame(end_effector_name))
+    // Fallback if somehow not found
+    if (root_name_.empty()) root_name_ = full_model.frames[0].name;  // usually "universe"
+  }
+  if (!full_model.existFrame(root_name_))
   {
-    RCLCPP_ERROR(
-      LOGGER, "failed to find chain from robot root '%s' to end effector '%s'", root_name_.c_str(),
-      end_effector_name.c_str());
+    RCLCPP_ERROR(LOGGER, "failed to find robot root '%s' ", root_name_.c_str());
+    return false;
+  }
+  if (!full_model.existFrame(end_effector_name))
+  {
+    RCLCPP_ERROR(LOGGER, "failed to find robot end effector '%s'", end_effector_name.c_str());
     return false;
   }
 
   // create reduced model by locking joints
-  auto const isChildOf = [](
-                           const pinocchio::Model & model, pinocchio::JointIndex ancestor,
-                           pinocchio::JointIndex descendant)
+  auto const get_descendants = [](const pinocchio::Model & model, pinocchio::JointIndex root)
+    -> std::unordered_set<pinocchio::JointIndex>
   {
-    pinocchio::JointIndex current = descendant;
+    std::unordered_set<pinocchio::JointIndex> descendants;
+    std::queue<pinocchio::JointIndex> q;
+    q.push(root);
+    while (!q.empty())
+    {
+      auto j = q.front();
+      q.pop();
+      for (pinocchio::JointIndex k = 1; k < static_cast<pinocchio::JointIndex>(model.njoints); ++k)
+      {
+        if (model.parents[k] == j)
+        {
+          descendants.insert(k);
+          q.push(k);
+        }
+      }
+    }
+    return descendants;
+  };
+  auto const get_chain_joints =
+    [](
+      const pinocchio::Model & model, pinocchio::JointIndex base_joint,
+      pinocchio::JointIndex tool_joint) -> std::vector<pinocchio::JointIndex>
+  {
+    std::vector<pinocchio::JointIndex> chain;
+    // Start from tool_joint and go upward to base_joint
+    pinocchio::JointIndex current = tool_joint;
     while (current > 0)
     {
-      if (current == ancestor) return true;
+      chain.push_back(current);
+      if (current == base_joint) break;
       current = model.parents[current];
     }
-    return false;
+    std::reverse(chain.begin(), chain.end());
+    // Remove base_joint itself → chain starts AFTER base link
+    if (!chain.empty() && chain.front() == base_joint) chain.erase(chain.begin());
+    return chain;
   };
-  std::vector<pinocchio::JointIndex> locked_joints_base, locked_joints_tip;
+
+  pinocchio::JointIndex base_joint_id = 0;  // default to universe
   if (root_name_ != "universe")
   {
     pinocchio::FrameIndex base_frame_id = full_model.getFrameId(root_name_);
     const pinocchio::Frame & base_frame = full_model.frames[base_frame_id];
-    pinocchio::JointIndex base_joint_id =
-      base_frame.parent;  // the joint to which this frame is attached
-
-    // Lock all ancestors of base_joint
-    pinocchio::JointIndex current = base_joint_id;
-    while (current > 0)
-    {
-      locked_joints_base.push_back(current);
-      current = full_model.parents[current];
-    }
-    RCLCPP_INFO(
-      LOGGER, "Locked %zu joint(s) before root '%s'", locked_joints_base.size(),
-      root_name_.c_str());
+    base_joint_id = base_frame.parent;  // the joint to which this frame is attached
   }
 
   pinocchio::FrameIndex end_effector_frame_id = full_model.getFrameId(end_effector_name);
   const pinocchio::Frame & end_effector_frame = full_model.frames[end_effector_frame_id];
   pinocchio::JointIndex tool_joint_id =
     end_effector_frame.parent;  // the joint to which this frame is attached
+
+  // Validate: is tool under base?
+  auto base_descendants = get_descendants(full_model, base_joint_id);
+  if (base_descendants.find(tool_joint_id) == base_descendants.end())
+  {
+    RCLCPP_WARN(
+      LOGGER, "Tool '%s' is not a descendant of base '%s'", end_effector_name.c_str(),
+      root_name_.c_str());
+    auto tip_descendants = get_descendants(full_model, tool_joint_id);
+    if (tip_descendants.find(base_joint_id) == tip_descendants.end())
+    {
+      RCLCPP_ERROR(
+        LOGGER, "Base frame '%s' is also not a descendant of tip '%s' — cannot form a chain.",
+        end_effector_name.c_str(), root_name_.c_str());
+      return false;
+    }
+    else
+    {
+      std::swap(root_name_, end_effector_name);
+      RCLCPP_WARN(LOGGER, "Swapping tool and base frame");
+    }
+  }
+
+  // Get joints in the subchain
+  auto chain_joints = get_chain_joints(full_model, base_joint_id, tool_joint_id);
+  RCLCPP_INFO(
+    LOGGER, "Found chain from '%s' to tool frame '%s' with %zu joint(s)", root_name_.c_str(),
+    end_effector_name.c_str(), chain_joints.size());
+  std::unordered_set<pinocchio::JointIndex> chain_set(chain_joints.begin(), chain_joints.end());
+
+  // Build list of joints to lock
+  std::vector<pinocchio::JointIndex> locked_joints;
   for (pinocchio::JointIndex jid = 1; jid < static_cast<pinocchio::JointIndex>(full_model.njoints);
        ++jid)
   {
-    // Lock all joints that are descendants of tool frame
-    if (isChildOf(full_model, tool_joint_id, jid) && jid != tool_joint_id)
+    if (chain_set.find(jid) == chain_set.end())
     {
-      locked_joints_tip.push_back(jid);
+      locked_joints.push_back(jid);
     }
   }
-  RCLCPP_INFO(
-    LOGGER, "Locked %zu joint(s) after tool frame '%s'", locked_joints_tip.size(),
-    end_effector_name.c_str());
   Eigen::VectorXd q_fixed =
     Eigen::VectorXd::Zero(full_model.nq);  // actual value is not important for kinematics
-
-  std::vector<pinocchio::JointIndex> locked_joints = locked_joints_base;
-  locked_joints.insert(locked_joints.end(), locked_joints_tip.begin(), locked_joints_tip.end());
   model_ = pinocchio::buildReducedModel(full_model, locked_joints, q_fixed);
 
-  // allocate dynamics memory
+  // allocate dynamic memory
   data_ = std::make_shared<pinocchio::Data>(model_);
   num_joints_ = static_cast<Eigen::Index>(model_.nq);
   q_.resize(num_joints_);
@@ -188,7 +246,7 @@ bool KinematicsInterfacePinocchio::convert_joint_deltas_to_cartesian_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in convert_joint_deltas_to_cartesian_deltas");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -213,7 +271,7 @@ bool KinematicsInterfacePinocchio::convert_cartesian_deltas_to_joint_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in convert_cartesian_deltas_to_joint_deltas");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -237,7 +295,7 @@ bool KinematicsInterfacePinocchio::calculate_jacobian(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian(jacobian))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_jacobian");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -261,7 +319,7 @@ bool KinematicsInterfacePinocchio::calculate_jacobian_inverse(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian_inverse(jacobian_inverse))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_jacobian_inverse");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -328,7 +386,7 @@ bool KinematicsInterfacePinocchio::calculate_frame_difference(
   // verify inputs
   if (!verify_period(dt))
   {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in calculate_frame_difference");
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
