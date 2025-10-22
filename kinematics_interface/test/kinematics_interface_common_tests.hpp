@@ -40,6 +40,8 @@ public:
   std::shared_ptr<kinematics_interface::KinematicsInterface> ik_;
   std::shared_ptr<rclcpp_lifecycle::LifecycleNode> node_;
   std::string end_effector_ = "link2";
+  // world -> base_joint(fixed) -> base_link
+  //   -> joint1 -> link1 -> joint2 -> link2 -> joint3 -> link3
   std::string urdf_ = std::string(ros2_control_test_assets::urdf_head) +
                       std::string(ros2_control_test_assets::urdf_tail);
 
@@ -105,7 +107,7 @@ public:
 
 TYPED_TEST_SUITE_P(TestPlugin);
 
-TYPED_TEST_P(TestPlugin, basic_plugin_function)
+TYPED_TEST_P(TestPlugin, plugin_function_basic)
 {
   this->loadTipParameter("link3");
 
@@ -309,6 +311,27 @@ TYPED_TEST_P(TestPlugin, plugin_calculate_frame_difference_std_vector)
   EXPECT_THAT(delta_x, ::testing::Pointwise(::testing::DoubleNear(0.02), delta_x_est));
 }
 
+TYPED_TEST_P(TestPlugin, incorrect_parameters)
+{
+  this->loadTipParameter("");
+  EXPECT_FALSE(
+    this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
+
+  this->loadTipParameter("unknown");
+  EXPECT_FALSE(
+    this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
+
+  this->loadBaseParameter("unknown");
+  this->loadTipParameter("link2");
+  EXPECT_FALSE(
+    this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
+
+  // but this should work
+  this->loadBaseParameter("link2");
+  this->loadTipParameter("link1");
+  EXPECT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
+}
+
 TYPED_TEST_P(TestPlugin, incorrect_input_sizes)
 {
   // initialize the plugin
@@ -370,17 +393,10 @@ TYPED_TEST_P(TestPlugin, plugin_no_robot_description)
   ASSERT_FALSE(this->ik_->initialize("", this->node_->get_node_parameters_interface(), ""));
 }
 
-TYPED_TEST_P(TestPlugin, plugin_no_parameter_tip)
-{
-  this->loadTipParameter("");
-  ASSERT_FALSE(
-    this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
-}
-
 REGISTER_TYPED_TEST_SUITE_P(
-  TestPlugin, basic_plugin_function, plugin_function_reduced_model_tip,
+  TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
   plugin_function_reduced_model_base, plugin_function_std_vector, plugin_calculate_frame_difference,
-  plugin_calculate_frame_difference_std_vector, incorrect_input_sizes, plugin_no_robot_description,
-  plugin_no_parameter_tip);
+  plugin_calculate_frame_difference_std_vector, incorrect_parameters, incorrect_input_sizes,
+  plugin_no_robot_description);
 
 #endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
