@@ -300,6 +300,24 @@ TEST_F(TestKDLPlugin, KDL_plugin_calculate_frame_difference_std_vector)
   EXPECT_THAT(delta_x, ::testing::Pointwise(::testing::DoubleNear(0.02), delta_x_est));
 }
 
+TEST_F(TestKDLPlugin, KDL_incorrect_parameters)
+{
+  loadTipParameter("");
+  EXPECT_FALSE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
+
+  loadTipParameter("unknown");
+  EXPECT_FALSE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
+
+  loadBaseParameter("unknown");
+  loadTipParameter("link2");
+  EXPECT_FALSE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
+
+  // but this should work
+  loadBaseParameter("link2");
+  loadTipParameter("link1");
+  EXPECT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
+}
+
 TEST_F(TestKDLPlugin, incorrect_input_sizes)
 {
   // initialize the plugin
