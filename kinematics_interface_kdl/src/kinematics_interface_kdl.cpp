@@ -79,7 +79,7 @@ bool KinematicsInterfaceKDL::initialize(
     parameters_interface->get_parameter(ns + "base", base_param);
     root_name_ = base_param.as_string();
   }
-  else
+  if (root_name_.empty())
   {
     root_name_ = robot_tree.getRootSegment()->first;
   }
@@ -87,7 +87,7 @@ bool KinematicsInterfaceKDL::initialize(
   if (!robot_tree.getChain(root_name_, end_effector_name, chain_))
   {
     RCLCPP_ERROR(
-      LOGGER, "failed to find chain from robot root %s to end effector %s", root_name_.c_str(),
+      LOGGER, "failed to find chain from robot root '%s' to end effector '%s'", root_name_.c_str(),
       end_effector_name.c_str());
     return false;
   }
@@ -121,6 +121,7 @@ bool KinematicsInterfaceKDL::convert_joint_deltas_to_cartesian_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -144,6 +145,7 @@ bool KinematicsInterfaceKDL::convert_cartesian_deltas_to_joint_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -167,6 +169,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian(jacobian))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -189,6 +192,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian_inverse(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian_inverse(jacobian_inverse))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -215,6 +219,7 @@ bool KinematicsInterfaceKDL::calculate_link_transform(
   // verify inputs
   if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -231,8 +236,40 @@ bool KinematicsInterfaceKDL::calculate_link_transform(
   }
 
   // create forward kinematics solver
+<<<<<<< HEAD
   fk_pos_solver_->JntToCart(q_, frame_, link_name_map_[link_name]);
   tf2::transformKDLToEigen(frame_, transform);
+=======
+  fk_pos_solver_->JntToCart(q_, frames_(0), link_name_map_[link_name]);
+  tf2::transformKDLToEigen(frames_(0), transform);
+  return true;
+}
+
+bool KinematicsInterfaceKDL::calculate_frame_difference(
+  Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+  Eigen::Matrix<double, 6, 1> & delta_x)
+{
+  // verify inputs
+  if (!verify_period(dt))
+  {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
+    return false;
+  }
+
+  // get frames
+  frames_(0) = KDL::Frame(
+    KDL::Rotation::Quaternion(x_a(3), x_a(4), x_a(5), x_a(6)), KDL::Vector(x_a(0), x_a(1), x_a(2)));
+  frames_(1) = KDL::Frame(
+    KDL::Rotation::Quaternion(x_b(3), x_b(4), x_b(5), x_b(6)), KDL::Vector(x_b(0), x_b(1), x_b(2)));
+
+  // compute the difference
+  delta_x_ = KDL::diff(frames_(0), frames_(1), dt);
+  for (size_t i = 0; i < 6; ++i)
+  {
+    delta_x(static_cast<Eigen::Index>(i)) = delta_x_[static_cast<int>(i)];
+  }
+
+>>>>>>> 7a77940 (Refactor and extend tests (#210))
   return true;
 }
 
