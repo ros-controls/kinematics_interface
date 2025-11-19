@@ -38,13 +38,12 @@ pluginlib_export_plugin_description_file(kinematics_interface kinematics_interfa
 
 if(BUILD_TESTING)
   find_package(ament_cmake_gmock REQUIRED)
-  find_package(ros2_control_test_assets REQUIRED)
 
   ament_add_gmock(
     test_kinematics_interface_kdl
     test/test_kinematics_interface_kdl.cpp
   )
-  target_link_libraries(test_kinematics_interface_kdl kinematics_interface_kdl ros2_control_test_assets::ros2_control_test_assets)
+  target_link_libraries(test_kinematics_interface_kdl kinematics_interface::kinematics_interface_tests)
 endif()
 
 install(
