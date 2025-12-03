@@ -183,15 +183,6 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_reduced_model_tip)
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
 
   // ensure jacobian inverse math is correct
-<<<<<<< HEAD
-  for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
-  {
-    for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
-    {
-      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
-    }
-  }
-=======
   EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
 }
 
@@ -236,7 +227,6 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_reduced_model_base)
 
   // ensure jacobian inverse math is correct
   EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
->>>>>>> 7a77940 (Refactor and extend tests (#210))
 }
 
 TEST_F(TestKDLPlugin, KDL_plugin_function_std_vector)
@@ -276,47 +266,7 @@ TEST_F(TestKDLPlugin, KDL_plugin_function_std_vector)
   ASSERT_TRUE(ik_->calculate_jacobian_inverse(pos, end_effector_, jacobian_inverse_est));
 
   // ensure jacobian inverse math is correct
-<<<<<<< HEAD
-  for (Eigen::Index i = 0; i < jacobian_inverse.rows(); ++i)
-  {
-    for (Eigen::Index j = 0; j < jacobian_inverse.cols(); ++j)
-    {
-      ASSERT_NEAR(jacobian_inverse(i, j), jacobian_inverse_est(i, j), 0.02);
-    }
-  }
-=======
   EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
-}
-
-TEST_F(TestKDLPlugin, KDL_plugin_calculate_frame_difference)
-{
-  // compute the difference between two cartesian frames
-  Eigen::Matrix<double, 7, 1> x_a, x_b;
-  x_a << 0, 1, 0, 0, 0, 0, 1;
-  x_b << 2, 3, 0, 0, 1, 0, 0;
-  double dt = 1.0;
-  kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
-  kinematics_interface::Vector6d delta_x_est;
-  delta_x_est << 2, 2, 0, 0, 3.14, 0;
-  ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
-
-  // ensure that difference math is correct
-  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
-}
-
-TEST_F(TestKDLPlugin, KDL_plugin_calculate_frame_difference_std_vector)
-{
-  // compute the difference between two cartesian frames
-  std::vector<double> x_a(7), x_b(7);
-  x_a = {0, 1, 0, 0, 0, 0, 1};
-  x_b = {2, 3, 0, 0, 1, 0, 0};
-  double dt = 1.0;
-  std::vector<double> delta_x = {0, 0, 0, 0, 0, 0};
-  std::vector<double> delta_x_est = {2, 2, 0, 0, 3.14, 0};
-  ASSERT_TRUE(ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
-
-  // ensure that difference math is correct
-  EXPECT_THAT(delta_x, ::testing::Pointwise(::testing::DoubleNear(0.02), delta_x_est));
 }
 
 TEST_F(TestKDLPlugin, KDL_incorrect_parameters)
@@ -335,7 +285,6 @@ TEST_F(TestKDLPlugin, KDL_incorrect_parameters)
   loadBaseParameter("link2");
   loadTipParameter("link1");
   EXPECT_TRUE(ik_->initialize(urdf_, node_->get_node_parameters_interface(), ""));
->>>>>>> 7a77940 (Refactor and extend tests (#210))
 }
 
 TEST_F(TestKDLPlugin, incorrect_input_sizes)
