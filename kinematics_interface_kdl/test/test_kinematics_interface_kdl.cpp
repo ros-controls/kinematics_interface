@@ -27,5 +27,5 @@ struct PluginKDL
   }
 };
 
-using MyTypes = ::testing::Types<PluginKDL>;
-INSTANTIATE_TYPED_TEST_SUITE_P(PluginTestKDL, TestPlugin, MyTypes);
+using KinematicsInterfaceKDLTestTypes = ::testing::Types<PluginKDL>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PluginTestKDL, TestPlugin, KinematicsInterfaceKDLTestTypes);
