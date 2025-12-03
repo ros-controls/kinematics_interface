@@ -361,7 +361,7 @@ TYPED_TEST_P(TestPlugin, plugin_no_robot_description)
 
 REGISTER_TYPED_TEST_SUITE_P(
   TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
-  plugin_function_reduced_model_base, plugin_function_std_vector, 
-  incorrect_parameters, incorrect_input_sizes, plugin_no_robot_description);
+  plugin_function_reduced_model_base, plugin_function_std_vector, incorrect_parameters,
+  incorrect_input_sizes, plugin_no_robot_description);
 
 #endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
