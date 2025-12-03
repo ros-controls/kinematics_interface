@@ -31,4 +31,5 @@ struct PluginPinocchio
 };
 
 using KinematicsInterfacePinocchioTestTypes = ::testing::Types<PluginPinocchio>;
-INSTANTIATE_TYPED_TEST_SUITE_P(PluginTestPinocchio, TestPlugin, KinematicsInterfacePinocchioTestTypes);
+INSTANTIATE_TYPED_TEST_SUITE_P(
+  PluginTestPinocchio, TestPlugin, KinematicsInterfacePinocchioTestTypes);
