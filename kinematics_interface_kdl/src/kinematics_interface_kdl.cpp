@@ -79,7 +79,7 @@ bool KinematicsInterfaceKDL::initialize(
     parameters_interface->get_parameter(ns + "base", base_param);
     root_name_ = base_param.as_string();
   }
-  else
+  if (root_name_.empty())
   {
     root_name_ = robot_tree.getRootSegment()->first;
   }
@@ -87,7 +87,7 @@ bool KinematicsInterfaceKDL::initialize(
   if (!robot_tree.getChain(root_name_, end_effector_name, chain_))
   {
     RCLCPP_ERROR(
-      LOGGER, "failed to find chain from robot root %s to end effector %s", root_name_.c_str(),
+      LOGGER, "failed to find chain from robot root '%s' to end effector '%s'", root_name_.c_str(),
       end_effector_name.c_str());
     return false;
   }
@@ -121,6 +121,7 @@ bool KinematicsInterfaceKDL::convert_joint_deltas_to_cartesian_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -144,6 +145,7 @@ bool KinematicsInterfaceKDL::convert_cartesian_deltas_to_joint_deltas(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_joint_vector(delta_theta))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -167,6 +169,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian(jacobian))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -189,6 +192,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian_inverse(
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
     !verify_jacobian_inverse(jacobian_inverse))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
@@ -215,6 +219,7 @@ bool KinematicsInterfaceKDL::calculate_link_transform(
   // verify inputs
   if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name))
   {
+    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
 
