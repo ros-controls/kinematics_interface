@@ -30,5 +30,5 @@ struct PluginPinocchio
   }
 };
 
-using MyTypes = ::testing::Types<PluginPinocchio>;
-INSTANTIATE_TYPED_TEST_SUITE_P(PluginTestPinocchio, TestPlugin, MyTypes);
+using KinematicsInterfacePinocchioTestTypes = ::testing::Types<PluginPinocchio>;
+INSTANTIATE_TYPED_TEST_SUITE_P(PluginTestPinocchio, TestPlugin, KinematicsInterfacePinocchioTestTypes);
