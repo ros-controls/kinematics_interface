@@ -33,6 +33,36 @@ install(
   DIRECTORY include/
   DESTINATION include/kinematics_interface
 )
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gmock REQUIRED)
+  find_package(ros2_control_test_assets REQUIRED)
+  find_package(pluginlib REQUIRED)
+
+  add_library(kinematics_interface_tests INTERFACE)
+  target_include_directories(kinematics_interface_tests INTERFACE
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/kinematics_interface>
+  )
+  target_link_libraries(kinematics_interface_tests INTERFACE
+    kinematics_interface
+    ros2_control_test_assets::ros2_control_test_assets
+    pluginlib::pluginlib
+  )
+
+  install(
+    DIRECTORY test/
+    DESTINATION include/kinematics_interface/kinematics_interface_tests
+  )
+  ament_export_dependencies(ros2_control_test_assets pluginlib)
+install(
+  TARGETS kinematics_interface kinematics_interface_tests
+  EXPORT export_kinematics_interface
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+)
+else()
 install(
   TARGETS kinematics_interface
   EXPORT export_kinematics_interface
@@ -40,6 +70,7 @@ install(
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
 )
+endif()
 
 ament_export_targets(export_kinematics_interface HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS} Eigen3)
