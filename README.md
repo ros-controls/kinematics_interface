@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![codecov](https://codecov.io/gh/ros-controls/kinematics_interface/graph/badge.svg?token=NS73VKPG9V)](https://codecov.io/gh/ros-controls/kinematics_interface)
 
-This is a ROS 2 package for using C++ kinematics frameworks in the context of ROS 2 control. A kinematics interface is designed to allow ROS 2 controllers to control robots in Cartesian space. This package also contains a basic implementation of the interface using KDL.
+This is a ROS 2 package for using C++ kinematics frameworks in the context of ROS 2 control. A kinematics interface is designed to allow ROS 2 controllers to control robots in Cartesian space. This package also contains a basic implementation of the interface using KDL and a pinocchio-based implementation. Use  `kinematics_interface_pinocchio`  plugin when you need high-performance kinematics computations for complex robots, require efficient handling of large kinematic chains, or want to leverage Pinocchio's advanced features such as automatic differentiation and collision detection integration. The plugin supports damped least-squares Jacobian inversion for robust singularity handling.
 
 ## Contributing
 
