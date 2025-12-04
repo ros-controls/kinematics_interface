@@ -119,11 +119,13 @@ public:
 
   /**
    * \brief Calculates the difference between two Cartesian frames
-   * \param[in] x_a first Cartesian frame (x, y, z, wx, wy, wz, ww)
-   * \param[in] x_b second Cartesian frame (x, y, z, wx, wy, wz, ww)
+   * \param[in] x_a first Cartesian frame (x, y, z, qx, qy, qz, qw)
+   * \param[in] x_b second Cartesian frame (x, y, z, qx, qy, qz, qw)
    * \param[in] dt time interval over which the numerical differentiation takes place
-   * \param[out] delta_x  Cartesian deltas (x, y, z, wx, wy, wz)
+   * \param[out] delta_x  Cartesian deltas (vx, vy, vz, wx, wy, wz)
    * \return true if successful
+   *
+   * \note This method is independent of robot kinematics and the model loaded to the plugin
    */
   virtual bool calculate_frame_difference(
     Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
