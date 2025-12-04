@@ -117,6 +117,23 @@ public:
     const Eigen::VectorXd & joint_pos, const std::string & link_name,
     Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse) = 0;
 
+<<<<<<< HEAD
+=======
+  /**
+   * \brief Calculates the difference between two Cartesian frames
+   * \param[in] x_a first Cartesian frame (x, y, z, qx, qy, qz, qw)
+   * \param[in] x_b second Cartesian frame (x, y, z, qx, qy, qz, qw)
+   * \param[in] dt time interval over which the numerical differentiation takes place
+   * \param[out] delta_x  Cartesian deltas (vx, vy, vz, wx, wy, wz)
+   * \return true if successful
+   *
+   * \note This method is independent of robot kinematics and the model loaded to the plugin
+   */
+  virtual bool calculate_frame_difference(
+    Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+    Eigen::Matrix<double, 6, 1> & delta_x) = 0;
+
+>>>>>>> 42a8c9f (Add pinocchio plugin (#199))
   bool convert_cartesian_deltas_to_joint_deltas(
     std::vector<double> & joint_pos_vec, const std::vector<double> & delta_x_vec,
     const std::string & link_name, std::vector<double> & delta_theta_vec);
