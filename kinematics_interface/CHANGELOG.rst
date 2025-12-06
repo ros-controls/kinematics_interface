@@ -2,6 +2,14 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add pinocchio plugin (`#199 <https://github.com/ros-controls/kinematics_interface/issues/199>`_)
+* Add a test template for plugin implementations (`#211 <https://github.com/ros-controls/kinematics_interface/issues/211>`_)
+* Refactor and extend tests (`#210 <https://github.com/ros-controls/kinematics_interface/issues/210>`_)
+* Update maintainers (`#198 <https://github.com/ros-controls/kinematics_interface/issues/198>`_)
+* Contributors: Christoph Fröhlich
+
 2.3.0 (2025-10-02)
 ------------------
 * Add backward_ros (`#190 <https://github.com/ros-controls/kinematics_interface/issues/190>`_)
