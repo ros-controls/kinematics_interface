@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface_pinocchio
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.0 (2025-12-06)
+------------------
 * Add pinocchio plugin (backport `#199 <https://github.com/ros-controls/kinematics_interface/issues/199>`_) (`#225 <https://github.com/ros-controls/kinematics_interface/issues/225>`_)
 * Contributors: mergify[bot]
 
