@@ -2,6 +2,13 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Add a test template for plugin implementations (backport `#211 <https://github.com/ros-controls/kinematics_interface/issues/211>`_) (`#223 <https://github.com/ros-controls/kinematics_interface/issues/223>`_)
+* Refactor and extend tests (backport `#210 <https://github.com/ros-controls/kinematics_interface/issues/210>`_) (`#219 <https://github.com/ros-controls/kinematics_interface/issues/219>`_)
+* Update maintainers (backport `#198 <https://github.com/ros-controls/kinematics_interface/issues/198>`_) (`#201 <https://github.com/ros-controls/kinematics_interface/issues/201>`_)
+* Contributors: mergify[bot]
+
 1.6.0 (2025-10-02)
 ------------------
 * Add backward_ros (backport `#190 <https://github.com/ros-controls/kinematics_interface/issues/190>`_) (`#193 <https://github.com/ros-controls/kinematics_interface/issues/193>`_)
