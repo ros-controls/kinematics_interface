@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+2.4.0 (2025-12-06)
+------------------
 * Add a test template for plugin implementations (`#211 <https://github.com/ros-controls/kinematics_interface/issues/211>`_)
 * Refactor and extend tests (`#210 <https://github.com/ros-controls/kinematics_interface/issues/210>`_)
 * Update maintainers (`#198 <https://github.com/ros-controls/kinematics_interface/issues/198>`_)
