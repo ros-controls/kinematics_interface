@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   source:
-    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-source-build.yml@exclude-from-sourcebuild
+    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-source-build.yml@master
     strategy:
       fail-fast: false
       matrix:
@@ -43,3 +43,4 @@ jobs:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ref: master
       container: ${{ matrix.CONTAINER }}
+      exclude_source_packages: pinocchio
