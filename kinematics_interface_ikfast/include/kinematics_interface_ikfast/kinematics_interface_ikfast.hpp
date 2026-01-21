@@ -47,8 +47,8 @@ public:
 
   // Virtual function to get number of joints from IKFast
   virtual int get_num_joints_internal() = 0;
-  virtual void do_compute_fk(const double* j, double* etrans, double* erot) = 0;
-  virtual void do_compute_ik(const double* etrans, const double* erot, const double* free, void* solutions) = 0;
+  virtual void compute_fk(const double* j, double* etrans, double* erot) = 0;
+  virtual void compute_ik(const double* etrans, const double* erot, const double* free, void* solutions) = 0;
 
 private:
   // verification methods

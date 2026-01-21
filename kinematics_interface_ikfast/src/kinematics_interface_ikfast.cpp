@@ -61,7 +61,7 @@ bool KinematicsInterfaceIKFast::calculate_link_transform(
 
   double eerot[9], eetrans[3];
 
-  do_compute_fk(vjoints.data(), eetrans, eerot);
+  compute_fk(vjoints.data(), eetrans, eerot);
 
   Eigen::Matrix3d rotation;
   rotation << eerot[0], eerot[1], eerot[2],
