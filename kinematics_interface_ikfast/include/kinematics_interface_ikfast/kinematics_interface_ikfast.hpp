@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "eigen3/Eigen/Core"
@@ -44,6 +45,20 @@ public:
   bool calculate_jacobian_inverse(
     const Eigen::VectorXd & joint_pos, const std::string & link_name,
     Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse) override;
+
+  bool convert_cartesian_pose_to_closest_joint_state(
+    const Eigen::Isometry3d & pose, const std::vector<double> & current_joint_state,
+    std::vector<double> & joint_state) override;
+
+  bool convert_cartesian_pose_to_joint_state_within_range(
+    const Eigen::Isometry3d & pose, const std::vector<std::pair<double, double>> & joint_ranges,
+    std::vector<double> & joint_state) override;
+
+  bool convert_cartesian_pose_to_all_possible_joint_states(
+    const Eigen::Isometry3d & pose, std::vector<std::vector<double>> & joint_states) override;
+
+  bool convert_joint_state_to_cartesian_pose(
+    const std::vector<double> & joint_state, Eigen::Isometry3d & pose) override;
 
   // Virtual function to get number of joints from IKFast
   virtual int get_num_joints_internal() = 0;

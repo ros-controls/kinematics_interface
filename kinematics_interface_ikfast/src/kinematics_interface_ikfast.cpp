@@ -1,8 +1,11 @@
 #include "kinematics_interface_ikfast/kinematics_interface_ikfast.hpp"
+#include <cmath>
 
 namespace kinematics_interface_ikfast
 {
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_ikfast");
+
+const int MAX_IK_SOLUTIONS = 8;
 
 bool KinematicsInterfaceIKFast::initialize(
   const std::string & robot_description,
@@ -140,6 +143,139 @@ bool KinematicsInterfaceIKFast::convert_joint_deltas_to_cartesian_deltas(
   if (!calculate_jacobian(joint_pos, link_name, J)) return false;
   delta_x = J * delta_theta;
   return true;
+}
+
+bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_closest_joint_state(
+  const Eigen::Isometry3d & pose, const std::vector<double> & current_joint_state,
+  std::vector<double> & joint_state)
+{
+  std::vector<std::vector<double>> all_states;
+  if (!convert_cartesian_pose_to_all_possible_joint_states(pose, all_states)) return false;
+  if (all_states.empty()) return false;
+
+  double min_sum = 1e10;
+  std::vector<double> best;
+  for (const auto& sol : all_states) {
+    double sum = 0.0;
+    for (size_t j = 0; j < static_cast<size_t>(num_joints_); ++j) {
+      double diff = sol[j] - current_joint_state[j];
+      while (diff > M_PI) diff -= 2 * M_PI;
+      while (diff < -M_PI) diff += 2 * M_PI;
+      sum += std::fabs(diff);
+    }
+    if (sum < min_sum) {
+      min_sum = sum;
+      best = sol;
+    }
+  }
+  joint_state = best;
+  return true;
+}
+
+bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_joint_state_within_range(
+  const Eigen::Isometry3d & pose, const std::vector<std::pair<double, double>> & joint_ranges,
+  std::vector<double> & joint_state)
+{
+  std::vector<std::vector<double>> all_states;
+  if (!convert_cartesian_pose_to_all_possible_joint_states(pose, all_states)) return false;
+
+  const double TWO_PI = 2.0 * M_PI;
+
+  for (const auto& sol : all_states) {
+    bool all_joints_valid = true;
+    std::vector<double> adjusted_sol(num_joints_);
+
+    for (size_t j = 0; j < static_cast<size_t>(num_joints_); ++j) {
+      double low = joint_ranges[j].first;
+      double high = joint_ranges[j].second;
+      double s = sol[j];
+
+      // Case 1 : No constraint (NaN)
+      if (std::isnan(low) || std::isnan(high)) {
+        adjusted_sol[j] = s;
+        continue;
+      }
+
+      // Case 2: Exact value constraint (low == high)
+      if (std::abs(low - high) < 1e-6) {
+        double diff = std::fmod(s - low, TWO_PI);
+        if (diff > M_PI) diff -= TWO_PI;
+        if (diff < -M_PI) diff += TWO_PI;
+
+        if (std::abs(diff) > 1e-6) {
+          all_joints_valid = false;
+          break;
+        }
+        adjusted_sol[j] = low;
+      }
+      // Case 3: Range constraint
+      else {
+        double shifted_s = s;
+
+        // Bring it up if too low
+        while (shifted_s < low) shifted_s += TWO_PI;
+        // Bring it down if too high
+        while (shifted_s > high) shifted_s -= TWO_PI;
+        if (shifted_s < low || shifted_s > high) {
+          all_joints_valid = false;
+          break;
+        }
+        adjusted_sol[j] = shifted_s;
+      }
+    }
+
+    if (all_joints_valid) {
+      joint_state = adjusted_sol;
+      return true;
+    }
+  }
+  return false;
+}
+
+bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_all_possible_joint_states(
+  const Eigen::Isometry3d & pose, std::vector<std::vector<double>> & joint_states)
+{
+  if (!verify_initialized()) return false;
+
+  double eetrans[3];
+  eetrans[0] = pose.translation().x();
+  eetrans[1] = pose.translation().y();
+  eetrans[2] = pose.translation().z();
+
+  double eerot[9];
+  Eigen::Matrix3d rot = pose.rotation();
+  for (int i = 0; i < 3; ++i) {
+    for (int j = 0; j < 3; ++j) {
+      eerot[i * 3 + j] = rot(i, j);
+    }
+  }
+
+  std::vector<double> solutions(MAX_IK_SOLUTIONS * num_joints_);
+  compute_ik(eetrans, eerot, nullptr, solutions.data());
+
+  joint_states.clear();
+  for (int s = 0; s < MAX_IK_SOLUTIONS; ++s) {
+    std::vector<double> joints(num_joints_);
+    bool valid = true;
+    for (int j = 0; j < num_joints_; ++j) {
+      joints[j] = solutions[s * num_joints_ + j];
+      if (std::isnan(joints[j])) {
+        valid = false;
+        break;
+      }
+    }
+    if (valid) {
+      joint_states.push_back(joints);
+    }
+  }
+  return true;
+}
+
+bool KinematicsInterfaceIKFast::convert_joint_state_to_cartesian_pose(
+  const std::vector<double> & joint_state, Eigen::Isometry3d & pose)
+{
+  Eigen::VectorXd joint_pos = Eigen::Map<const Eigen::VectorXd>(joint_state.data(), joint_state.size());
+  return calculate_link_transform(joint_pos, end_effector_name_, pose);
 }
 
 bool KinematicsInterfaceIKFast::verify_initialized()
