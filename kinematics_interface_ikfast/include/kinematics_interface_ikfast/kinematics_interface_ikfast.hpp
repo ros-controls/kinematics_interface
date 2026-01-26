@@ -1,3 +1,15 @@
+// Copyright (c) 2026 b»robotized
+// All rights reserved.
+//
+// Proprietary License
+//
+// Unauthorized copying of this file, via any medium is strictly prohibited.
+// The file is considered confidential
+//
+// Adapted for <Insert_Company_Name> that received unlimited, worldwide
+// use and change right, except distributing this library separately
+// of their product.
+
 #ifndef KINEMATICS_INTERFACE_IKFAST__KINEMATICS_INTERFACE_IKFAST_HPP_
 #define KINEMATICS_INTERFACE_IKFAST__KINEMATICS_INTERFACE_IKFAST_HPP_
 
@@ -9,9 +21,9 @@
 #include "eigen3/Eigen/Core"
 #include "eigen3/Eigen/Geometry"
 #include "kinematics_interface/kinematics_interface.hpp"
+#include "kinematics_interface_ikfast/ikfast.h"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
-#include "kinematics_interface_ikfast/ikfast.h"
 
 namespace kinematics_interface_ikfast
 {
@@ -63,8 +75,9 @@ public:
 
   // Virtual function to get number of joints from IKFast
   virtual int get_num_joints_internal() = 0;
-  virtual void compute_fk(const double* j, double* etrans, double* erot) = 0;
-  virtual void compute_ik(const double* etrans, const double* erot, const double* free, void* solutions) = 0;
+  virtual void compute_fk(const double * j, double * etrans, double * erot) = 0;
+  virtual void compute_ik(
+    const double * etrans, const double * erot, const double * free, void * solutions) = 0;
 
 private:
   // verification methods

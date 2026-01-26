@@ -122,8 +122,7 @@ public:
    * \brief Convert Cartesian pose to the closest joint state using inverse kinematics.
    */
   virtual bool convert_cartesian_pose_to_closest_joint_state(
-    const Eigen::Isometry3d & /*pose*/,
-    const std::vector<double> & /*current_joint_state*/,
+    const Eigen::Isometry3d & /*pose*/, const std::vector<double> & /*current_joint_state*/,
     std::vector<double> & /*joint_state*/)
   {
     return false;
@@ -144,8 +143,7 @@ public:
    * \brief Convert Cartesian pose to all possible joint states using inverse kinematics.
    */
   virtual bool convert_cartesian_pose_to_all_possible_joint_states(
-    const Eigen::Isometry3d & /*pose*/,
-    std::vector<std::vector<double>> & /*joint_states*/)
+    const Eigen::Isometry3d & /*pose*/, std::vector<std::vector<double>> & /*joint_states*/)
   {
     return false;
   }
@@ -154,8 +152,7 @@ public:
    * \brief Convert joint state to Cartesian pose using forward kinematics.
    */
   virtual bool convert_joint_state_to_cartesian_pose(
-    const std::vector<double> & /*joint_state*/,
-    Eigen::Isometry3d & /*pose*/)
+    const std::vector<double> & /*joint_state*/, Eigen::Isometry3d & /*pose*/)
   {
     return false;
   }

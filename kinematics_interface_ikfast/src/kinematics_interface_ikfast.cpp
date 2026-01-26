@@ -1,3 +1,15 @@
+// Copyright (c) 2026 b»robotized
+// All rights reserved.
+//
+// Proprietary License
+//
+// Unauthorized copying of this file, via any medium is strictly prohibited.
+// The file is considered confidential
+//
+// Adapted for <Insert_Company_Name> that received unlimited, worldwide
+// use and change right, except distributing this library separately
+// of their product.
+
 #include "kinematics_interface_ikfast/kinematics_interface_ikfast.hpp"
 #include <cmath>
 #include "kinematics_interface_ikfast/ikfast.h"
@@ -9,7 +21,7 @@ rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_ikfast");
 const int MAX_IK_SOLUTIONS = 8;
 
 bool KinematicsInterfaceIKFast::initialize(
-  const std::string & robot_description, //unused but lets keep for now
+  const std::string & robot_description,  //unused but lets keep for now
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
   const std::string & param_namespace)
 {
@@ -33,16 +45,19 @@ bool KinematicsInterfaceIKFast::initialize(
   num_joints_ = get_num_joints_internal();
 
   // Debug log
-  RCLCPP_INFO(rclcpp::get_logger("kinematics_interface_ikfast"),
-              "Plugin initialized with %d joints.", num_joints_);
+  RCLCPP_INFO(
+    rclcpp::get_logger("kinematics_interface_ikfast"), "Plugin initialized with %d joints.",
+    num_joints_);
 
-  if (num_joints_ <= 0) {
-      RCLCPP_ERROR(rclcpp::get_logger("kinematics_interface_ikfast"),
-                   "Joint number is non-positive: %d", num_joints_);
-      return false;
+  if (num_joints_ <= 0)
+  {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("kinematics_interface_ikfast"), "Joint number is non-positive: %d",
+      num_joints_);
+    return false;
   }
 
-  I_ = Eigen::MatrixXd::Identity(num_joints_, num_joints_); // set this for Jacobian calculation
+  I_ = Eigen::MatrixXd::Identity(num_joints_, num_joints_);  // set this for Jacobian calculation
 
   initialized_ = true;
   return true;
@@ -50,14 +65,15 @@ bool KinematicsInterfaceIKFast::initialize(
 
 // Forward Kinematics
 bool KinematicsInterfaceIKFast::calculate_link_transform(
-  const Eigen::VectorXd & joint_pos,
-  const std::string & link_name,
-  Eigen::Isometry3d & transform)
+  const Eigen::VectorXd & joint_pos, const std::string & link_name, Eigen::Isometry3d & transform)
 {
   if (!verify_initialized() || !verify_joint_vector(joint_pos)) return false;
 
-  if (link_name != end_effector_name_) {
-    RCLCPP_WARN(LOGGER, "Requested link [%s] does not match tip [%s]", link_name.c_str(), end_effector_name_.c_str());
+  if (link_name != end_effector_name_)
+  {
+    RCLCPP_WARN(
+      LOGGER, "Requested link [%s] does not match tip [%s]", link_name.c_str(),
+      end_effector_name_.c_str());
     return false;
   }
 
@@ -67,12 +83,11 @@ bool KinematicsInterfaceIKFast::calculate_link_transform(
   double eerot[9], eetrans[3];
 
   compute_fk(vjoints.data(), eetrans, eerot);
-  RCLCPP_INFO(LOGGER, "vjoints.data = %p", static_cast<const void*>(vjoints.data()));
+  RCLCPP_INFO(LOGGER, "vjoints.data = %p", static_cast<const void *>(vjoints.data()));
 
   Eigen::Matrix3d rotation;
-  rotation << eerot[0], eerot[1], eerot[2],
-              eerot[3], eerot[4], eerot[5],
-              eerot[6], eerot[7], eerot[8];
+  rotation << eerot[0], eerot[1], eerot[2], eerot[3], eerot[4], eerot[5], eerot[6], eerot[7],
+    eerot[8];
 
   transform.setIdentity();
   transform.linear() = rotation;
@@ -84,14 +99,16 @@ bool KinematicsInterfaceIKFast::calculate_jacobian(
   const Eigen::VectorXd & joint_pos, const std::string & link_name,
   Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian)
 {
-  if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_jacobian(jacobian)) return false;
+  if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_jacobian(jacobian))
+    return false;
 
   jacobian.setZero(6, num_joints_);
   Eigen::Isometry3d T_nominal, T_perturbed;
 
   if (!calculate_link_transform(joint_pos, link_name, T_nominal)) return false;
 
-  for (size_t i = 0; i < static_cast<size_t>(num_joints_); ++i) {
+  for (size_t i = 0; i < static_cast<size_t>(num_joints_); ++i)
+  {
     Eigen::VectorXd q_perturbed = joint_pos;
     q_perturbed[i] += epsilon_;
 
@@ -114,7 +131,10 @@ bool KinematicsInterfaceIKFast::calculate_jacobian_inverse(
 
   jacobian_inverse.resize(num_joints_, 6);
 
-  if (!calculate_jacobian(joint_pos, link_name, jacobian) || !verify_jacobian_inverse(jacobian_inverse)) return false;
+  if (
+    !calculate_jacobian(joint_pos, link_name, jacobian) ||
+    !verify_jacobian_inverse(jacobian_inverse))
+    return false;
 
   Eigen::Matrix<double, 6, 6> A = jacobian * jacobian.transpose();
   A += (alpha_ * alpha_) * Eigen::Matrix<double, 6, 6>::Identity();
@@ -158,15 +178,18 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_closest_joint_state(
 
   double min_sum = 1e10;
   std::vector<double> best;
-  for (const auto& sol : all_states) {
+  for (const auto & sol : all_states)
+  {
     double sum = 0.0;
-    for (size_t j = 0; j < static_cast<size_t>(num_joints_); ++j) {
+    for (size_t j = 0; j < static_cast<size_t>(num_joints_); ++j)
+    {
       double diff = sol[j] - current_joint_state[j];
       while (diff > M_PI) diff -= 2 * M_PI;
       while (diff < -M_PI) diff += 2 * M_PI;
       sum += std::fabs(diff);
     }
-    if (sum < min_sum) {
+    if (sum < min_sum)
+    {
       min_sum = sum;
       best = sol;
     }
@@ -184,42 +207,49 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_joint_state_within_ran
 
   const double TWO_PI = 2.0 * M_PI;
 
-  for (const auto& sol : all_states) {
+  for (const auto & sol : all_states)
+  {
     bool all_joints_valid = true;
     std::vector<double> adjusted_sol(num_joints_);
 
-    for (size_t j = 0; j < static_cast<size_t>(num_joints_); ++j) {
+    for (size_t j = 0; j < static_cast<size_t>(num_joints_); ++j)
+    {
       double low = joint_ranges[j].first;
       double high = joint_ranges[j].second;
       double s = sol[j];
 
       // Case 1 : No constraint (NaN)
-      if (std::isnan(low) || std::isnan(high)) {
+      if (std::isnan(low) || std::isnan(high))
+      {
         adjusted_sol[j] = s;
         continue;
       }
 
       // Case 2: Exact value constraint (low == high)
-      if (std::abs(low - high) < 1e-6) {
+      if (std::abs(low - high) < 1e-6)
+      {
         double diff = std::fmod(s - low, TWO_PI);
         if (diff > M_PI) diff -= TWO_PI;
         if (diff < -M_PI) diff += TWO_PI;
 
-        if (std::abs(diff) > 1e-6) {
+        if (std::abs(diff) > 1e-6)
+        {
           all_joints_valid = false;
           break;
         }
         adjusted_sol[j] = low;
       }
       // Case 3: Range constraint
-      else {
+      else
+      {
         double shifted_s = s;
 
         // Bring it up if too low
         while (shifted_s < low) shifted_s += TWO_PI;
         // Bring it down if too high
         while (shifted_s > high) shifted_s -= TWO_PI;
-        if (shifted_s < low || shifted_s > high) {
+        if (shifted_s < low || shifted_s > high)
+        {
           all_joints_valid = false;
           break;
         }
@@ -227,7 +257,8 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_joint_state_within_ran
       }
     }
 
-    if (all_joints_valid) {
+    if (all_joints_valid)
+    {
       joint_state = adjusted_sol;
       return true;
     }
@@ -247,28 +278,34 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_all_possible_joint_sta
 
   double eerot[9];
   Eigen::Matrix3d rot = pose.rotation();
-  for (int i = 0; i < 3; ++i) {
-    for (int j = 0; j < 3; ++j) {
+  for (int i = 0; i < 3; ++i)
+  {
+    for (int j = 0; j < 3; ++j)
+    {
       eerot[i * 3 + j] = rot(i, j);
     }
   }
 
   ikfast::IkSolutionList<double> solutions;
-  compute_ik(eetrans, eerot, nullptr, (void*)&solutions);
+  compute_ik(eetrans, eerot, nullptr, (void *)&solutions);
 
   joint_states.clear();
-  for (size_t i = 0; i < solutions.GetNumSolutions(); ++i) {
+  for (size_t i = 0; i < solutions.GetNumSolutions(); ++i)
+  {
     std::vector<double> joints(num_joints_);
-    const ikfast::IkSolutionBase<double>& sol = solutions.GetSolution(i);
+    const ikfast::IkSolutionBase<double> & sol = solutions.GetSolution(i);
     sol.GetSolution(&joints[0], nullptr);
     bool valid = true;
-    for (double j : joints) {
-      if (std::isnan(j)) {
+    for (double j : joints)
+    {
+      if (std::isnan(j))
+      {
         valid = false;
         break;
       }
     }
-    if (valid) {
+    if (valid)
+    {
       joint_states.push_back(joints);
     }
   }
@@ -278,7 +315,8 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_all_possible_joint_sta
 bool KinematicsInterfaceIKFast::convert_joint_state_to_cartesian_pose(
   const std::vector<double> & joint_state, Eigen::Isometry3d & pose)
 {
-  Eigen::VectorXd joint_pos = Eigen::Map<const Eigen::VectorXd>(joint_state.data(), joint_state.size());
+  Eigen::VectorXd joint_pos =
+    Eigen::Map<const Eigen::VectorXd>(joint_state.data(), joint_state.size());
   return calculate_link_transform(joint_pos, end_effector_name_, pose);
 }
 
@@ -319,11 +357,12 @@ bool KinematicsInterfaceIKFast::verify_jacobian_inverse(
   if (jacobian.rows() != num_joints_ || jacobian.cols() != 6)
   {
     RCLCPP_ERROR(
-      LOGGER, "The size of the jacobian inverse (%zu, %zu) does not match the required size of (%u, %u)",
+      LOGGER,
+      "The size of the jacobian inverse (%zu, %zu) does not match the required size of (%u, %u)",
       jacobian.rows(), jacobian.cols(), num_joints_, 6);
     return false;
   }
   return true;
 }
 
-} // namespace kinematics_interface_ikfast
+}  // namespace kinematics_interface_ikfast
