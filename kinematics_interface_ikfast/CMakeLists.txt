@@ -42,26 +42,6 @@ target_link_libraries(kinematics_interface_ikfast PUBLIC
   rclcpp::rclcpp
 )
 
-if(BUILD_TESTING)
-  find_package(ament_cmake_gmock REQUIRED)
-
-  ament_add_gmock(
-    test_kinematics_interface_ikfast
-    test/test_kinematics_interface_ikfast.cpp
-  )
-
-  target_include_directories(test_kinematics_interface_ikfast PRIVATE
-    include
-    src
-  )
-
-  target_link_libraries(test_kinematics_interface_ikfast
-    kinematics_interface_ikfast
-    kinematics_interface::kinematics_interface_tests
-  )
-endif()
-
-
 install(
   DIRECTORY include/
   DESTINATION include

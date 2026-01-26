@@ -1,5 +1,6 @@
 #include "kinematics_interface_ikfast/kinematics_interface_ikfast.hpp"
 #include <cmath>
+#include "kinematics_interface_ikfast/ikfast.h"
 
 namespace kinematics_interface_ikfast
 {
@@ -8,7 +9,7 @@ rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_ikfast");
 const int MAX_IK_SOLUTIONS = 8;
 
 bool KinematicsInterfaceIKFast::initialize(
-  const std::string & robot_description,
+  const std::string & robot_description, //unused but lets keep for now
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
   const std::string & param_namespace)
 {
@@ -41,12 +42,13 @@ bool KinematicsInterfaceIKFast::initialize(
       return false;
   }
 
-  I_ = Eigen::MatrixXd::Identity(num_joints_, num_joints_);
+  I_ = Eigen::MatrixXd::Identity(num_joints_, num_joints_); // set this for Jacobian calculation
 
   initialized_ = true;
   return true;
 }
 
+// Forward Kinematics
 bool KinematicsInterfaceIKFast::calculate_link_transform(
   const Eigen::VectorXd & joint_pos,
   const std::string & link_name,
@@ -65,6 +67,7 @@ bool KinematicsInterfaceIKFast::calculate_link_transform(
   double eerot[9], eetrans[3];
 
   compute_fk(vjoints.data(), eetrans, eerot);
+  RCLCPP_INFO(LOGGER, "vjoints.data = %p", static_cast<const void*>(vjoints.data()));
 
   Eigen::Matrix3d rotation;
   rotation << eerot[0], eerot[1], eerot[2],
@@ -250,16 +253,17 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_all_possible_joint_sta
     }
   }
 
-  std::vector<double> solutions(MAX_IK_SOLUTIONS * num_joints_);
-  compute_ik(eetrans, eerot, nullptr, solutions.data());
+  ikfast::IkSolutionList<double> solutions;
+  compute_ik(eetrans, eerot, nullptr, (void*)&solutions);
 
   joint_states.clear();
-  for (int s = 0; s < MAX_IK_SOLUTIONS; ++s) {
+  for (size_t i = 0; i < solutions.GetNumSolutions(); ++i) {
     std::vector<double> joints(num_joints_);
+    const ikfast::IkSolutionBase<double>& sol = solutions.GetSolution(i);
+    sol.GetSolution(&joints[0], nullptr);
     bool valid = true;
-    for (int j = 0; j < num_joints_; ++j) {
-      joints[j] = solutions[s * num_joints_ + j];
-      if (std::isnan(joints[j])) {
+    for (double j : joints) {
+      if (std::isnan(j)) {
         valid = false;
         break;
       }

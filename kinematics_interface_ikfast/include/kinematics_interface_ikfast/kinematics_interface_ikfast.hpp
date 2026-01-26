@@ -11,6 +11,7 @@
 #include "kinematics_interface/kinematics_interface.hpp"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "kinematics_interface_ikfast/ikfast.h"
 
 namespace kinematics_interface_ikfast
 {
