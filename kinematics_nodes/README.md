@@ -1,6 +1,6 @@
 # Kinematics Nodes
 
-This package provides a high-performance ROS 2 service node that acts as a bridge between the **MoveIt 2 ecosystem** and any analytical or numerical kinematics solver implemented via the `kinematics_interface`. 
+This package provides a high-performance ROS 2 service node that acts as a bridge between the **MoveIt 2 ecosystem** and any analytical or numerical kinematics solver implemented via the `kinematics_interface`.
 
 By wrapping your solvers in this node, you expose raw kinematic math as standard MoveIt services, allowing any ROS 2 tool (like RViz, MoveGroup, or custom planners) to communicate with your robot using a unified interface.
 
@@ -9,6 +9,7 @@ By wrapping your solvers in this node, you expose raw kinematic math as standard
 ## Table of Contents
 
 - [Key Features](#key-features)
+- [Professional Improvements](#professional-improvements)
 - [Architecture Overview](#architecture-overview)
 - [Installation & Building](#installation--building)
 - [Configuration](#configuration)
@@ -29,6 +30,99 @@ By wrapping your solvers in this node, you expose raw kinematic math as standard
 * **Robust Error Handling**: Maps solver outcomes to official MoveIt error codes (`SUCCESS`, `NO_IK_SOLUTION`, `INVALID_LINK_NAME`, `FAILURE`) for better system-level diagnostics.
 * **URDF Validation**: Validates link names at startup and runtime to prevent configuration errors and invalid requests.
 * **Standalone Operation**: Runs as an independent ROS 2 service, not requiring MoveIt to be running.
+
+---
+
+## Professional Improvements
+
+This service node includes critical production-ready features that go beyond basic IK functionality:
+
+### 1. Group Name Validation ✅
+
+**Problem Solved:** In multi-arm or multi-group systems, the `group_name` field must be validated to ensure IK is computed for the correct kinematic chain.
+
+**Implementation:**
+- Configure the node with expected `group_name` parameter
+- Service validates all requests have matching `group_name`
+- Prevents accidental cross-group IK queries (e.g., using left_arm IK for right_arm)
+
+**Why Critical:**
+- Multi-arm robots have separate kinematic chains
+- Wrong group selection → wrong arm moves → collision risk
+- MoveIt architecture relies on group_name for routing
+
+**Example:**
+```bash
+# Configure for 'manipulator' group
+-p group_name:=manipulator
+
+# Request with wrong group rejected
+group_name: 'wrong_group' → Error -18 (INVALID_LINK_NAME)
+```
+
+### 2. URDF Joint Name Extraction ✅
+
+**Problem Solved:** Generic joint names (`joint_1`, `joint_2`) don't match actual URDF joint names, breaking controller compatibility.
+
+**Implementation:**
+- Automatically traverse kinematic chain from tip to base
+- Extract actual joint names from URDF (e.g., `joint_1`, `fanuc_joint_2`, `shoulder_pan_joint`)
+- Preserve correct joint order
+- Return proper names in response messages
+
+**Why Critical:**
+- ROS controllers match commands by joint name
+- Wrong names → trajectory rejected or applied to wrong joints
+- Different robots use different naming conventions
+
+**Example:**
+```
+Chain traversal: flange → joint_6 → link_6 → joint_5 → ... → joint_1 → base_link
+Extracted: ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']
+Response uses actual names ✓
+```
+
+### 3. Seed State Validation ✅
+
+**Problem Solved:** Unvalidated seed states can come from wrong groups, have wrong sizes, or incorrect joint ordering.
+
+**Implementation:**
+- Validate seed state size matches kinematic chain joint count
+- Validate seed joint names match URDF chain (if provided)
+- Validate joint order matches expected sequence
+- Clear error messages showing expected vs. received
+
+**Why Critical:**
+- Seed state guides solver to find closest solution
+- Wrong seed from different group → suboptimal solution
+- Wrong size → solver crash or incorrect behavior
+- Wrong order → wrong joint values used as seed
+
+**Example:**
+```bash
+# Kinematic chain has 6 joints
+
+# Wrong size rejected
+seed: [0, 0, 0, 0] → Error: "Seed state has 4 joint positions but kinematic chain has 6 joints"
+
+# Wrong names rejected
+seed: name=['wrong_j1', ...] → Error: "Seed state joint name mismatch at index 0: expected 'joint_1', got 'wrong_j1'"
+
+# Correct seed accepted
+seed: name=['joint_1', 'joint_2', ...], position=[0, 0, 0, 0, 0, 0] → SUCCESS
+```
+
+### 4. Clear Service Naming ✅
+
+**Change:** Service renamed from `/compute_ik` to `/compute_ikfast`
+
+**Benefits:**
+- Prevents collision with MoveIt's own IK services
+- Clearly identifies service purpose and solver type
+- Allows running multiple IK services concurrently
+- Follows ROS naming best practices
+
+See `IMPROVEMENTS.md` for detailed technical analysis of each improvement.
 
 ---
 
@@ -165,14 +259,15 @@ The node is highly configurable via ROS 2 parameters. These can be set via a YAM
 | Parameter | Type | Default | Required | Description |
 |-----------|------|---------|----------|-------------|
 | `plugin_name` | `string` | - | ✅ **Yes** | The plugin lookup name (e.g., `fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics`). Must match the plugin class name exported in the plugin's XML file. |
-| `robot_description` | `string` | - | ✅ **Yes** | The complete URDF/XML string describing the robot. Used to initialize the kinematics chain and validate link names. Can be loaded from a file or fetched from the parameter server. |
+| `robot_description` | `string` | - | ✅ **Yes** | The complete URDF/XML string describing the robot. Used to initialize the kinematics chain, extract joint names, and validate link names. Can be loaded from a file or fetched from the parameter server. |
+| `group_name` | `string` | (empty) | ⚠️ **Recommended** | The MoveIt planning group name (e.g., `manipulator`, `left_arm`). If set, the service validates that all IK requests have matching `group_name`. If empty, any group name is accepted (not recommended for production). |
 | `base_link` | `string` | `base_link` | No | The root frame of the kinematic chain. This link anchors the robot to the world. **Must exist in the URDF or the node will terminate at startup.** |
 | `tip_link` | `string` | `link_6` | No | The end-effector frame (target frame) for IK. This is typically the robot's flange or tool mounting point. **Must exist in the URDF or the node will terminate at startup.** |
 | `alpha` | `double` | `0.000005` | No | Damping factor used for numerical Jacobian calculations. Larger values improve stability near singularities but reduce accuracy. Range: 1e-8 to 1e-3. |
 
 ### Parameter Details
 
-#### `plugin_name`
+#### `plugin_name` (Required)
 The plugin name must match exactly with the class name defined in the plugin's XML descriptor file. This follows the format: `package_name/ClassName`.
 
 **Example:**
@@ -183,14 +278,42 @@ The plugin name must match exactly with the class name defined in the plugin's X
        base_class_type="kinematics_interface::KinematicsInterface">
 ```
 
-#### `robot_description`
+#### `robot_description` (Required)
 The URDF must contain valid kinematic chain definition with:
 - Links with `<joint>` connections
 - Joint types (revolute, prismatic, fixed)
 - Joint limits (lower, upper, velocity)
 - Link collision and visual properties (optional for IK)
 
+The node **automatically extracts joint names** from the kinematic chain between `base_link` and `tip_link`. Only movable joints (revolute, prismatic, continuous) are included; fixed joints are skipped.
+
 **Important:** URDF parser warnings about visual materials are cosmetic and don't affect kinematics.
+
+#### `group_name` (Recommended)
+The MoveIt planning group name that this service instance handles. This is **critical for production systems**:
+
+**If set (recommended):**
+- ✅ Service validates all requests have matching `group_name`
+- ✅ Prevents accidental cross-group IK queries
+- ✅ Essential for multi-arm or multi-group robots
+- ✅ Follows MoveIt semantic conventions
+
+**If empty (not recommended):**
+- ⚠️ Service accepts any `group_name` in requests
+- ⚠️ No protection against wrong-group errors
+- ⚠️ Only suitable for single-group robots in controlled environments
+
+**Multi-Group Systems:**
+For robots with multiple planning groups (e.g., dual-arm), run separate service instances:
+```bash
+# Left arm service
+ros2 run kinematics_nodes ikfast_service_node --ros-args \
+  -p group_name:=left_arm -p tip_link:=left_tcp
+
+# Right arm service
+ros2 run kinematics_nodes ikfast_service_node --ros-args \
+  -p group_name:=right_arm -p tip_link:=right_tcp
+```
 
 #### `base_link` and `tip_link`
 These define the kinematic chain endpoints:
@@ -198,6 +321,16 @@ These define the kinematic chain endpoints:
 - **tip_link**: The moving end-effector frame (usually `flange`, `tool0`, or gripper TCP)
 
 The IK solver computes joint values to position `tip_link` at the desired pose relative to `base_link`.
+
+**Joint Name Extraction:**
+The node automatically traverses the kinematic chain from `tip_link` back to `base_link` and extracts joint names in the correct order. This ensures response messages contain proper joint names that match your URDF and controllers.
+
+**Example:**
+```
+base_link → joint_1 → link_1 → joint_2 → link_2 → ... → joint_6 → link_6 → flange
+                ↑                  ↑                          ↑
+           Extracted: [joint_1, joint_2, ..., joint_6]
+```
 
 ---
 
@@ -214,6 +347,7 @@ ros2 run kinematics_nodes ikfast_service_node \
   --ros-args \
   -p plugin_name:=fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics \
   -p robot_description:="$(cat src/fanuc_lrmate200id/robot.urdf)" \
+  -p group_name:=manipulator \
   -p base_link:=base_link \
   -p tip_link:=flange
 ```
@@ -222,16 +356,19 @@ ros2 run kinematics_nodes ikfast_service_node \
 ```
 [INFO] [ikfast_service_node]: Initializing IKFast Kinematics Service Node
 [INFO] [ikfast_service_node]:   Plugin name: fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics
+[INFO] [ikfast_service_node]:   Group name: manipulator
 [INFO] [ikfast_service_node]:   Base link: base_link
 [INFO] [ikfast_service_node]:   Tip link: flange
 [INFO] [ikfast_service_node]: URDF parsed successfully for robot: sichtzelle
 [INFO] [ikfast_service_node]: Link validation successful:
 [INFO] [ikfast_service_node]:   Base link 'base_link' found in URDF
 [INFO] [ikfast_service_node]:   Tip link 'flange' found in URDF
+[INFO] [ikfast_service_node]: Extracted 6 joints from kinematic chain:
+[INFO] [ikfast_service_node]:   Joints: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6]
 [INFO] [ikfast_service_node]: Loading kinematics plugin: fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics
 [INFO] [kinematics_interface_ikfast]: Plugin initialized with 6 joints.
 [INFO] [ikfast_service_node]: Kinematics plugin loaded and initialized successfully
-[INFO] [ikfast_service_node]: IK service 'compute_ik' ready!
+[INFO] [ikfast_service_node]: IK service 'compute_ikfast' ready!
 ```
 
 ### Method 2: Launch File (Recommended for Production)
@@ -261,7 +398,7 @@ from launch.substitutions import Command
 
 def generate_launch_description():
     # ... your existing robot setup ...
-    
+
     ikfast_service = Node(
         package='kinematics_nodes',
         executable='ikfast_service_node',
@@ -275,7 +412,7 @@ def generate_launch_description():
             'alpha': 0.000005,
         }]
     )
-    
+
     return LaunchDescription([
         # ... your other nodes ...
         ikfast_service,
@@ -286,7 +423,7 @@ def generate_launch_description():
 
 **From command line:**
 ```bash
-ros2 service call /compute_ik moveit_msgs/srv/GetPositionIK "{
+ros2 service call /compute_ikfast moveit_msgs/srv/GetPositionIK "{
   ik_request: {
     group_name: 'manipulator',
     ik_link_name: 'flange',
@@ -299,12 +436,15 @@ ros2 service call /compute_ik moveit_msgs/srv/GetPositionIK "{
     },
     robot_state: {
       joint_state: {
+        name: ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6'],
         position: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
       }
     }
   }
 }"
 ```
+
+**Note:** Including joint `name` in the seed state is optional but recommended for extra validation.
 
 **From Python:**
 ```python
@@ -317,9 +457,9 @@ from geometry_msgs.msg import PoseStamped, Pose, Point, Quaternion
 class IKClient(Node):
     def __init__(self):
         super().__init__('ik_client')
-        self.client = self.create_client(GetPositionIK, '/compute_ik')
+        self.client = self.create_client(GetPositionIK, '/compute_ikfast')
         self.client.wait_for_service()
-    
+
     def compute_ik(self, x, y, z, qx=0, qy=0, qz=0, qw=1):
         request = GetPositionIK.Request()
         request.ik_request.group_name = 'manipulator'
@@ -328,10 +468,10 @@ class IKClient(Node):
         request.ik_request.pose_stamped.pose.position = Point(x=x, y=y, z=z)
         request.ik_request.pose_stamped.pose.orientation = Quaternion(x=qx, y=qy, z=qz, w=qw)
         request.ik_request.robot_state.joint_state.position = [0.0] * 6
-        
+
         future = self.client.call_async(request)
         rclpy.spin_until_future_complete(self, future)
-        
+
         response = future.result()
         if response.error_code.val == 1:  # SUCCESS
             return response.solution.joint_state.position
@@ -362,7 +502,7 @@ class IKClient : public rclcpp::Node
 public:
   IKClient() : Node("ik_client")
   {
-    client_ = this->create_client<moveit_msgs::srv::GetPositionIK>("/compute_ik");
+    client_ = this->create_client<moveit_msgs::srv::GetPositionIK>("/compute_ikfast");
     client_->wait_for_service();
   }
 
@@ -396,10 +536,12 @@ private:
 ```
 
 **Important Notes:**
+- ✅ `group_name` in the request **must match** the configured `group_name` parameter (if set)
 - ✅ `ik_link_name` in the request **must match** the configured `tip_link` parameter
-- ✅ `frame_id` in the request **must match** the configured `base_link` parameter  
-- ✅ `group_name` is informational only (not validated by the service)
-- ✅ Seed state (`robot_state.joint_state.position`) is used to find the closest solution
+- ✅ `frame_id` in the request **must match** the configured `base_link` parameter (if provided)
+- ✅ Seed state size **must match** the kinematic chain joint count
+- ✅ Seed state joint names **must match** URDF joint order (if names provided)
+- ✅ Response contains **actual joint names from URDF**, not generic names
 
 ---
 
@@ -444,28 +586,57 @@ At node startup, the following validation occurs:
 
 ### Runtime Validation (Stage 2)
 
-For each incoming IK service request, the following validation occurs:
+For each incoming IK service request, the following comprehensive validation occurs:
 
-1. **Link Name Validation**:
+1. **Group Name Validation** (if `group_name` parameter is set):
+   - Compares `ik_request.group_name` with configured `group_name`
+   - Must match exactly (case-sensitive)
+   - Prevents cross-group IK queries in multi-arm systems
+
+2. **Link Name Validation**:
    - Compares `ik_request.ik_link_name` with configured `tip_link`
    - Must match exactly (case-sensitive)
 
-2. **Frame ID Validation**:
+3. **Frame ID Validation**:
    - Compares `ik_request.pose_stamped.header.frame_id` with configured `base_link`
    - Only validated if `frame_id` is provided (empty frame_id is acceptable)
    - Must match exactly (case-sensitive)
 
+4. **Seed State Size Validation**:
+   - Checks `robot_state.joint_state.position` size matches expected joint count
+   - Prevents using seed states from different kinematic chains
+   - Required number of joints is determined from URDF chain traversal
+
+5. **Seed State Name Validation** (if names provided):
+   - Validates `robot_state.joint_state.name` matches extracted joint names
+   - Checks both joint names and their order
+   - Prevents accidental joint reordering or wrong joint mapping
+
 **If runtime validation fails:**
-- ⚠️ Warning message logged: "IK request link name 'X' does not match configured tip link 'Y'"
-- ❌ Error message logged: "IK request validation failed - invalid link names or frame_id"
+- ❌ Error message logged with specific validation failure
 - ❌ Service returns error code `-18` (INVALID_LINK_NAME)
 - ❌ Empty solution is returned
 - ✅ Node continues running (doesn't crash)
 
-**Example validation failure:**
+**Example validation failures:**
+
+**Wrong group_name:**
 ```
-[INFO] [ikfast_service_node]: Received IK request for group 'manipulator', link 'wrong_link'
-[WARN] [ikfast_service_node]: IK request link name 'wrong_link' does not match configured tip link 'flange'
+[INFO] [ikfast_service_node]: Received IK request for group 'wrong_group', link 'flange'
+[ERROR] [ikfast_service_node]: IK request group_name 'wrong_group' does not match configured group_name 'manipulator'
+[ERROR] [ikfast_service_node]: IK request validation failed - invalid link names or frame_id
+```
+
+**Wrong seed size:**
+```
+[ERROR] [ikfast_service_node]: Seed state has 4 joint positions but kinematic chain has 6 joints
+[ERROR] [ikfast_service_node]: IK request validation failed - invalid link names or frame_id
+```
+
+**Wrong seed joint names:**
+```
+[ERROR] [ikfast_service_node]: Seed state joint name mismatch at index 0: expected 'joint_1', got 'wrong_joint_1'
+[ERROR] [ikfast_service_node]: Expected joint order: [joint_1, joint_2, joint_3, joint_4, joint_5, joint_6]
 [ERROR] [ikfast_service_node]: IK request validation failed - invalid link names or frame_id
 ```
 
@@ -522,11 +693,12 @@ ros2 run kinematics_nodes ikfast_service_node \
   --ros-args \
   -p plugin_name:=fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics \
   -p robot_description:="$(cat src/fanuc_lrmate200id/robot.urdf)" \
+  -p group_name:=manipulator \
   -p base_link:=base_link \
   -p tip_link:=flange
 
-# Expected: Node starts successfully, service /compute_ik is available
-# Verify with: ros2 service list | grep compute_ik
+# Expected: Node starts successfully, service /compute_ikfast is available
+# Verify with: ros2 service list | grep compute_ikfast
 ```
 
 **Test 2: Startup Validation (Should Fail)**
@@ -545,8 +717,9 @@ ros2 run kinematics_nodes ikfast_service_node \
 **Test 3: Valid IK Request**
 ```bash
 # With node running from Test 1
-ros2 service call /compute_ik moveit_msgs/srv/GetPositionIK "{
+ros2 service call /compute_ikfast moveit_msgs/srv/GetPositionIK "{
   ik_request: {
+    group_name: 'manipulator',
     ik_link_name: 'flange',
     pose_stamped: {
       header: {frame_id: 'base_link'},
@@ -556,24 +729,83 @@ ros2 service call /compute_ik moveit_msgs/srv/GetPositionIK "{
   }
 }"
 
-# Expected: error_code.val = 1 (SUCCESS), joint positions returned
+# Expected: error_code.val = 1 (SUCCESS)
+# Response includes: name=['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']
 ```
 
-**Test 4: Runtime Validation (Should Fail)**
+**Test 4: Wrong Group Name (Should Fail)**
 ```bash
-# With node running, try wrong link name
-ros2 service call /compute_ik moveit_msgs/srv/GetPositionIK "{
+ros2 service call /compute_ikfast moveit_msgs/srv/GetPositionIK "{
   ik_request: {
-    ik_link_name: 'wrong_link',
+    group_name: 'wrong_group',
+    ik_link_name: 'flange',
     pose_stamped: {
       header: {frame_id: 'base_link'},
-      pose: {position: {x: 0.5, y: 0.0, z: 0.5}, orientation: {w: 1.0}}
+      pose: {position: {x: 0.5}, orientation: {w: 1.0}}
     }
   }
 }"
 
 # Expected: error_code.val = -18 (INVALID_LINK_NAME)
-# Check node logs for validation error message
+# Log: [ERROR] IK request group_name 'wrong_group' does not match configured group_name 'manipulator'
+```
+
+**Test 5: Wrong Link Name (Should Fail)**
+```bash
+ros2 service call /compute_ikfast moveit_msgs/srv/GetPositionIK "{
+  ik_request: {
+    group_name: 'manipulator',
+    ik_link_name: 'wrong_link',
+    pose_stamped: {
+      header: {frame_id: 'base_link'},
+      pose: {position: {x: 0.5}, orientation: {w: 1.0}}
+    }
+  }
+}"
+
+# Expected: error_code.val = -18 (INVALID_LINK_NAME)
+# Log: [ERROR] IK request ik_link_name 'wrong_link' does not match configured tip_link 'flange'
+```
+
+**Test 6: Wrong Seed Size (Should Fail)**
+```bash
+ros2 service call /compute_ikfast moveit_msgs/srv/GetPositionIK "{
+  ik_request: {
+    group_name: 'manipulator',
+    ik_link_name: 'flange',
+    pose_stamped: {
+      header: {frame_id: 'base_link'},
+      pose: {position: {x: 0.5}, orientation: {w: 1.0}}
+    },
+    robot_state: {joint_state: {position: [0, 0, 0, 0]}}
+  }
+}"
+
+# Expected: error_code.val = -18 (INVALID_LINK_NAME)
+# Log: [ERROR] Seed state has 4 joint positions but kinematic chain has 6 joints
+```
+
+**Test 7: Wrong Seed Joint Names (Should Fail)**
+```bash
+ros2 service call /compute_ikfast moveit_msgs/srv/GetPositionIK "{
+  ik_request: {
+    group_name: 'manipulator',
+    ik_link_name: 'flange',
+    pose_stamped: {
+      header: {frame_id: 'base_link'},
+      pose: {position: {x: 0.5}, orientation: {w: 1.0}}
+    },
+    robot_state: {
+      joint_state: {
+        name: ['wrong_joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6'],
+        position: [0, 0, 0, 0, 0, 0]
+      }
+    }
+  }
+}"
+
+# Expected: error_code.val = -18 (INVALID_LINK_NAME)
+# Log: [ERROR] Seed state joint name mismatch at index 0: expected 'joint_1', got 'wrong_joint_1'
 ```
 
 ### Automated Test Suite
@@ -676,7 +908,7 @@ sleep 3
 
 if ps -p $NODE_PID > /dev/null; then
     echo "✅ Node started successfully"
-    
+
     echo ""
     echo "=== Testing Runtime Validation ==="
     echo "Test 4: Wrong ik_link_name (should return error -18)"
@@ -689,13 +921,13 @@ if ps -p $NODE_PID > /dev/null; then
         }
       }
     }" 2>&1)
-    
+
     if echo "$RESPONSE" | grep -q "val=-18"; then
         echo "✅ Correctly returned INVALID_LINK_NAME"
     else
         echo "❌ Expected error code -18"
     fi
-    
+
     echo ""
     echo "Test 5: Valid request (should return success)"
     RESPONSE=$(ros2 service call /compute_ik moveit_msgs/srv/GetPositionIK "{
@@ -708,13 +940,13 @@ if ps -p $NODE_PID > /dev/null; then
         robot_state: {joint_state: {position: [0,0,0,0,0,0]}}
       }
     }" 2>&1)
-    
+
     if echo "$RESPONSE" | grep -q "val=1"; then
         echo "✅ Correctly returned SUCCESS"
     else
         echo "❌ Expected error code 1"
     fi
-    
+
     kill $NODE_PID
 else
     echo "❌ Node failed to start"
@@ -810,13 +1042,13 @@ class TrajectoryIKClient(Node):
     def __init__(self):
         super().__init__('trajectory_ik_client')
         self.client = self.create_client(GetPositionIK, '/compute_ik')
-        
+
         if not self.client.wait_for_service(timeout_sec=5.0):
             self.get_logger().error('IK service not available!')
             raise RuntimeError('IK service timeout')
-        
+
         self.get_logger().info('Connected to IK service')
-    
+
     def compute_ik(self, pose, seed_state=None):
         """Query IK for a single pose."""
         request = GetPositionIK.Request()
@@ -824,21 +1056,21 @@ class TrajectoryIKClient(Node):
         request.ik_request.ik_link_name = 'flange'
         request.ik_request.pose_stamped.header.frame_id = 'base_link'
         request.ik_request.pose_stamped.pose = pose
-        
+
         if seed_state:
             request.ik_request.robot_state.joint_state.position = seed_state
         else:
             request.ik_request.robot_state.joint_state.position = [0.0] * 6
-        
+
         future = self.client.call_async(request)
         rclpy.spin_until_future_complete(self, future, timeout_sec=1.0)
-        
+
         if not future.done():
             self.get_logger().error('IK request timeout!')
             return None
-        
+
         response = future.result()
-        
+
         if response.error_code.val == 1:  # SUCCESS
             return response.solution.joint_state.position
         elif response.error_code.val == -31:  # NO_IK_SOLUTION
@@ -847,9 +1079,9 @@ class TrajectoryIKClient(Node):
             self.get_logger().error('Link name validation failed!')
         else:
             self.get_logger().error(f'IK failed with code {response.error_code.val}')
-        
+
         return None
-    
+
     def compute_trajectory_ik(self, waypoints):
         """
         Compute IK for a series of waypoints.
@@ -857,12 +1089,12 @@ class TrajectoryIKClient(Node):
         """
         trajectory = []
         seed_state = [0.0] * 6  # Start from zero position
-        
+
         for i, waypoint in enumerate(waypoints):
             self.get_logger().info(f'Computing IK for waypoint {i+1}/{len(waypoints)}')
-            
+
             solution = self.compute_ik(waypoint, seed_state)
-            
+
             if solution:
                 trajectory.append(solution)
                 seed_state = solution  # Use as seed for next waypoint
@@ -870,13 +1102,13 @@ class TrajectoryIKClient(Node):
             else:
                 self.get_logger().error(f'  ❌ Failed at waypoint {i+1}')
                 return None
-        
+
         return trajectory
 
 def main():
     rclpy.init()
     client = TrajectoryIKClient()
-    
+
     # Define a linear trajectory (10 waypoints)
     waypoints = []
     for i in range(10):
@@ -889,18 +1121,18 @@ def main():
         )
         pose.orientation = Quaternion(x=0.0, y=0.0, z=0.0, w=1.0)
         waypoints.append(pose)
-    
+
     # Compute IK for entire trajectory
     print("\n=== Computing Trajectory IK ===")
     trajectory = client.compute_trajectory_ik(waypoints)
-    
+
     if trajectory:
         print(f"\n✅ Trajectory computed successfully!")
         print(f"   {len(trajectory)} waypoints")
         print(f"   Ready for execution\n")
     else:
         print("\n❌ Trajectory computation failed!\n")
-    
+
     client.destroy_node()
     rclpy.shutdown()
 
@@ -934,18 +1166,36 @@ terminate called after throwing an instance of 'rclcpp::exceptions::RCLInvalidRO
 
 **Cause:** Command substitution `$(ros2 param get ...)` is executed before the parameter server is ready, returning empty string.
 
-**Solution:**
-Use local URDF file instead:
+**Solutions:**
+
+**Option 1: Use local URDF file (Recommended):**
 ```bash
 ros2 run kinematics_nodes ikfast_service_node \
   --ros-args \
+  -p plugin_name:=fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics \
   -p robot_description:="$(cat src/fanuc_lrmate200id/robot.urdf)" \
-  # ... other parameters
+  -p group_name:=manipulator \
+  -p base_link:=base_link \
+  -p tip_link:=flange
 ```
 
-Or use the launch file:
+**Option 2: Use the launch file:**
 ```bash
 ros2 launch kinematics_nodes ikfast_service_standalone.launch.py
+```
+
+**Option 3: Fetch from running robot (two-step):**
+```bash
+# Step 1: Start mock robot first
+ros2 launch sfb_qa_cell_configuration moveit_setup.launch.xml use_mock_hardware:=true
+
+# Step 2: In another terminal, fetch and start service
+ROBOT_DESC=$(ros2 param get /robot_state_publisher robot_description --hide-type)
+ros2 run kinematics_nodes ikfast_service_node --ros-args \
+  -p robot_description:="$ROBOT_DESC" \
+  -p group_name:=manipulator \
+  -p base_link:=base_link \
+  -p tip_link:=flange
 ```
 
 #### Issue 2: "Plugin loading exception"
