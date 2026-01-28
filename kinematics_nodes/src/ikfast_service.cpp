@@ -23,6 +23,9 @@
 #include "rclcpp/rclcpp.hpp"
 #include "tf2_eigen/tf2_eigen.hpp"
 #include "urdf/model.h"
+// Transform link between flange to ee
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 class IKFastKinematicsServiceNode : public rclcpp::Node
 {
@@ -42,11 +45,16 @@ private:
   std::string robot_description_;
   std::string group_name_;
   std::string base_link_;
-  std::string tip_link_;
+  std::string tip_link_;       // ikfast_tip_link -> flange
+  std::string tcp_link_name_;  // tcp_link_name -> left_gripper_tcp
   size_t num_joints_;
 
   // Joint names from URDF (extracted from kinematic chain)
   std::vector<std::string> joint_names_;
+
+  // Private members içinde:
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
   // Internal methods
   bool load_kinematics_plugin();
@@ -73,6 +81,7 @@ IKFastKinematicsServiceNode::IKFastKinematicsServiceNode(const rclcpp::NodeOptio
   this->declare_parameter<std::string>("group_name", "");
   this->declare_parameter<std::string>("base_link", "");
   this->declare_parameter<std::string>("tip_link", "");
+  this->declare_parameter<std::string>("tcp_link_name", "");
   this->declare_parameter<double>("alpha", 0.000005);
 
   this->get_parameter("plugin_name", plugin_name_);
@@ -80,6 +89,11 @@ IKFastKinematicsServiceNode::IKFastKinematicsServiceNode(const rclcpp::NodeOptio
   this->get_parameter("group_name", group_name_);
   this->get_parameter("base_link", base_link_);
   this->get_parameter("tip_link", tip_link_);
+  this->get_parameter("tcp_link_name", tcp_link_name_);
+
+  // BURASI EKSİK - ÇÖKMEYİ ENGELLEYECEK SATIRLAR:
+  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
   // Validate required parameters
   if (base_link_.empty())
@@ -412,78 +426,123 @@ void IKFastKinematicsServiceNode::get_position_ik_callback(
   const moveit_msgs::srv::GetPositionIK::Request::SharedPtr request,
   moveit_msgs::srv::GetPositionIK::Response::SharedPtr response)
 {
-  RCLCPP_INFO(
-    this->get_logger(), "Received IK request for group '%s', link '%s'",
-    request->ik_request.group_name.c_str(), request->ik_request.ik_link_name.c_str());
+  // Requested tcp link -> e.g. left_grippertcp_link
+  // Requested target frame -> e.g. part_1/pick_frame
+  const std::string requested_tcp_link = request->ik_request.ik_link_name;
+  const std::string target_frame = request->ik_request.pose_stamped.header.frame_id;
 
-  // Validate the IK request
-  if (!validate_ik_request(request))
+  RCLCPP_INFO(
+    this->get_logger(), "IK Request TARGETTTTT: TCP=%s, Frame=%s", requested_tcp_link.c_str(),
+    target_frame.c_str());
+
+  // This step converts the target coordinates from the object's local frame (e.g., a pick position on a part) into the robot's base frame.
+  Eigen::Isometry3d target_pose_in_base;
+  try
   {
-    response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_LINK_NAME;
-    RCLCPP_ERROR(
-      this->get_logger(), "IK request validation failed - invalid link names or frame_id");
+    Eigen::Isometry3d target_pose_in_request_frame;
+    tf2::fromMsg(request->ik_request.pose_stamped.pose, target_pose_in_request_frame);
+
+    if (!target_frame.empty() && target_frame != base_link_)
+    {
+      // Get frame transform from TF (Base -> Target_Frame)
+      auto transform_stamped = tf_buffer_->lookupTransform(
+        base_link_, target_frame, tf2::TimePointZero, tf2::durationFromSec(1.0));
+
+      Eigen::Isometry3d frame_transform = tf2::transformToEigen(transform_stamped);
+      target_pose_in_base = frame_transform * target_pose_in_request_frame;
+    }
+    else
+    {
+      target_pose_in_base = target_pose_in_request_frame;
+    }
+  }
+  catch (const tf2::TransformException & ex)
+  {
+    RCLCPP_ERROR(this->get_logger(), "Frame transform error %s", ex.what());
+    response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::FRAME_TRANSFORM_FAILURE;
     return;
   }
 
+  Eigen::Isometry3d flange_pose_to_solve;
+  if (requested_tcp_link != tip_link_)
+  {
+    try
+    {
+      auto flange_to_tcp_msg = tf_buffer_->lookupTransform(
+        tip_link_, requested_tcp_link, tf2::TimePointZero, tf2::durationFromSec(1.0));
+
+      Eigen::Isometry3d flange_to_tcp = tf2::transformToEigen(flange_to_tcp_msg);
+
+      // Base_T_Flange = Base_T_TCP * (Flange_T_TCP)^-1
+      flange_pose_to_solve = target_pose_in_base * flange_to_tcp.inverse();
+
+      RCLCPP_INFO(
+        this->get_logger(), "Tool offset: %s -> %s", requested_tcp_link.c_str(), tip_link_.c_str());
+    }
+    catch (const tf2::TransformException & ex)
+    {
+      RCLCPP_ERROR(
+        this->get_logger(), "Tool offset error (%s -> %s): %s", tip_link_.c_str(),
+        requested_tcp_link.c_str(), ex.what());
+      response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_LINK_NAME;
+      return;
+    }
+  }
+  else
+  {
+    flange_pose_to_solve = target_pose_in_base;
+  }
+
+  // send to solver
   try
   {
-    // Extract target pose from request and convert to Eigen
-    const auto & pose_msg = request->ik_request.pose_stamped.pose;
-    Eigen::Isometry3d target_pose;
-    tf2::fromMsg(pose_msg, target_pose);
-
-    RCLCPP_DEBUG(
-      this->get_logger(), "Target pose - Position: [%.3f, %.3f, %.3f]", pose_msg.position.x,
-      pose_msg.position.y, pose_msg.position.z);
-
-    // Extract seed joint state (if provided)
     std::vector<double> seed_state;
     if (!request->ik_request.robot_state.joint_state.position.empty())
     {
       seed_state = request->ik_request.robot_state.joint_state.position;
-      RCLCPP_DEBUG(this->get_logger(), "Using seed state with %zu joints", seed_state.size());
     }
     else
     {
-      // Use zero initial state as seed if not provided
-      seed_state.resize(num_joints_, 0.0);
-      RCLCPP_DEBUG(this->get_logger(), "No seed state provided, using zeros");
+      seed_state.resize(6, 0.0);  //CAREFUL
     }
 
-    // Call IK solver to find solution closest to seed state
     std::vector<double> solution;
+    // Send flange position
     bool ik_success = kinematics_solver_->convert_cartesian_pose_to_closest_joint_state(
-      target_pose, seed_state, solution);
+      flange_pose_to_solve, seed_state, solution);
 
     if (ik_success && !solution.empty())
     {
-      // IK solution found - fill response
       response->solution = create_robot_state_msg(solution);
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
 
-      RCLCPP_INFO(this->get_logger(), "IK solution found with %zu joints", solution.size());
+      std::stringstream ss_rad, ss_deg;
+      ss_rad << std::fixed << std::setprecision(4);
+      ss_deg << std::fixed << std::setprecision(2);
 
-      // Log solution for debugging
-      std::stringstream ss;
-      ss << "Solution: [";
+      ss_rad << "[";
+      ss_deg << "[";
       for (size_t i = 0; i < solution.size(); ++i)
       {
-        ss << solution[i];
-        if (i < solution.size() - 1) ss << ", ";
+        ss_rad << solution[i] << (i < solution.size() - 1 ? ", " : "");
+        ss_deg << solution[i] * 180.0 / M_PI << (i < solution.size() - 1 ? ", " : "");
       }
-      ss << "]";
-      RCLCPP_DEBUG(this->get_logger(), "%s", ss.str().c_str());
+      ss_rad << "]";
+      ss_deg << "]";
+
+      RCLCPP_INFO(this->get_logger(), "Hey OZ -> IKFAST Solution is found!:");
+      RCLCPP_INFO(this->get_logger(), "  Radian: %s", ss_rad.str().c_str());
+      RCLCPP_INFO(this->get_logger(), "  Degree: %s", ss_deg.str().c_str());
     }
     else
     {
-      // No IK solution found
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
-      RCLCPP_WARN(this->get_logger(), "No IK solution found for the requested pose");
+      RCLCPP_WARN(this->get_logger(), "No IKFast Solution Found.");
     }
   }
   catch (const std::exception & ex)
   {
-    RCLCPP_ERROR(this->get_logger(), "Exception during IK computation: %s", ex.what());
+    RCLCPP_ERROR(this->get_logger(), "IKFast Solution Error: %s", ex.what());
     response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::FAILURE;
   }
 }
