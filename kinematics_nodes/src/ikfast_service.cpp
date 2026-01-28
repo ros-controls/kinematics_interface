@@ -43,7 +43,6 @@ private:
   // Parameters
   std::string plugin_name_;
   std::string robot_description_;
-  std::string group_name_;
   std::string base_link_;
   std::string tip_link_;       // ikfast_tip_link -> flange
   std::string tcp_link_name_;  // tcp_link_name -> left_gripper_tcp
@@ -78,7 +77,6 @@ IKFastKinematicsServiceNode::IKFastKinematicsServiceNode(const rclcpp::NodeOptio
   // Declare and read parameters
   this->declare_parameter<std::string>("plugin_name", "");
   this->declare_parameter<std::string>("robot_description", "");
-  this->declare_parameter<std::string>("group_name", "");
   this->declare_parameter<std::string>("base_link", "");
   this->declare_parameter<std::string>("tip_link", "");
   this->declare_parameter<std::string>("tcp_link_name", "");
@@ -86,7 +84,6 @@ IKFastKinematicsServiceNode::IKFastKinematicsServiceNode(const rclcpp::NodeOptio
 
   this->get_parameter("plugin_name", plugin_name_);
   this->get_parameter("robot_description", robot_description_);
-  this->get_parameter("group_name", group_name_);
   this->get_parameter("base_link", base_link_);
   this->get_parameter("tip_link", tip_link_);
   this->get_parameter("tcp_link_name", tcp_link_name_);
@@ -122,17 +119,9 @@ IKFastKinematicsServiceNode::IKFastKinematicsServiceNode(const rclcpp::NodeOptio
 
   RCLCPP_INFO(this->get_logger(), "Initializing IKFast Kinematics Service Node");
   RCLCPP_INFO(this->get_logger(), "  Plugin name: %s", plugin_name_.c_str());
-  if (!group_name_.empty())
-  {
-    RCLCPP_INFO(this->get_logger(), "  Group name: %s", group_name_.c_str());
-  }
-  else
-  {
-    RCLCPP_WARN(
-      this->get_logger(), "  Group name: NOT SET (will accept any group_name in requests)");
-  }
   RCLCPP_INFO(this->get_logger(), "  Base link: %s", base_link_.c_str());
   RCLCPP_INFO(this->get_logger(), "  Tip link: %s", tip_link_.c_str());
+  RCLCPP_INFO(this->get_logger(), "  Tcp Link name link: %s", tcp_link_name_.c_str());
 
   // Validate URDF and link names
   if (!validate_urdf_and_links())
@@ -336,31 +325,13 @@ bool IKFastKinematicsServiceNode::extract_joint_names_from_chain()
 bool IKFastKinematicsServiceNode::validate_ik_request(
   const moveit_msgs::srv::GetPositionIK::Request::SharedPtr & request)
 {
-  // Validate group_name if configured
-  if (!group_name_.empty() && request->ik_request.group_name != group_name_)
-  {
-    RCLCPP_ERROR(
-      this->get_logger(), "IK request group_name '%s' does not match configured group_name '%s'",
-      request->ik_request.group_name.c_str(), group_name_.c_str());
-    return false;
-  }
-
   // Validate that ik_link_name matches the configured tip_link
-  if (request->ik_request.ik_link_name != tip_link_)
+  if (request->ik_request.ik_link_name != tcp_link_name_)
   {
     RCLCPP_ERROR(
-      this->get_logger(), "IK request ik_link_name '%s' does not match configured tip_link '%s'",
+      this->get_logger(),
+      "IK request ik_link_name '%s' does not match configured tcp_link_name '%s'",
       request->ik_request.ik_link_name.c_str(), tip_link_.c_str());
-    return false;
-  }
-
-  // Validate that the frame_id in pose_stamped matches base_link
-  const auto & frame_id = request->ik_request.pose_stamped.header.frame_id;
-  if (!frame_id.empty() && frame_id != base_link_)
-  {
-    RCLCPP_ERROR(
-      this->get_logger(), "Pose frame_id '%s' does not match configured base_link '%s'",
-      frame_id.c_str(), base_link_.c_str());
     return false;
   }
 
@@ -426,6 +397,13 @@ void IKFastKinematicsServiceNode::get_position_ik_callback(
   const moveit_msgs::srv::GetPositionIK::Request::SharedPtr request,
   moveit_msgs::srv::GetPositionIK::Response::SharedPtr response)
 {
+  if (!validate_ik_request(request))
+  {
+    RCLCPP_WARN(this->get_logger(), "IK Request validation failed!");
+    response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_ROBOT_STATE;
+    return;
+  }
+
   // Requested tcp link -> e.g. left_grippertcp_link
   // Requested target frame -> e.g. part_1/pick_frame
   const std::string requested_tcp_link = request->ik_request.ik_link_name;
