@@ -21,18 +21,31 @@ ros2 run kinematics_nodes test_kinematics_service.sh
 
 - **Name:** `/compute_plugin_ik`
 - **Type:** `moveit_msgs/srv/GetPositionIK`
-- **Input:** Cartesian pose + seed state
+- **Input:** Cartesian pose + optional seed state
 - **Output:** Joint angles or error code
 
-## Parameters
+## Parameters (Required)
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `plugin_name` | `fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics` | Kinematics plugin to load |
-| `robot_description` | - | Robot URDF (required) |
-| `base_link` | `base_link` | Base frame name |
-| `tip_link` | `flange` | End-effector frame name |
-| `alpha` | `0.000005` | Jacobian damping factor |
+| Parameter | Description |
+|-----------|-------------|
+| `plugin_name` | Kinematics plugin class name (e.g., `fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics`) |
+| `robot_description` | Robot URDF as XML string |
+| `base_link` | Base frame name (e.g., `base_link`) |
+| `tip_link` | End-effector frame name (e.g., `flange`) |
+| `alpha` | Jacobian damping factor (default: `0.000005`) |
+
+**Note:** All parameters except `alpha` are required. The node will fail to start if any required parameter is missing.
+
+## Example Launch
+
+```xml
+<node pkg="kinematics_nodes" exec="ik_plugin_service_node" output="screen">
+  <param name="plugin_name" value="fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics"/>
+  <param name="base_link" value="base_link"/>
+  <param name="tip_link" value="flange"/>
+  <param name="robot_description" value="$(var robot_description_content)"/>
+</node>
+```
 
 ## Example Service Call
 
@@ -55,9 +68,11 @@ ros2 service call /compute_plugin_ik moveit_msgs/srv/GetPositionIK "{
 ## Features
 
 - Loads any kinematics plugin via pluginlib
-- Automatic URDF joint name extraction
+- Automatic URDF joint name extraction from kinematic chain
 - Validates requests and returns MoveIt error codes
+- Supports frame transforms via TF2
 - Finds closest IK solution to seed state
+- Handles tool offsets (TCP to flange transforms)
 
 ## Test Script
 
