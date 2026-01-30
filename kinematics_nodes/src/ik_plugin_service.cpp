@@ -27,7 +27,7 @@
 #include <tf2_ros/buffer.h>
 #include <tf2_ros/transform_listener.h>
 
-class IKFastKinematicsServiceNode : public rclcpp::Node
+class IKPluginKinematicsServiceNode : public rclcpp::Node
 {
 private:
   // Plugin management
@@ -44,8 +44,7 @@ private:
   std::string plugin_name_;
   std::string robot_description_;
   std::string base_link_;
-  std::string tip_link_;       // ikfast_tip_link -> flange
-  std::string tcp_link_name_;  // tcp_link_name -> left_gripper_tcp
+  std::string tip_link_;       // ik_tip_link -> flange
   size_t num_joints_;
 
   // Joint names from URDF (extracted from kinematic chain)
@@ -63,7 +62,7 @@ private:
   moveit_msgs::msg::RobotState create_robot_state_msg(const std::vector<double> & joint_positions);
 
 public:
-  explicit IKFastKinematicsServiceNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit IKPluginKinematicsServiceNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   // Service callbacks
   void get_position_ik_callback(
@@ -71,22 +70,20 @@ public:
     moveit_msgs::srv::GetPositionIK::Response::SharedPtr response);
 };
 
-IKFastKinematicsServiceNode::IKFastKinematicsServiceNode(const rclcpp::NodeOptions & options)
-: Node("ikfast_service_node", options), num_joints_(6)
+IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeOptions & options)
+: Node("ik_plugin_service_node", options), num_joints_(6)
 {
   // Declare and read parameters
   this->declare_parameter<std::string>("plugin_name", "");
   this->declare_parameter<std::string>("robot_description", "");
   this->declare_parameter<std::string>("base_link", "");
   this->declare_parameter<std::string>("tip_link", "");
-  this->declare_parameter<std::string>("tcp_link_name", "");
   this->declare_parameter<double>("alpha", 0.000005);
 
   this->get_parameter("plugin_name", plugin_name_);
   this->get_parameter("robot_description", robot_description_);
   this->get_parameter("base_link", base_link_);
   this->get_parameter("tip_link", tip_link_);
-  this->get_parameter("tcp_link_name", tcp_link_name_);
 
   // BURASI EKSİK - ÇÖKMEYİ ENGELLEYECEK SATIRLAR:
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
@@ -121,7 +118,6 @@ IKFastKinematicsServiceNode::IKFastKinematicsServiceNode(const rclcpp::NodeOptio
   RCLCPP_INFO(this->get_logger(), "  Plugin name: %s", plugin_name_.c_str());
   RCLCPP_INFO(this->get_logger(), "  Base link: %s", base_link_.c_str());
   RCLCPP_INFO(this->get_logger(), "  Tip link: %s", tip_link_.c_str());
-  RCLCPP_INFO(this->get_logger(), "  Tcp Link name link: %s", tcp_link_name_.c_str());
 
   // Validate URDF and link names
   if (!validate_urdf_and_links())
@@ -146,14 +142,14 @@ IKFastKinematicsServiceNode::IKFastKinematicsServiceNode(const rclcpp::NodeOptio
 
   // Create service
   get_ik_service_ = this->create_service<moveit_msgs::srv::GetPositionIK>(
-    "compute_ikfast", std::bind(
-                        &IKFastKinematicsServiceNode::get_position_ik_callback, this,
+    "compute_plugin_ik", std::bind(
+                        &IKPluginKinematicsServiceNode::get_position_ik_callback, this,
                         std::placeholders::_1, std::placeholders::_2));
 
-  RCLCPP_INFO(this->get_logger(), "IK service 'compute_ikfast' ready!");
+  RCLCPP_INFO(this->get_logger(), "IK service 'compute_plugin_ik' ready!");
 }
 
-bool IKFastKinematicsServiceNode::load_kinematics_plugin()
+bool IKPluginKinematicsServiceNode::load_kinematics_plugin()
 {
   try
   {
@@ -198,7 +194,7 @@ bool IKFastKinematicsServiceNode::load_kinematics_plugin()
   }
 }
 
-bool IKFastKinematicsServiceNode::validate_urdf_and_links()
+bool IKPluginKinematicsServiceNode::validate_urdf_and_links()
 {
   // Parse URDF
   if (!urdf_model_.initString(robot_description_))
@@ -251,7 +247,7 @@ bool IKFastKinematicsServiceNode::validate_urdf_and_links()
   return true;
 }
 
-bool IKFastKinematicsServiceNode::extract_joint_names_from_chain()
+bool IKPluginKinematicsServiceNode::extract_joint_names_from_chain()
 {
   // Traverse the kinematic chain from tip to base and extract joint names
   joint_names_.clear();
@@ -322,19 +318,9 @@ bool IKFastKinematicsServiceNode::extract_joint_names_from_chain()
   return true;
 }
 
-bool IKFastKinematicsServiceNode::validate_ik_request(
+bool IKPluginKinematicsServiceNode::validate_ik_request(
   const moveit_msgs::srv::GetPositionIK::Request::SharedPtr & request)
 {
-  // Validate that ik_link_name matches the configured tip_link
-  if (request->ik_request.ik_link_name != tcp_link_name_)
-  {
-    RCLCPP_ERROR(
-      this->get_logger(),
-      "IK request ik_link_name '%s' does not match configured tcp_link_name '%s'",
-      request->ik_request.ik_link_name.c_str(), tip_link_.c_str());
-    return false;
-  }
-
   // Validate seed state if provided
   const auto & seed_positions = request->ik_request.robot_state.joint_state.position;
   const auto & seed_names = request->ik_request.robot_state.joint_state.name;
@@ -393,7 +379,7 @@ bool IKFastKinematicsServiceNode::validate_ik_request(
   return true;
 }
 
-void IKFastKinematicsServiceNode::get_position_ik_callback(
+void IKPluginKinematicsServiceNode::get_position_ik_callback(
   const moveit_msgs::srv::GetPositionIK::Request::SharedPtr request,
   moveit_msgs::srv::GetPositionIK::Response::SharedPtr response)
 {
@@ -424,7 +410,7 @@ void IKFastKinematicsServiceNode::get_position_ik_callback(
     {
       // Get frame transform from TF (Base -> Target_Frame)
       auto transform_stamped = tf_buffer_->lookupTransform(
-        base_link_, target_frame, tf2::TimePointZero, tf2::durationFromSec(1.0));
+        base_link_, target_frame, request->ik_request.pose_stamped.header.stamp, tf2::durationFromSec(0.2));
 
       Eigen::Isometry3d frame_transform = tf2::transformToEigen(transform_stamped);
       target_pose_in_base = frame_transform * target_pose_in_request_frame;
@@ -481,7 +467,7 @@ void IKFastKinematicsServiceNode::get_position_ik_callback(
     }
     else
     {
-      seed_state.resize(6, 0.0);  //CAREFUL
+      seed_state.resize(num_joints_, 0.0);  //do not set as 6 OZ
     }
 
     std::vector<double> solution;
@@ -525,7 +511,7 @@ void IKFastKinematicsServiceNode::get_position_ik_callback(
   }
 }
 
-moveit_msgs::msg::RobotState IKFastKinematicsServiceNode::create_robot_state_msg(
+moveit_msgs::msg::RobotState IKPluginKinematicsServiceNode::create_robot_state_msg(
   const std::vector<double> & joint_positions)
 {
   moveit_msgs::msg::RobotState robot_state;
@@ -553,7 +539,7 @@ int main(int argc, char ** argv)
 
   try
   {
-    auto node = std::make_shared<IKFastKinematicsServiceNode>(rclcpp::NodeOptions());
+    auto node = std::make_shared<IKPluginKinematicsServiceNode>(rclcpp::NodeOptions());
     rclcpp::spin(node);
   }
   catch (const std::exception & ex)

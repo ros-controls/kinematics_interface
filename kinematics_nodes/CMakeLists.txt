@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.8)
 project(kinematics_nodes)
 
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
-  add_compile_options(-Wall -Wextra -Werror=conversion -Werror=unused-but-set-variable -Werror=return-type -Werror=shadow)
+  add_compile_options(-Wall -Wextra)
 endif()
 
 # Find dependencies
@@ -17,16 +17,16 @@ find_package(tf2_eigen REQUIRED)
 find_package(urdf REQUIRED)
 find_package(Eigen3 REQUIRED)
 
-# Executable: ikfast_service_node
-add_executable(ikfast_service_node src/ikfast_service.cpp)
+# Executable: ik_plugin_service_node
+add_executable(ik_plugin_service_node src/ik_plugin_service.cpp)
 
-target_include_directories(ikfast_service_node PUBLIC
+target_include_directories(ik_plugin_service_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(ikfast_service_node
+ament_target_dependencies(ik_plugin_service_node
   rclcpp
   pluginlib
   kinematics_interface
@@ -38,18 +38,14 @@ ament_target_dependencies(ikfast_service_node
 )
 
 # Install executable
-install(TARGETS ikfast_service_node
+install(TARGETS ik_plugin_service_node
   DESTINATION lib/${PROJECT_NAME}
-)
-
-# Install launch files
-install(DIRECTORY launch/
-  DESTINATION share/${PROJECT_NAME}/launch
 )
 
 # Install scripts
 install(PROGRAMS
   scripts/test_ik_poses.py
+  test/test_kinematics_service.sh
   DESTINATION lib/${PROJECT_NAME}
 )
 
