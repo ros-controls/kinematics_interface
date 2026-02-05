@@ -21,6 +21,7 @@
 #include "moveit_msgs/srv/get_position_ik.hpp"
 #include "pluginlib/class_loader.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "rcutils/logging.h"
 #include "tf2_eigen/tf2_eigen.hpp"
 #include "urdf/model.h"
 // Transform link between flange to ee
@@ -114,7 +115,7 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
     throw std::runtime_error("Missing required parameter: robot_description");
   }
 
-  RCLCPP_INFO(this->get_logger(), "Initializing IKFast Kinematics Service Node");
+  RCLCPP_INFO(this->get_logger(), "Initializing IK Service Node");
   RCLCPP_INFO(this->get_logger(), "  Plugin name: %s", plugin_name_.c_str());
   RCLCPP_INFO(this->get_logger(), "  Base link: %s", base_link_.c_str());
   RCLCPP_INFO(this->get_logger(), "  Tip link: %s", tip_link_.c_str());
@@ -142,11 +143,11 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
 
   // Create service
   get_ik_service_ = this->create_service<moveit_msgs::srv::GetPositionIK>(
-    "compute_plugin_ik", std::bind(
+    "custom_compute_ik", std::bind(
                         &IKPluginKinematicsServiceNode::get_position_ik_callback, this,
                         std::placeholders::_1, std::placeholders::_2));
 
-  RCLCPP_INFO(this->get_logger(), "IK service 'compute_plugin_ik' ready!");
+  RCLCPP_INFO(this->get_logger(), "IK service 'custom_compute_ik' ready!");
 }
 
 bool IKPluginKinematicsServiceNode::load_kinematics_plugin()
@@ -480,33 +481,36 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
       response->solution = create_robot_state_msg(solution);
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
 
-      std::stringstream ss_rad, ss_deg;
-      ss_rad << std::fixed << std::setprecision(4);
-      ss_deg << std::fixed << std::setprecision(2);
-
-      ss_rad << "[";
-      ss_deg << "[";
-      for (size_t i = 0; i < solution.size(); ++i)
+      if (rcutils_logging_logger_is_enabled_for(
+            this->get_logger().get_name(), RCUTILS_LOG_SEVERITY_DEBUG))
       {
-        ss_rad << solution[i] << (i < solution.size() - 1 ? ", " : "");
-        ss_deg << solution[i] * 180.0 / M_PI << (i < solution.size() - 1 ? ", " : "");
+        std::ostringstream ss;
+        ss << std::fixed << std::setprecision(4);
+        ss << "IK solution (rad): [";
+        for (size_t i = 0; i < solution.size(); ++i)
+        {
+          ss << solution[i] << (i + 1 < solution.size() ? ", " : "");
+        }
+        ss << "]";
+        ss << std::setprecision(2);
+        ss << " deg: [";
+        for (size_t i = 0; i < solution.size(); ++i)
+        {
+          ss << solution[i] * 180.0 / M_PI << (i + 1 < solution.size() ? ", " : "");
+        }
+        ss << "]";
+        RCLCPP_DEBUG(this->get_logger(), "%s", ss.str().c_str());
       }
-      ss_rad << "]";
-      ss_deg << "]";
-
-      RCLCPP_INFO(this->get_logger(), "Hey OZ -> IKFAST Solution is found!:");
-      RCLCPP_INFO(this->get_logger(), "  Radian: %s", ss_rad.str().c_str());
-      RCLCPP_INFO(this->get_logger(), "  Degree: %s", ss_deg.str().c_str());
     }
     else
     {
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
-      RCLCPP_WARN(this->get_logger(), "No IKFast Solution Found.");
+      RCLCPP_WARN(this->get_logger(), "No IK Solution Found.");
     }
   }
   catch (const std::exception & ex)
   {
-    RCLCPP_ERROR(this->get_logger(), "IKFast Solution Error: %s", ex.what());
+    RCLCPP_ERROR(this->get_logger(), "IK Solution Error: %s", ex.what());
     response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::FAILURE;
   }
 }
@@ -544,7 +548,7 @@ int main(int argc, char ** argv)
   }
   catch (const std::exception & ex)
   {
-    RCLCPP_ERROR(rclcpp::get_logger("ikfast_service"), "Fatal error: %s", ex.what());
+    RCLCPP_ERROR(rclcpp::get_logger("custom_ik_service"), "Fatal error: %s", ex.what());
     rclcpp::shutdown();
     return 1;
   }
