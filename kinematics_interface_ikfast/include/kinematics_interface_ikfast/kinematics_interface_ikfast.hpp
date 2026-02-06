@@ -73,6 +73,10 @@ public:
   bool convert_joint_state_to_cartesian_pose(
     const std::vector<double> & joint_state, Eigen::Isometry3d & pose) override;
 
+  bool calculate_frame_difference(
+    Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+    Eigen::Matrix<double, 6, 1> & delta_x) override;
+
   // Virtual function to get number of joints from IKFast
   virtual int get_num_joints_internal() = 0;
   virtual void compute_fk(const double * j, double * etrans, double * erot) = 0;

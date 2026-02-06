@@ -365,4 +365,53 @@ bool KinematicsInterfaceIKFast::verify_jacobian_inverse(
   return true;
 }
 
+bool KinematicsInterfaceIKFast::calculate_frame_difference(
+  Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+  Eigen::Matrix<double, 6, 1> & delta_x)
+{
+  if (dt <= 0.0)
+  {
+    RCLCPP_ERROR(LOGGER, "Invalid time interval dt (%f). Must be positive.", dt);
+    return false;
+  }
+
+  // Extract positions
+  Eigen::Vector3d pos_a(x_a(0), x_a(1), x_a(2));
+  Eigen::Vector3d pos_b(x_b(0), x_b(1), x_b(2));
+
+  // Extract quaternions (x, y, z, w)
+  Eigen::Quaterniond quat_a(x_a(6), x_a(3), x_a(4), x_a(5));
+  Eigen::Quaterniond quat_b(x_b(6), x_b(3), x_b(4), x_b(5));
+
+  // Linear velocity (translation difference divided by dt)
+  delta_x.head<3>() = (pos_b - pos_a) / dt;
+
+  // Angular velocity from quaternion difference
+  // Compute the relative rotation: quat_diff = quat_b * quat_a.inverse()
+  Eigen::Quaterniond quat_diff = quat_b * quat_a.inverse();
+
+  // Ensure shortest path (w >= 0)
+  if (quat_diff.w() < 0.0)
+  {
+    quat_diff.coeffs() = -quat_diff.coeffs();
+  }
+
+  // Convert quaternion to angle-axis
+  double angle = 2.0 * std::acos(quat_diff.w());
+  Eigen::Vector3d axis;
+  if (angle < 1e-6)
+  {
+    axis = Eigen::Vector3d::Zero();
+  }
+  else
+  {
+    axis = quat_diff.vec() / std::sin(angle / 2.0);
+  }
+
+  // Angular velocity = axis * angle / dt
+  delta_x.tail<3>() = axis * angle / dt;
+
+  return true;
+}
+
 }  // namespace kinematics_interface_ikfast
