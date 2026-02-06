@@ -1,87 +1,74 @@
-# Kinematics Nodes
+# kinematics_nodes
 
-ROS2 service node for analytical kinematics solvers (IKFast). Exposes kinematics as a MoveIt-compatible service.
+ROS 2 nodes that expose kinematics functionality as services using the `kinematics_interface` package.
 
-## Quick Start
+## Overview
 
-### Launch
+This package provides executable nodes that load kinematics plugins (KDL, Pinocchio, or IKFast) and expose their functionality as ROS 2 services. The primary use case is providing a MoveIt-compatible inverse kinematics service that works with any kinematics plugin implementation.
 
-```bash
-ros2 launch sfb_qa_cell_configuration bringup.launch.xml
-```
+## Nodes
 
-### Test
+### ik_plugin_service_node
 
-```bash
-# Simple test - checks if service works
-ros2 run kinematics_nodes test_kinematics_service.sh
-```
+A ROS 2 service node that provides inverse kinematics computations using any `kinematics_interface` plugin.
 
-## Service
+#### Features
 
-- **Name:** `/compute_plugin_ik`
-- **Type:** `moveit_msgs/srv/GetPositionIK`
-- **Input:** Cartesian pose + optional seed state
-- **Output:** Joint angles or error code
+- **Plugin-based Architecture**: Works with any kinematics plugin (KDL, Pinocchio, IKFast)
+- **MoveIt-compatible Service**: Implements `moveit_msgs/srv/GetPositionIK` service interface
+- **Automatic URDF Parsing**: Validates robot model and extracts joint names from kinematic chain
+- **TF Transform Support**: Handles tool offset transforms and frame conversions automatically
+- **Request Validation**: Validates seed states and joint configurations
 
-## Parameters (Required)
+#### Service
 
-| Parameter | Description |
-|-----------|-------------|
-| `plugin_name` | Kinematics plugin class name (e.g., `fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics`) |
-| `robot_description` | Robot URDF as XML string |
-| `base_link` | Base frame name (e.g., `base_link`) |
-| `tip_link` | End-effector frame name (e.g., `flange`) |
-| `alpha` | Jacobian damping factor (default: `0.000005`) |
+- **`custom_compute_ik`** (`moveit_msgs/srv/GetPositionIK`): Compute inverse kinematics for a given Cartesian pose
 
-**Note:** All parameters except `alpha` are required. The node will fail to start if any required parameter is missing.
+#### Parameters
 
-## Example Launch
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `plugin_name` | string | Yes | Name of the kinematics plugin to load (e.g., `kinematics_interface_kdl/KinematicsInterfaceKDL`) |
+| `robot_description` | string | Yes | URDF robot description as XML string |
+| `base_link` | string | Yes | Name of the base link for the kinematic chain |
+| `tip_link` | string | Yes | Name of the tip/flange link for the kinematic chain |
+| `alpha` | double | No | Damping factor for Jacobian inverse (default: 0.000005) |
 
-```xml
-<node pkg="kinematics_nodes" exec="ik_plugin_service_node" output="screen">
-  <param name="plugin_name" value="fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics"/>
-  <param name="base_link" value="base_link"/>
-  <param name="tip_link" value="flange"/>
-  <param name="robot_description" value="$(var robot_description_content)"/>
-</node>
-```
-
-## Example Service Call
+#### Usage Example
 
 ```bash
-ros2 service call /compute_plugin_ik moveit_msgs/srv/GetPositionIK "{
-  ik_request: {
-    group_name: 'manipulator_left',
-    ik_link_name: 'left_gripper_tcp_link',
-    pose_stamped: {
-      header: {frame_id: 'base_link'},
-      pose: {
-        position: {x: 0.4, y: 0.0, z: 0.6},
-        orientation: {w: 1.0}
-      }
-    }
-  }
-}"
+ros2 run kinematics_nodes ik_plugin_service_node --ros-args \
+  -p plugin_name:="kinematics_interface_kdl/KinematicsInterfaceKDL" \
+  -p robot_description:="$(cat robot.urdf)" \
+  -p base_link:="base_link" \
+  -p tip_link:="flange"
 ```
 
-## Features
-
-- Loads any kinematics plugin via pluginlib
-- Automatic URDF joint name extraction from kinematic chain
-- Validates requests and returns MoveIt error codes
-- Supports frame transforms via TF2
-- Finds closest IK solution to seed state
-- Handles tool offsets (TCP to flange transforms)
-
-## Test Script
-
-The `test_kinematics_service.sh` script verifies:
-1. Service is available
-2. IK request returns valid solution
-
-**Usage:**
+Call the service:
 ```bash
-# With service running
-ros2 run kinematics_nodes test_kinematics_service.sh
+ros2 service call /custom_compute_ik moveit_msgs/srv/GetPositionIK \
+  '{ik_request: {group_name: "manipulator", ik_link_name: "tcp", pose_stamped: {pose: {position: {x: 0.5, y: 0.0, z: 0.5}, orientation: {x: 0.0, y: 0.0, z: 0.0, w: 1.0}}}}}'
 ```
+
+## Dependencies
+
+- `rclcpp`: ROS 2 C++ client library
+- `pluginlib`: For loading kinematics plugins
+- `kinematics_interface`: Base kinematics interface
+- `moveit_msgs`: MoveIt message definitions
+- `geometry_msgs`: Geometry message types
+- `sensor_msgs`: Sensor message types
+- `tf2_eigen`: TF2 Eigen conversions
+- `urdf`: URDF parsing
+- `eigen`: Linear algebra library
+
+## License
+
+Apache License 2.0
+
+## See Also
+
+- [kinematics_interface](../kinematics_interface/): Base kinematics interface
+- [kinematics_interface_kdl](../kinematics_interface_kdl/): KDL plugin implementation
+- [kinematics_interface_pinocchio](../kinematics_interface_pinocchio/): Pinocchio plugin implementation
+- [kinematics_interface_ikfast](../kinematics_interface_ikfast/): IKFast plugin implementation
