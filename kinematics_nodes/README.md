@@ -38,8 +38,8 @@ A ROS 2 service node that provides inverse kinematics computations using any `ki
 
 ```bash
 ros2 run kinematics_nodes ik_plugin_service_node --ros-args \
-  -p plugin_name:="kinematics_interface_kdl/KinematicsInterfaceKDL" \
-  -p robot_description:="$(cat robot.urdf)" \
+  -p plugin_name:="plugin_name" \
+  -p robot_description:="robot_description" \
   -p base_link:="base_link" \
   -p tip_link:="flange"
 ```
