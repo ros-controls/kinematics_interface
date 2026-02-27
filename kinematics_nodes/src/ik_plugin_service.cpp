@@ -396,7 +396,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
   const std::string target_frame = request->ik_request.pose_stamped.header.frame_id;
 
   RCLCPP_INFO(
-    this->get_logger(), "IK Request TARGETTTTT: TCP=%s, Frame=%s", requested_tcp_link.c_str(),
+    this->get_logger(), "IK Request Target: TCP=%s, Frame=%s", requested_tcp_link.c_str(),
     target_frame.c_str());
 
   // This step converts the target coordinates from the object's local frame (e.g., a pick position on a part) into the robot's base frame.
