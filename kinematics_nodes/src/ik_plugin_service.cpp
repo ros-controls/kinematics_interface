@@ -45,13 +45,12 @@ private:
   std::string plugin_name_;
   std::string robot_description_;
   std::string base_link_;
-  std::string tip_link_;       // ik_tip_link -> flange
+  std::string tip_link_;
   size_t num_joints_;
 
   // Joint names from URDF (extracted from kinematic chain)
   std::vector<std::string> joint_names_;
 
-  // Private members içinde:
   std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
   std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
@@ -75,32 +74,32 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
 : Node("ik_plugin_service_node", options), num_joints_(6)
 {
   // Declare and read parameters
+  // Note: 'tip' and 'base' parameter names match what kinematics plugins (KDL, IKFast, etc.) expect.
   this->declare_parameter<std::string>("plugin_name", "");
   this->declare_parameter<std::string>("robot_description", "");
-  this->declare_parameter<std::string>("base_link", "");
-  this->declare_parameter<std::string>("tip_link", "");
+  this->declare_parameter<std::string>("base", "");
+  this->declare_parameter<std::string>("tip", "");
   this->declare_parameter<double>("alpha", 0.000005);
 
   this->get_parameter("plugin_name", plugin_name_);
   this->get_parameter("robot_description", robot_description_);
-  this->get_parameter("base_link", base_link_);
-  this->get_parameter("tip_link", tip_link_);
+  this->get_parameter("base", base_link_);
+  this->get_parameter("tip", tip_link_);
 
-  // BURASI EKSİK - ÇÖKMEYİ ENGELLEYECEK SATIRLAR:
   tf_buffer_ = std::make_shared<tf2_ros::Buffer>(this->get_clock());
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
   // Validate required parameters
   if (base_link_.empty())
   {
-    RCLCPP_ERROR(this->get_logger(), "Parameter 'base_link' is required but not set!");
-    throw std::runtime_error("Missing required parameter: base_link");
+    RCLCPP_ERROR(this->get_logger(), "Parameter 'base' is required but not set!");
+    throw std::runtime_error("Missing required parameter: base");
   }
 
   if (tip_link_.empty())
   {
-    RCLCPP_ERROR(this->get_logger(), "Parameter 'tip_link' is required but not set!");
-    throw std::runtime_error("Missing required parameter: tip_link");
+    RCLCPP_ERROR(this->get_logger(), "Parameter 'tip' is required but not set!");
+    throw std::runtime_error("Missing required parameter: tip");
   }
 
   if (plugin_name_.empty())
