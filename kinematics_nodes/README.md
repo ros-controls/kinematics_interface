@@ -27,7 +27,7 @@ The node uses the same parameter names (`tip`, `base`, `alpha`) that the plugins
 ## Available plugins
 
 > [!NOTE]
-> IKFast plugins are generated per robot and are not shipped with `kinematics_interface`.  
+> IKFast plugins are generated per robot and are not shipped with `kinematics_interface`.
 > Use the `plugin_name` exported by your robot-specific IKFast package (for example, `fanuc_lrmate200id_ikfast/FanucLrmate200idKinematics`).
 
 | Plugin | `plugin_name` value |

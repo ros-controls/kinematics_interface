@@ -11,8 +11,8 @@
 // of their product.
 
 #include "kinematics_interface_ikfast/kinematics_interface_ikfast.hpp"
-#include <cmath>
 #include <algorithm>
+#include <cmath>
 #include "kinematics_interface_ikfast/ikfast.h"
 
 namespace kinematics_interface_ikfast
@@ -179,8 +179,7 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_closest_joint_state(
   if (current_joint_state.size() != static_cast<size_t>(num_joints_))
   {
     RCLCPP_ERROR(
-      LOGGER,
-      "Size mismatch: current_joint_state has %zu elements, but expected %d joints.",
+      LOGGER, "Size mismatch: current_joint_state has %zu elements, but expected %d joints.",
       current_joint_state.size(), num_joints_);
     return false;
   }
@@ -379,9 +378,7 @@ bool KinematicsInterfaceIKFast::verify_jacobian_inverse(
 }
 
 bool KinematicsInterfaceIKFast::calculate_frame_difference(
-  const Eigen::Matrix<double, 7, 1> & x_a, 
-  const Eigen::Matrix<double, 7, 1> & x_b, 
-  double dt,
+  const Eigen::Matrix<double, 7, 1> & x_a, const Eigen::Matrix<double, 7, 1> & x_b, double dt,
   Eigen::Matrix<double, 6, 1> & delta_x)
 {
   if (dt <= 0.0)

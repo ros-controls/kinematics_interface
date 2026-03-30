@@ -62,7 +62,8 @@ private:
   moveit_msgs::msg::RobotState create_robot_state_msg(const std::vector<double> & joint_positions);
 
 public:
-  explicit IKPluginKinematicsServiceNode(const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+  explicit IKPluginKinematicsServiceNode(
+    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   // Service callbacks
   void get_position_ik_callback(
@@ -143,8 +144,8 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
   // Create service
   get_ik_service_ = this->create_service<moveit_msgs::srv::GetPositionIK>(
     "kinematics_compute_ik", std::bind(
-                        &IKPluginKinematicsServiceNode::get_position_ik_callback, this,
-                        std::placeholders::_1, std::placeholders::_2));
+                               &IKPluginKinematicsServiceNode::get_position_ik_callback, this,
+                               std::placeholders::_1, std::placeholders::_2));
 
   RCLCPP_INFO(this->get_logger(), "IK service 'kinematics_compute_ik' ready!");
 }
@@ -396,8 +397,8 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
   const std::string target_frame = request->ik_request.pose_stamped.header.frame_id;
 
   RCLCPP_INFO(
-    this->get_logger(), "IK Request: place %s in the desired position within frame %s", requested_tcp_link.c_str(),
-    target_frame.c_str());
+    this->get_logger(), "IK Request: place %s in the desired position within frame %s",
+    requested_tcp_link.c_str(), target_frame.c_str());
 
   // This step converts the target coordinates from the object's local frame (e.g., a pick position on a part) into the robot's base frame.
   Eigen::Isometry3d target_pose_in_base;
@@ -410,7 +411,8 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     {
       // Get frame transform from TF (Base -> Target_Frame)
       auto transform_stamped = tf_buffer_->lookupTransform(
-        base_link_, target_frame, request->ik_request.pose_stamped.header.stamp, tf2::durationFromSec(0.5));
+        base_link_, target_frame, request->ik_request.pose_stamped.header.stamp,
+        tf2::durationFromSec(0.5));
 
       Eigen::Isometry3d frame_transform = tf2::transformToEigen(transform_stamped);
       target_pose_in_base = frame_transform * target_pose_in_request_frame;
@@ -419,7 +421,9 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     {
       if (target_frame.empty())
       {
-        RCLCPP_WARN(this->get_logger(), "The frame_id of the target pose is empty. Assuming that it is provided in base frame");
+        RCLCPP_WARN(
+          this->get_logger(),
+          "The frame_id of the target pose is empty. Assuming that it is provided in base frame");
       }
       target_pose_in_base = target_pose_in_request_frame;
     }
@@ -537,8 +541,8 @@ moveit_msgs::msg::RobotState IKPluginKinematicsServiceNode::create_robot_state_m
       this->get_logger(), "Mismatch between joint names (%zu) and positions (%zu)",
       robot_state.joint_state.name.size(), robot_state.joint_state.position.size());
 
-      // Prevent returning an invalid RobotState
-      throw std::runtime_error("Joint names and positions size mismatch");
+    // Prevent returning an invalid RobotState
+    throw std::runtime_error("Joint names and positions size mismatch");
   }
 
   return robot_state;

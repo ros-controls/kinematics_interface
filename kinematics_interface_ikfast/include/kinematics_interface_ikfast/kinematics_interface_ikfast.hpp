@@ -91,7 +91,7 @@ private:
   bool verify_jacobian_inverse(const Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian);
 
   bool initialized_ = false;
-  int num_joints_ = 0; // Default 0: indicates "not yet initialized"
+  int num_joints_ = 0;  // Default 0: indicates "not yet initialized"
   std::string root_name_;
   std::string end_effector_name_;
   const double epsilon_ = 1e-6;
