@@ -12,13 +12,12 @@
 
 #include "kinematics_interface_ikfast/kinematics_interface_ikfast.hpp"
 #include <cmath>
+#include <algorithm>
 #include "kinematics_interface_ikfast/ikfast.h"
 
 namespace kinematics_interface_ikfast
 {
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_ikfast");
-
-const int MAX_IK_SOLUTIONS = 8;
 
 bool KinematicsInterfaceIKFast::initialize(
   const std::string & robot_description,  //unused but lets keep for now
@@ -56,8 +55,6 @@ bool KinematicsInterfaceIKFast::initialize(
       num_joints_);
     return false;
   }
-
-  I_ = Eigen::MatrixXd::Identity(num_joints_, num_joints_);  // set this for Jacobian calculation
 
   initialized_ = true;
   return true;
@@ -172,6 +169,15 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_closest_joint_state(
   const Eigen::Isometry3d & pose, const std::vector<double> & current_joint_state,
   std::vector<double> & joint_state)
 {
+  if (current_joint_state.size() != static_cast<size_t>(num_joints_))
+  {
+    RCLCPP_ERROR(
+      LOGGER,
+      "Size mismatch: current_joint_state has %zu elements, but expected %d joints.",
+      current_joint_state.size(), num_joints_);
+    return false;
+  }
+
   std::vector<std::vector<double>> all_states;
   if (!convert_cartesian_pose_to_possible_joint_states(pose, all_states)) return false;
   if (all_states.empty()) return false;
@@ -366,7 +372,7 @@ bool KinematicsInterfaceIKFast::verify_jacobian_inverse(
 }
 
 bool KinematicsInterfaceIKFast::calculate_frame_difference(
-  Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+  const Eigen::Matrix<double, 7, 1> & x_a, const Eigen::Matrix<double, 7, 1> & x_b, double dt,
   Eigen::Matrix<double, 6, 1> & delta_x)
 {
   if (dt <= 0.0)
@@ -396,8 +402,9 @@ bool KinematicsInterfaceIKFast::calculate_frame_difference(
     quat_diff.coeffs() = -quat_diff.coeffs();
   }
 
-  // Convert quaternion to angle-axis
-  double angle = 2.0 * std::acos(quat_diff.w());
+  // Convert quaternion to angle-axis (clamp to avoid numerical issues with acos)
+  double w = std::clamp(quat_diff.w(), -1.0, 1.0);
+  double angle = 2.0 * std::acos(w);
   Eigen::Vector3d axis;
   if (angle < 1e-6)
   {

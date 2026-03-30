@@ -97,7 +97,6 @@ private:
   const double epsilon_ = 1e-6;
 
   double alpha_;  // damping term for Jacobian inverse
-  Eigen::MatrixXd I_;
 };
 
 }  // namespace kinematics_interface_ikfast
