@@ -2,6 +2,10 @@
 
 A ROS 2 plugin that provides an IKFast-based implementation of the `kinematics_interface` for high-performance robot kinematics computations.
 
+> [!IMPORTANT]
+> This package does **not** generate IKFast solver code. You must generate the IKFast analytical kinematics solution for your specific robot **before** using this plugin. For instructions on generating IKFast code, refer to the [pyikfast repository](https://github.com/cyberbotics/pyikfast).
+
+
 ## Overview
 
 This package implements the `KinematicsInterface` base class using IKFast-generated analytical kinematics solvers. IKFast produces optimized C++ code for specific robot geometries, offering significant performance advantages over numerical methods for compatible manipulators.
@@ -103,7 +107,7 @@ Initialize the plugin with robot description and parameters. Must be called befo
 #### `bool calculate_link_transform(...)`
 Compute the forward kinematics transformation for the end-effector.
 
-#### `bool convert_cartesian_pose_to_all_possible_joint_states(...)`
+#### `bool convert_cartesian_pose_to_possible_joint_states(...)`
 Get all valid IK solutions for a given Cartesian pose (up to 8 solutions).
 
 #### `bool convert_cartesian_pose_to_closest_joint_state(...)`

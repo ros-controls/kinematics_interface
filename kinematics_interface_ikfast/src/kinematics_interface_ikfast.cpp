@@ -173,7 +173,7 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_closest_joint_state(
   std::vector<double> & joint_state)
 {
   std::vector<std::vector<double>> all_states;
-  if (!convert_cartesian_pose_to_all_possible_joint_states(pose, all_states)) return false;
+  if (!convert_cartesian_pose_to_possible_joint_states(pose, all_states)) return false;
   if (all_states.empty()) return false;
 
   double min_sum = 1e10;
@@ -203,7 +203,7 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_joint_state_within_ran
   std::vector<double> & joint_state)
 {
   std::vector<std::vector<double>> all_states;
-  if (!convert_cartesian_pose_to_all_possible_joint_states(pose, all_states)) return false;
+  if (!convert_cartesian_pose_to_possible_joint_states(pose, all_states)) return false;
 
   const double TWO_PI = 2.0 * M_PI;
 
@@ -266,7 +266,7 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_joint_state_within_ran
   return false;
 }
 
-bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_all_possible_joint_states(
+bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_possible_joint_states(
   const Eigen::Isometry3d & pose, std::vector<std::vector<double>> & joint_states)
 {
   if (!verify_initialized()) return false;

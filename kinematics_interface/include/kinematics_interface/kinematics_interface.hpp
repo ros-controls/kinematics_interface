@@ -141,7 +141,7 @@ public:
   /**
    * \brief Convert Cartesian pose to all possible joint states using inverse kinematics.
    */
-  virtual bool convert_cartesian_pose_to_all_possible_joint_states(
+  virtual bool convert_cartesian_pose_to_possible_joint_states(
     const Eigen::Isometry3d & /*pose*/, std::vector<std::vector<double>> & /*joint_states*/)
   {
     return false;
