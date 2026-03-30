@@ -386,7 +386,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
   if (!validate_ik_request(request))
   {
     RCLCPP_WARN(this->get_logger(), "IK Request validation failed!");
-    response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_ROBOT_STATE;
+    response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::FAILURE;
     return;
   }
 
