@@ -6,13 +6,13 @@ ROS 2 node that loads a `kinematics_interface` plugin and exposes a MoveIt-compa
 
 1. Reads the URDF and extracts the kinematic chain between `base` and `tip` links
 2. Loads the specified kinematics plugin via `pluginlib`
-3. Exposes a `custom_compute_ik` service that accepts a target pose and returns joint positions
+3. Exposes a `kinematics_compute_ik` service that accepts a target pose and returns joint positions
 
 The node uses the same parameter names (`tip`, `base`, `alpha`) that the plugins expect, so plugin initialization works without extra parameter bridging.
 
 ## Service
 
-- **`custom_compute_ik`** (`moveit_msgs/srv/GetPositionIK`) -- given a target pose, returns an IK joint solution
+- **`kinematics_compute_ik`** (`moveit_msgs/srv/GetPositionIK`) -- given a target pose, returns an IK joint solution
 
 ## Parameters
 

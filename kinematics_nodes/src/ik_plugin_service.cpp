@@ -142,11 +142,11 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
 
   // Create service
   get_ik_service_ = this->create_service<moveit_msgs::srv::GetPositionIK>(
-    "custom_compute_ik", std::bind(
+    "kinematics_compute_ik", std::bind(
                         &IKPluginKinematicsServiceNode::get_position_ik_callback, this,
                         std::placeholders::_1, std::placeholders::_2));
 
-  RCLCPP_INFO(this->get_logger(), "IK service 'custom_compute_ik' ready!");
+  RCLCPP_INFO(this->get_logger(), "IK service 'kinematics_compute_ik' ready!");
 }
 
 bool IKPluginKinematicsServiceNode::load_kinematics_plugin()
