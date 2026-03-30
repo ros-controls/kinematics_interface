@@ -74,7 +74,7 @@ public:
     const std::vector<double> & joint_state, Eigen::Isometry3d & pose) override;
 
   bool calculate_frame_difference(
-    Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
+    const Eigen::Matrix<double, 7, 1> & x_a, const Eigen::Matrix<double, 7, 1> & x_b, double dt,
     Eigen::Matrix<double, 6, 1> & delta_x) override;
 
   // Virtual function to get number of joints from IKFast
@@ -91,7 +91,7 @@ private:
   bool verify_jacobian_inverse(const Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian);
 
   bool initialized_ = false;
-  int num_joints_;
+  int num_joints_ = 0; // Default 0: indicates "not yet initialized"
   std::string root_name_;
   std::string end_effector_name_;
   const double epsilon_ = 1e-6;

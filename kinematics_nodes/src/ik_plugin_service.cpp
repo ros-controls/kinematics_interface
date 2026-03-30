@@ -71,7 +71,7 @@ public:
 };
 
 IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeOptions & options)
-: Node("ik_plugin_service_node", options), num_joints_(6)
+: Node("ik_plugin_service_node", options), num_joints_(0)
 {
   // Declare and read parameters
   // Note: 'tip' and 'base' parameter names match what kinematics plugins (KDL, IKFast, etc.) expect.
@@ -410,7 +410,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     {
       // Get frame transform from TF (Base -> Target_Frame)
       auto transform_stamped = tf_buffer_->lookupTransform(
-        base_link_, target_frame, request->ik_request.pose_stamped.header.stamp, tf2::durationFromSec(0.2));
+        base_link_, target_frame, request->ik_request.pose_stamped.header.stamp, tf2::durationFromSec(0.5));
 
       Eigen::Isometry3d frame_transform = tf2::transformToEigen(transform_stamped);
       target_pose_in_base = frame_transform * target_pose_in_request_frame;
@@ -419,7 +419,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     {
       if (target_frame.empty())
       {
-        RCLCPP_WARN(this->get_logger(), "The frame_id of the target pose is empty. Assuming that it is provided in base frame".);
+        RCLCPP_WARN(this->get_logger(), "The frame_id of the target pose is empty. Assuming that it is provided in base frame");
       }
       target_pose_in_base = target_pose_in_request_frame;
     }
@@ -438,7 +438,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     try
     {
       auto flange_to_tcp_msg = tf_buffer_->lookupTransform(
-        tip_link_, requested_tcp_link, tf2::TimePointZero, tf2::durationFromSec(1.0));
+        tip_link_, requested_tcp_link, tf2::TimePointZero, tf2::durationFromSec(0.5));
 
       Eigen::Isometry3d flange_to_tcp = tf2::transformToEigen(flange_to_tcp_msg);
 
@@ -536,6 +536,9 @@ moveit_msgs::msg::RobotState IKPluginKinematicsServiceNode::create_robot_state_m
     RCLCPP_ERROR(
       this->get_logger(), "Mismatch between joint names (%zu) and positions (%zu)",
       robot_state.joint_state.name.size(), robot_state.joint_state.position.size());
+
+      // Prevent returning an invalid RobotState
+      throw std::runtime_error("Joint names and positions size mismatch");
   }
 
   return robot_state;

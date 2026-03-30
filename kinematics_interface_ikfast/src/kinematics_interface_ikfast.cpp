@@ -80,7 +80,6 @@ bool KinematicsInterfaceIKFast::calculate_link_transform(
   double eerot[9], eetrans[3];
 
   compute_fk(vjoints.data(), eetrans, eerot);
-  RCLCPP_INFO(LOGGER, "vjoints.data = %p", static_cast<const void *>(vjoints.data()));
 
   Eigen::Matrix3d rotation;
   rotation << eerot[0], eerot[1], eerot[2], eerot[3], eerot[4], eerot[5], eerot[6], eerot[7],
@@ -106,15 +105,23 @@ bool KinematicsInterfaceIKFast::calculate_jacobian(
 
   for (size_t i = 0; i < static_cast<size_t>(num_joints_); ++i)
   {
-    Eigen::VectorXd q_perturbed = joint_pos;
-    q_perturbed[i] += epsilon_;
+    // Perturb joint in both directions
+    Eigen::VectorXd q_plus = joint_pos;
+    Eigen::VectorXd q_minus = joint_pos;
+    q_plus[i] += epsilon_;
+    q_minus[i] -= epsilon_;
 
-    if (!calculate_link_transform(q_perturbed, link_name, T_perturbed)) return false;
+    Eigen::Isometry3d T_plus, T_minus;
+    if (!calculate_link_transform(q_plus, link_name, T_plus)) return false;
+    if (!calculate_link_transform(q_minus, link_name, T_minus)) return false;
 
-    jacobian.block<3, 1>(0, i) = (T_perturbed.translation() - T_nominal.translation()) / epsilon_;
-    Eigen::Matrix3d R_diff = T_perturbed.linear() * T_nominal.linear().transpose();
+    // Translational part
+    jacobian.block<3, 1>(0, i) = (T_plus.translation() - T_minus.translation()) / (2.0 * epsilon_);
+
+    // Rotational part
+    Eigen::Matrix3d R_diff = T_plus.linear() * T_minus.linear().transpose();
     Eigen::AngleAxisd angle_axis(R_diff);
-    jacobian.block<3, 1>(3, i) = (angle_axis.axis() * angle_axis.angle()) / epsilon_;
+    jacobian.block<3, 1>(3, i) = (angle_axis.axis() * angle_axis.angle()) / (2.0 * epsilon_);
   }
   return true;
 }
@@ -372,7 +379,9 @@ bool KinematicsInterfaceIKFast::verify_jacobian_inverse(
 }
 
 bool KinematicsInterfaceIKFast::calculate_frame_difference(
-  const Eigen::Matrix<double, 7, 1> & x_a, const Eigen::Matrix<double, 7, 1> & x_b, double dt,
+  const Eigen::Matrix<double, 7, 1> & x_a, 
+  const Eigen::Matrix<double, 7, 1> & x_b, 
+  double dt,
   Eigen::Matrix<double, 6, 1> & delta_x)
 {
   if (dt <= 0.0)
