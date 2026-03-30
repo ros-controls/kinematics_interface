@@ -396,7 +396,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
   const std::string target_frame = request->ik_request.pose_stamped.header.frame_id;
 
   RCLCPP_INFO(
-    this->get_logger(), "IK Request Target: TCP=%s, Frame=%s", requested_tcp_link.c_str(),
+    this->get_logger(), "IK Request: place %s in the desired position within frame %s", requested_tcp_link.c_str(),
     target_frame.c_str());
 
   // This step converts the target coordinates from the object's local frame (e.g., a pick position on a part) into the robot's base frame.
@@ -417,9 +417,14 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     }
     else
     {
+      if (target_frame.empty())
+      {
+        RCLCPP_WARN(this->get_logger(), "The frame_id of the target pose is empty. Assuming that it is provided in base frame".);
+      }
       target_pose_in_base = target_pose_in_request_frame;
     }
   }
+  // If the transform between frames cannot be resolved via TF, report failure and abort IK computation.
   catch (const tf2::TransformException & ex)
   {
     RCLCPP_ERROR(this->get_logger(), "Frame transform error %s", ex.what());
@@ -467,7 +472,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     }
     else
     {
-      seed_state.resize(num_joints_, 0.0);  //do not set as 6 OZ
+      seed_state.resize(num_joints_, 0.0);
     }
 
     std::vector<double> solution;
