@@ -26,15 +26,15 @@ target_include_directories(ik_plugin_service_node PUBLIC
   ${EIGEN3_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(ik_plugin_service_node
-  rclcpp
-  pluginlib
-  kinematics_interface
-  moveit_msgs
-  geometry_msgs
-  sensor_msgs
-  tf2_eigen
-  urdf
+target_link_libraries(ik_plugin_service_node
+  rclcpp::rclcpp
+  pluginlib::pluginlib
+  kinematics_interface::kinematics_interface
+  ${moveit_msgs_TARGETS}
+  ${geometry_msgs_TARGETS}
+  ${sensor_msgs_TARGETS}
+  tf2_eigen::tf2_eigen
+  urdf::urdf
 )
 
 # Install executable
