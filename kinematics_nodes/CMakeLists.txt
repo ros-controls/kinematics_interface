@@ -44,7 +44,6 @@ install(TARGETS ik_plugin_service_node
 
 # Install scripts
 install(PROGRAMS
-  scripts/test_ik_poses.py
   test/test_kinematics_service.sh
   DESTINATION lib/${PROJECT_NAME}
 )
