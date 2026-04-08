@@ -95,22 +95,26 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
   tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
 
   // Validate required parameters
-  if (base_link_.empty()) {
+  if (base_link_.empty())
+  {
     RCLCPP_ERROR(this->get_logger(), "Parameter 'base' is required but not set!");
     throw std::runtime_error("Missing required parameter: base");
   }
 
-  if (tip_link_.empty()) {
+  if (tip_link_.empty())
+  {
     RCLCPP_ERROR(this->get_logger(), "Parameter 'tip' is required but not set!");
     throw std::runtime_error("Missing required parameter: tip");
   }
 
-  if (plugin_name_.empty()) {
+  if (plugin_name_.empty())
+  {
     RCLCPP_ERROR(this->get_logger(), "Parameter 'plugin_name' is required but not set!");
     throw std::runtime_error("Missing required parameter: plugin_name");
   }
 
-  if (robot_description_.empty()) {
+  if (robot_description_.empty())
+  {
     RCLCPP_ERROR(this->get_logger(), "Parameter 'robot_description' is required but not set!");
     throw std::runtime_error("Missing required parameter: robot_description");
   }
@@ -121,19 +125,22 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
   RCLCPP_INFO(this->get_logger(), "  Tip link: %s", tip_link_.c_str());
 
   // Validate URDF and link names
-  if (!validate_urdf_and_links()) {
+  if (!validate_urdf_and_links())
+  {
     RCLCPP_ERROR(this->get_logger(), "URDF validation failed!");
     throw std::runtime_error("Invalid URDF or link names");
   }
 
   // Extract joint names from kinematic chain
-  if (!extract_joint_names_from_chain()) {
+  if (!extract_joint_names_from_chain())
+  {
     RCLCPP_ERROR(this->get_logger(), "Failed to extract joint names from kinematic chain!");
     throw std::runtime_error("Invalid kinematic chain");
   }
 
   // Load kinematics plugin
-  if (!load_kinematics_plugin()) {
+  if (!load_kinematics_plugin())
+  {
     RCLCPP_ERROR(this->get_logger(), "Failed to load kinematics plugin!");
     throw std::runtime_error("Failed to load kinematics plugin");
   }
@@ -149,7 +156,8 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
 
 bool IKPluginKinematicsServiceNode::load_kinematics_plugin()
 {
-  try {
+  try
+  {
     RCLCPP_INFO(this->get_logger(), "Loading kinematics plugin: %s", plugin_name_.c_str());
 
     // Create plugin loader
@@ -160,7 +168,8 @@ bool IKPluginKinematicsServiceNode::load_kinematics_plugin()
     // Load plugin instance
     kinematics_solver_ = plugin_loader_->createSharedInstance(plugin_name_);
 
-    if (!kinematics_solver_) {
+    if (!kinematics_solver_)
+    {
       RCLCPP_ERROR(this->get_logger(), "Failed to create plugin instance");
       return false;
     }
@@ -169,17 +178,22 @@ bool IKPluginKinematicsServiceNode::load_kinematics_plugin()
     bool init_success =
       kinematics_solver_->initialize(robot_description_, this->get_node_parameters_interface(), "");
 
-    if (!init_success) {
+    if (!init_success)
+    {
       RCLCPP_ERROR(this->get_logger(), "Failed to initialize kinematics plugin");
       return false;
     }
 
     RCLCPP_INFO(this->get_logger(), "Kinematics plugin loaded and initialized successfully");
     return true;
-  } catch (const pluginlib::PluginlibException & ex) {
+  }
+  catch (const pluginlib::PluginlibException & ex)
+  {
     RCLCPP_ERROR(this->get_logger(), "Plugin loading exception: %s", ex.what());
     return false;
-  } catch (const std::exception & ex) {
+  }
+  catch (const std::exception & ex)
+  {
     RCLCPP_ERROR(this->get_logger(), "Exception during plugin loading: %s", ex.what());
     return false;
   }
@@ -188,7 +202,8 @@ bool IKPluginKinematicsServiceNode::load_kinematics_plugin()
 bool IKPluginKinematicsServiceNode::validate_urdf_and_links()
 {
   // Parse URDF
-  if (!urdf_model_.initString(robot_description_)) {
+  if (!urdf_model_.initString(robot_description_))
+  {
     RCLCPP_ERROR(this->get_logger(), "Failed to parse URDF from robot_description parameter");
     return false;
   }
@@ -198,13 +213,15 @@ bool IKPluginKinematicsServiceNode::validate_urdf_and_links()
 
   // Validate base_link exists in URDF
   auto base_link_ptr = urdf_model_.getLink(base_link_);
-  if (!base_link_ptr) {
+  if (!base_link_ptr)
+  {
     RCLCPP_ERROR(
       this->get_logger(), "Base link '%s' not found in URDF! Available links:", base_link_.c_str());
 
     // List available links for debugging
     std::stringstream available_links;
-    for (const auto & link_pair : urdf_model_.links_) {
+    for (const auto & link_pair : urdf_model_.links_)
+    {
       available_links << link_pair.first << ", ";
     }
     RCLCPP_ERROR(this->get_logger(), "  Available: %s", available_links.str().c_str());
@@ -213,13 +230,15 @@ bool IKPluginKinematicsServiceNode::validate_urdf_and_links()
 
   // Validate tip_link exists in URDF
   auto tip_link_ptr = urdf_model_.getLink(tip_link_);
-  if (!tip_link_ptr) {
+  if (!tip_link_ptr)
+  {
     RCLCPP_ERROR(
       this->get_logger(), "Tip link '%s' not found in URDF! Available links:", tip_link_.c_str());
 
     // List available links for debugging
     std::stringstream available_links;
-    for (const auto & link_pair : urdf_model_.links_) {
+    for (const auto & link_pair : urdf_model_.links_)
+    {
       available_links << link_pair.first << ", ";
     }
     RCLCPP_ERROR(this->get_logger(), "  Available: %s", available_links.str().c_str());
@@ -240,16 +259,19 @@ bool IKPluginKinematicsServiceNode::extract_joint_names_from_chain()
 
   std::string current_link = tip_link_;
 
-  while (current_link != base_link_) {
+  while (current_link != base_link_)
+  {
     auto link_ptr = urdf_model_.getLink(current_link);
-    if (!link_ptr) {
+    if (!link_ptr)
+    {
       RCLCPP_ERROR(
         this->get_logger(), "Link '%s' not found in chain traversal", current_link.c_str());
       return false;
     }
 
     auto parent_joint = link_ptr->parent_joint;
-    if (!parent_joint) {
+    if (!parent_joint)
+    {
       RCLCPP_ERROR(
         this->get_logger(), "No parent joint found for link '%s'. Cannot reach base_link '%s'",
         current_link.c_str(), base_link_.c_str());
@@ -259,7 +281,8 @@ bool IKPluginKinematicsServiceNode::extract_joint_names_from_chain()
     // Only add revolute and prismatic joints (not fixed joints)
     if (
       parent_joint->type == urdf::Joint::REVOLUTE || parent_joint->type == urdf::Joint::PRISMATIC ||
-      parent_joint->type == urdf::Joint::CONTINUOUS) {
+      parent_joint->type == urdf::Joint::CONTINUOUS)
+    {
       joint_names_.insert(joint_names_.begin(), parent_joint->name);
     }
 
@@ -267,7 +290,8 @@ bool IKPluginKinematicsServiceNode::extract_joint_names_from_chain()
     current_link = parent_joint->parent_link_name;
 
     // Safety check to prevent infinite loops
-    if (joint_names_.size() > 100) {
+    if (joint_names_.size() > 100)
+    {
       RCLCPP_ERROR(
         this->get_logger(), "Kinematic chain too long (>100 joints). Possible loop in URDF?");
       return false;
@@ -277,7 +301,8 @@ bool IKPluginKinematicsServiceNode::extract_joint_names_from_chain()
   // Update num_joints based on actual chain
   num_joints_ = joint_names_.size();
 
-  if (num_joints_ == 0) {
+  if (num_joints_ == 0)
+  {
     RCLCPP_ERROR(
       this->get_logger(), "No movable joints found in chain from '%s' to '%s'", base_link_.c_str(),
       tip_link_.c_str());
@@ -287,9 +312,11 @@ bool IKPluginKinematicsServiceNode::extract_joint_names_from_chain()
   RCLCPP_INFO(this->get_logger(), "Extracted %zu joints from kinematic chain:", num_joints_);
   std::stringstream ss;
   ss << "  Joints: [";
-  for (size_t i = 0; i < joint_names_.size(); ++i) {
+  for (size_t i = 0; i < joint_names_.size(); ++i)
+  {
     ss << joint_names_[i];
-    if (i < joint_names_.size() - 1) {
+    if (i < joint_names_.size() - 1)
+    {
       ss << ", ";
     }
   }
@@ -306,9 +333,11 @@ bool IKPluginKinematicsServiceNode::validate_ik_request(
   const auto & seed_positions = request->ik_request.robot_state.joint_state.position;
   const auto & seed_names = request->ik_request.robot_state.joint_state.name;
 
-  if (!seed_positions.empty()) {
+  if (!seed_positions.empty())
+  {
     // Check size matches expected number of joints
-    if (seed_positions.size() != num_joints_) {
+    if (seed_positions.size() != num_joints_)
+    {
       RCLCPP_ERROR(
         this->get_logger(), "Seed state has %zu joint positions but kinematic chain has %zu joints",
         seed_positions.size(), num_joints_);
@@ -316,8 +345,10 @@ bool IKPluginKinematicsServiceNode::validate_ik_request(
     }
 
     // If joint names are provided in seed state, validate they match the chain
-    if (!seed_names.empty()) {
-      if (seed_names.size() != seed_positions.size()) {
+    if (!seed_names.empty())
+    {
+      if (seed_names.size() != seed_positions.size())
+      {
         RCLCPP_ERROR(
           this->get_logger(),
           "Seed state joint names size (%zu) doesn't match positions size (%zu)", seed_names.size(),
@@ -326,8 +357,10 @@ bool IKPluginKinematicsServiceNode::validate_ik_request(
       }
 
       // Validate joint names match our kinematic chain
-      for (size_t i = 0; i < seed_names.size(); ++i) {
-        if (seed_names[i] != joint_names_[i]) {
+      for (size_t i = 0; i < seed_names.size(); ++i)
+      {
+        if (seed_names[i] != joint_names_[i])
+        {
           RCLCPP_ERROR(
             this->get_logger(),
             "Seed state joint name mismatch at index %zu: expected '%s', got '%s'", i,
@@ -337,15 +370,17 @@ bool IKPluginKinematicsServiceNode::validate_ik_request(
             [this]()
             {
               std::stringstream ss;
-              for (size_t j = 0; j < joint_names_.size(); ++j) {
+              for (size_t j = 0; j < joint_names_.size(); ++j)
+              {
                 ss << joint_names_[j];
-                if (j < joint_names_.size() - 1) {
+                if (j < joint_names_.size() - 1)
+                {
                   ss << ", ";
                 }
               }
               return ss.str();
             }()
-            .c_str());
+              .c_str());
           return false;
         }
       }
@@ -359,7 +394,8 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
   const moveit_msgs::srv::GetPositionIK::Request::SharedPtr request,
   moveit_msgs::srv::GetPositionIK::Response::SharedPtr response)
 {
-  if (!validate_ik_request(request)) {
+  if (!validate_ik_request(request))
+  {
     RCLCPP_WARN(this->get_logger(), "IK Request validation failed!");
     response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::FAILURE;
     return;
@@ -377,11 +413,13 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
   // This step converts the target coordinates from the object's local frame
   // (e.g., a pick position on a part) into the robot's base frame.
   Eigen::Isometry3d target_pose_in_base;
-  try {
+  try
+  {
     Eigen::Isometry3d target_pose_in_request_frame;
     tf2::fromMsg(request->ik_request.pose_stamped.pose, target_pose_in_request_frame);
 
-    if (!target_frame.empty() && target_frame != base_link_) {
+    if (!target_frame.empty() && target_frame != base_link_)
+    {
       // Get frame transform from TF (Base -> Target_Frame)
       auto transform_stamped = tf_buffer_->lookupTransform(
         base_link_, target_frame, request->ik_request.pose_stamped.header.stamp,
@@ -389,8 +427,11 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
 
       Eigen::Isometry3d frame_transform = tf2::transformToEigen(transform_stamped);
       target_pose_in_base = frame_transform * target_pose_in_request_frame;
-    } else {
-      if (target_frame.empty()) {
+    }
+    else
+    {
+      if (target_frame.empty())
+      {
         RCLCPP_WARN(
           this->get_logger(),
           "The frame_id of the target pose is empty. Assuming that it is provided in base frame");
@@ -400,15 +441,18 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
   }
   // If the transform between frames cannot be resolved via TF,
   // report failure and abort IK computation.
-  catch (const tf2::TransformException & ex) {
+  catch (const tf2::TransformException & ex)
+  {
     RCLCPP_ERROR(this->get_logger(), "Frame transform error %s", ex.what());
     response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::FRAME_TRANSFORM_FAILURE;
     return;
   }
 
   Eigen::Isometry3d flange_pose_to_solve;
-  if (requested_tcp_link != tip_link_) {
-    try {
+  if (requested_tcp_link != tip_link_)
+  {
+    try
+    {
       auto flange_to_tcp_msg = tf_buffer_->lookupTransform(
         tip_link_, requested_tcp_link, tf2::TimePointZero, tf2::durationFromSec(0.5));
 
@@ -419,23 +463,31 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
 
       RCLCPP_INFO(
         this->get_logger(), "Tool offset: %s -> %s", requested_tcp_link.c_str(), tip_link_.c_str());
-    } catch (const tf2::TransformException & ex) {
+    }
+    catch (const tf2::TransformException & ex)
+    {
       RCLCPP_ERROR(
         this->get_logger(), "Tool offset error (%s -> %s): %s", tip_link_.c_str(),
         requested_tcp_link.c_str(), ex.what());
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_LINK_NAME;
       return;
     }
-  } else {
+  }
+  else
+  {
     flange_pose_to_solve = target_pose_in_base;
   }
 
   // send to solver
-  try {
+  try
+  {
     std::vector<double> seed_state;
-    if (!request->ik_request.robot_state.joint_state.position.empty()) {
+    if (!request->ik_request.robot_state.joint_state.position.empty())
+    {
       seed_state = request->ik_request.robot_state.joint_state.position;
-    } else {
+    }
+    else
+    {
       seed_state.resize(num_joints_, 0.0);
     }
 
@@ -444,32 +496,40 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     bool ik_success = kinematics_solver_->convert_cartesian_pose_to_closest_joint_state(
       flange_pose_to_solve, seed_state, solution);
 
-    if (ik_success && !solution.empty()) {
+    if (ik_success && !solution.empty())
+    {
       response->solution = create_robot_state_msg(solution);
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::SUCCESS;
 
       if (rcutils_logging_logger_is_enabled_for(
-            this->get_logger().get_name(), RCUTILS_LOG_SEVERITY_DEBUG)) {
+            this->get_logger().get_name(), RCUTILS_LOG_SEVERITY_DEBUG))
+      {
         std::ostringstream ss;
         ss << std::fixed << std::setprecision(4);
         ss << "IK solution (rad): [";
-        for (size_t i = 0; i < solution.size(); ++i) {
+        for (size_t i = 0; i < solution.size(); ++i)
+        {
           ss << solution[i] << (i + 1 < solution.size() ? ", " : "");
         }
         ss << "]";
         ss << std::setprecision(2);
         ss << " deg: [";
-        for (size_t i = 0; i < solution.size(); ++i) {
+        for (size_t i = 0; i < solution.size(); ++i)
+        {
           ss << solution[i] * 180.0 / M_PI << (i + 1 < solution.size() ? ", " : "");
         }
         ss << "]";
         RCLCPP_DEBUG(this->get_logger(), "%s", ss.str().c_str());
       }
-    } else {
+    }
+    else
+    {
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
       RCLCPP_WARN(this->get_logger(), "No IK Solution Found.");
     }
-  } catch (const std::exception & ex) {
+  }
+  catch (const std::exception & ex)
+  {
     RCLCPP_ERROR(this->get_logger(), "IK Solution Error: %s", ex.what());
     response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::FAILURE;
   }
@@ -487,7 +547,8 @@ moveit_msgs::msg::RobotState IKPluginKinematicsServiceNode::create_robot_state_m
   robot_state.joint_state.position = joint_positions;
 
   // Sanity check
-  if (robot_state.joint_state.name.size() != robot_state.joint_state.position.size()) {
+  if (robot_state.joint_state.name.size() != robot_state.joint_state.position.size())
+  {
     RCLCPP_ERROR(
       this->get_logger(), "Mismatch between joint names (%zu) and positions (%zu)",
       robot_state.joint_state.name.size(), robot_state.joint_state.position.size());
@@ -503,10 +564,13 @@ int main(int argc, char ** argv)
 {
   rclcpp::init(argc, argv);
 
-  try {
+  try
+  {
     auto node = std::make_shared<IKPluginKinematicsServiceNode>(rclcpp::NodeOptions());
     rclcpp::spin(node);
-  } catch (const std::exception & ex) {
+  }
+  catch (const std::exception & ex)
+  {
     RCLCPP_ERROR(rclcpp::get_logger("custom_ik_service"), "Fatal error: %s", ex.what());
     rclcpp::shutdown();
     return 1;
