@@ -74,8 +74,8 @@ bool KinematicsInterfaceIKFast::calculate_link_transform(
     return false;
   }
 
-  std::vector<double> vjoints(num_joints_);
-  Eigen::VectorXd::Map(&vjoints[0], num_joints_) = joint_pos;
+  std::vector<double> vjoints(static_cast<size_t>(num_joints_));
+  Eigen::VectorXd::Map(&vjoints[0], static_cast<Eigen::Index>(num_joints_)) = joint_pos;
 
   double eerot[9], eetrans[3];
 
@@ -105,23 +105,21 @@ bool KinematicsInterfaceIKFast::calculate_jacobian(
 
   for (size_t i = 0; i < static_cast<size_t>(num_joints_); ++i)
   {
-    // Perturb joint in both directions
+    Eigen::Index idx = static_cast<Eigen::Index>(i);
     Eigen::VectorXd q_plus = joint_pos;
     Eigen::VectorXd q_minus = joint_pos;
-    q_plus[i] += epsilon_;
-    q_minus[i] -= epsilon_;
+    q_plus[idx] += epsilon_;
+    q_minus[idx] -= epsilon_;
 
     Eigen::Isometry3d T_plus, T_minus;
     if (!calculate_link_transform(q_plus, link_name, T_plus)) return false;
     if (!calculate_link_transform(q_minus, link_name, T_minus)) return false;
 
-    // Translational part
-    jacobian.block<3, 1>(0, i) = (T_plus.translation() - T_minus.translation()) / (2.0 * epsilon_);
+    jacobian.block<3, 1>(0, idx) = (T_plus.translation() - T_minus.translation()) / (2.0 * epsilon_);
 
-    // Rotational part
     Eigen::Matrix3d R_diff = T_plus.linear() * T_minus.linear().transpose();
     Eigen::AngleAxisd angle_axis(R_diff);
-    jacobian.block<3, 1>(3, i) = (angle_axis.axis() * angle_axis.angle()) / (2.0 * epsilon_);
+    jacobian.block<3, 1>(3, idx) = (angle_axis.axis() * angle_axis.angle()) / (2.0 * epsilon_);
   }
   return true;
 }
@@ -222,7 +220,7 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_joint_state_within_ran
   for (const auto & sol : all_states)
   {
     bool all_joints_valid = true;
-    std::vector<double> adjusted_sol(num_joints_);
+    std::vector<double> adjusted_sol(static_cast<size_t>(num_joints_));
 
     for (size_t j = 0; j < static_cast<size_t>(num_joints_); ++j)
     {
@@ -304,7 +302,7 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_possible_joint_states(
   joint_states.clear();
   for (size_t i = 0; i < solutions.GetNumSolutions(); ++i)
   {
-    std::vector<double> joints(num_joints_);
+    std::vector<double> joints(static_cast<size_t>(num_joints_));
     const ikfast::IkSolutionBase<double> & sol = solutions.GetSolution(i);
     sol.GetSolution(&joints[0], nullptr);
     bool valid = true;
@@ -328,7 +326,7 @@ bool KinematicsInterfaceIKFast::convert_joint_state_to_cartesian_pose(
   const std::vector<double> & joint_state, Eigen::Isometry3d & pose)
 {
   Eigen::VectorXd joint_pos =
-    Eigen::Map<const Eigen::VectorXd>(joint_state.data(), joint_state.size());
+    Eigen::Map<const Eigen::VectorXd>(joint_state.data(), static_cast<Eigen::Index>(joint_state.size()));
   return calculate_link_transform(joint_pos, end_effector_name_, pose);
 }
 

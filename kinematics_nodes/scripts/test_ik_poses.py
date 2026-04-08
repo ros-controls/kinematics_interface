@@ -64,7 +64,7 @@ class IKTester(Node):
         return q
 
     def call_ik_service(self, pose_description, x, y, z, roll=0.0, pitch=0.0, yaw=0.0):
-        """Requests IK solution and executes motion."""
+        """Request IK solution and executes motion."""
         self.get_logger().info(f"--- Testing: {pose_description} ---")
 
         request = GetPositionIK.Request()
@@ -110,7 +110,7 @@ class IKTester(Node):
             return False
 
     def execute_motion(self, names, positions):
-        """Sends trajectory using joint names from the IK service."""
+        """Send trajectory using joint names from the IK service."""
         msg = JointTrajectory()
         msg.joint_names = names
 

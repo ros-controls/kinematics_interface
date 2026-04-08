@@ -419,9 +419,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
 
       Eigen::Isometry3d frame_transform = tf2::transformToEigen(transform_stamped);
       target_pose_in_base = frame_transform * target_pose_in_request_frame;
-    }
-    else
-    {
+    } else {
       if (target_frame.empty())
       {
         RCLCPP_WARN(
@@ -464,9 +462,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::INVALID_LINK_NAME;
       return;
     }
-  }
-  else
-  {
+  } else {
     flange_pose_to_solve = target_pose_in_base;
   }
 
@@ -477,9 +473,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     if (!request->ik_request.robot_state.joint_state.position.empty())
     {
       seed_state = request->ik_request.robot_state.joint_state.position;
-    }
-    else
-    {
+    } else {
       seed_state.resize(num_joints_, 0.0);
     }
 
@@ -513,9 +507,7 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
         ss << "]";
         RCLCPP_DEBUG(this->get_logger(), "%s", ss.str().c_str());
       }
-    }
-    else
-    {
+    } else {
       response->error_code.val = moveit_msgs::msg::MoveItErrorCodes::NO_IK_SOLUTION;
       RCLCPP_WARN(this->get_logger(), "No IK Solution Found.");
     }
