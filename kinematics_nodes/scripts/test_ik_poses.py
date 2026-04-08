@@ -16,14 +16,15 @@ Generic IK Service Test Script.
 Tests the analytical/plug-in based IK service (e.g., IKFast).
 """
 
-import rclpy
-from rclpy.node import Node
-from moveit_msgs.srv import GetPositionIK
-from geometry_msgs.msg import Point, Quaternion
-from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
-from builtin_interfaces.msg import Duration
 import math
 import sys
+
+import rclpy
+from builtin_interfaces.msg import Duration
+from geometry_msgs.msg import Point, Quaternion
+from moveit_msgs.srv import GetPositionIK
+from rclpy.node import Node
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
 
 class IKTester(Node):

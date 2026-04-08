@@ -32,7 +32,7 @@ MATCHER_P2(MatrixNear, expected, tol, "Two matrices are approximately equal")
   return arg.isApprox(expected, tol);
 }
 
-template <typename PluginUnderTest>
+template<typename PluginUnderTest>
 class TestPlugin : public ::testing::Test
 {
 public:
@@ -43,7 +43,7 @@ public:
   // world -> base_joint(fixed) -> base_link
   //   -> joint1 -> link1 -> joint2 -> link2 -> joint3 -> link3
   std::string urdf_ = std::string(ros2_control_test_assets::urdf_head) +
-                      std::string(ros2_control_test_assets::urdf_tail);
+    std::string(ros2_control_test_assets::urdf_tail);
 
   void SetUp()
   {

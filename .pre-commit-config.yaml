@@ -52,7 +52,13 @@ repos:
     rev: 25.12.0
     hooks:
       - id: black
-        args: ["--line-length=99"]
+        args: ["--line-length=99", "--skip-string-normalization"]
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        args: ["--profile=black"]
 
   - repo: https://github.com/pycqa/flake8
     rev: 7.3.0
@@ -60,12 +66,14 @@ repos:
     - id: flake8
       args: ["--extend-ignore=E501"]
 
-  # CPP hooks
-  - repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v21.1.8
+  - repo: local
     hooks:
-      - id: clang-format
-        args: ['-fallback-style=none', '-i']
+      - id: ament_uncrustify
+        name: ament_uncrustify
+        entry: ament_uncrustify --reformat
+        language: system
+        files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
+        exclude: ikfast\.h$
 
   - repo: local
     hooks:
@@ -85,7 +93,7 @@ repos:
         entry: ament_cpplint
         language: system
         files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
-        args: ["--linelength=100", "--filter=-whitespace/newline"]
+        args: ["--linelength=100"]
         exclude: ikfast\.h$
 
   # Cmake hooks
