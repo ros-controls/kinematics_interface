@@ -20,7 +20,7 @@ namespace kinematics_interface_ikfast
 rclcpp::Logger LOGGER = rclcpp::get_logger("kinematics_interface_ikfast");
 
 bool KinematicsInterfaceIKFast::initialize(
-  const std::string & robot_description,  //unused but lets keep for now
+  const std::string & robot_description,  // unused but lets keep for now
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
   const std::string & param_namespace)
 {
@@ -299,7 +299,7 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_possible_joint_states(
   }
 
   ikfast::IkSolutionList<double> solutions;
-  compute_ik(eetrans, eerot, nullptr, (void *)&solutions);
+  compute_ik(eetrans, eerot, nullptr, reinterpret_cast<void *>(&solutions));
 
   joint_states.clear();
   for (size_t i = 0; i < solutions.GetNumSolutions(); ++i)

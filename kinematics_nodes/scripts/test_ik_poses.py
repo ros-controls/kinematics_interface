@@ -1,4 +1,16 @@
 #!/usr/bin/env python3
+# Copyright (c) 2025 b»robotized
+# All rights reserved.
+#
+# Proprietary License
+#
+# Unauthorized copying of this file, via any medium is strictly prohibited.
+# The file is considered confidential
+#
+# Adapted for <Insert_Company_Name> that received unlimited, worldwide
+# use and change right, except distributing this library separately
+# of their product.
+
 """
 Generic IK Service Test Script.
 Tests the analytical/plug-in based IK service (e.g., IKFast).
@@ -7,7 +19,7 @@ Tests the analytical/plug-in based IK service (e.g., IKFast).
 import rclpy
 from rclpy.node import Node
 from moveit_msgs.srv import GetPositionIK
-from geometry_msgs.msg import Point, Quaternion, PoseStamped
+from geometry_msgs.msg import Point, Quaternion
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from builtin_interfaces.msg import Duration
 import math
@@ -34,7 +46,7 @@ class IKTester(Node):
             self.get_logger().error(f"Service {self.ik_service_name} not available!")
             sys.exit(1)
 
-        self.get_logger().info(f"Service ready! Using:")
+        self.get_logger().info("Service ready! Using:")
         self.get_logger().info(f"  Planning Group: {self.planning_group}")
         self.get_logger().info(f"  IK Link: {self.ik_link_name}")
         self.get_logger().info(f"  Base Frame: {self.base_frame}")
@@ -77,7 +89,7 @@ class IKTester(Node):
             joint_names = list(response.solution.joint_state.name)
             joint_positions = list(response.solution.joint_state.position)
 
-            self.get_logger().info(f"IK Success!")
+            self.get_logger().info("IK Success!")
             self.get_logger().info(f"  Joints: {joint_names}")
             self.get_logger().info(f"  Positions: {[f'{p:.3f}' for p in joint_positions]}")
 
@@ -108,7 +120,7 @@ class IKTester(Node):
 
         msg.points = [point]
         self.cmd_pub.publish(msg)
-        self.get_logger().info(f"Published trajectory to controller")
+        self.get_logger().info("Published trajectory to controller")
 
     def run_sequence(self):
         """Run a sequence of test poses."""

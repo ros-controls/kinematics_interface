@@ -10,12 +10,16 @@
 // use and change right, except distributing this library separately
 // of their product.
 
+#include <Eigen/Geometry>
+// Transform link between flange to ee
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
+
 #include <memory>
 #include <sstream>
 #include <string>
 #include <vector>
 
-#include <Eigen/Geometry>
 #include "kinematics_interface/kinematics_interface.hpp"
 #include "moveit_msgs/msg/move_it_error_codes.hpp"
 #include "moveit_msgs/srv/get_position_ik.hpp"
@@ -24,9 +28,6 @@
 #include "rcutils/logging.h"
 #include "tf2_eigen/tf2_eigen.hpp"
 #include "urdf/model.h"
-// Transform link between flange to ee
-#include <tf2_ros/buffer.h>
-#include <tf2_ros/transform_listener.h>
 
 class IKPluginKinematicsServiceNode : public rclcpp::Node
 {
@@ -75,7 +76,8 @@ IKPluginKinematicsServiceNode::IKPluginKinematicsServiceNode(const rclcpp::NodeO
 : Node("ik_plugin_service_node", options), num_joints_(0)
 {
   // Declare and read parameters
-  // Note: 'tip' and 'base' parameter names match what kinematics plugins (KDL, IKFast, etc.) expect.
+  // Note: 'tip' and 'base' parameter names match
+  // what kinematics plugins (KDL, IKFast, etc.) expect.
   this->declare_parameter<std::string>("plugin_name", "");
   this->declare_parameter<std::string>("robot_description", "");
   this->declare_parameter<std::string>("base", "");
@@ -400,7 +402,8 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
     this->get_logger(), "IK Request: place %s in the desired position within frame %s",
     requested_tcp_link.c_str(), target_frame.c_str());
 
-  // This step converts the target coordinates from the object's local frame (e.g., a pick position on a part) into the robot's base frame.
+  // This step converts the target coordinates from the object's local frame
+  // (e.g., a pick position on a part) into the robot's base frame.
   Eigen::Isometry3d target_pose_in_base;
   try
   {
@@ -428,7 +431,8 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
       target_pose_in_base = target_pose_in_request_frame;
     }
   }
-  // If the transform between frames cannot be resolved via TF, report failure and abort IK computation.
+  // If the transform between frames cannot be resolved via TF,
+  // report failure and abort IK computation.
   catch (const tf2::TransformException & ex)
   {
     RCLCPP_ERROR(this->get_logger(), "Frame transform error %s", ex.what());
