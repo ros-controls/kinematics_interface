@@ -32,30 +32,38 @@ bool KinematicsInterfaceKDL::initialize(
   std::string ns = !param_namespace.empty() ? param_namespace + "." : "";
 
   std::string robot_description_local;
-  if (robot_description.empty()) {
+  if (robot_description.empty())
+  {
     // If the robot_description input argument is empty, try to get the
     // robot_description from the node's parameters.
     auto robot_param = rclcpp::Parameter();
-    if (!parameters_interface->get_parameter("robot_description", robot_param)) {
+    if (!parameters_interface->get_parameter("robot_description", robot_param))
+    {
       RCLCPP_ERROR(LOGGER, "parameter robot_description not set in kinematics_interface_kdl");
       return false;
     }
     robot_description_local = robot_param.as_string();
-  } else {
+  }
+  else
+  {
     robot_description_local = robot_description;
   }
 
   // get alpha damping term
   auto alpha_param = rclcpp::Parameter("alpha", 0.000005);
-  if (parameters_interface->has_parameter(ns + "alpha")) {
+  if (parameters_interface->has_parameter(ns + "alpha"))
+  {
     parameters_interface->get_parameter(ns + "alpha", alpha_param);
   }
   alpha = alpha_param.as_double();
   // get end-effector name
   auto end_effector_name_param = rclcpp::Parameter("tip");
-  if (parameters_interface->has_parameter(ns + "tip")) {
+  if (parameters_interface->has_parameter(ns + "tip"))
+  {
     parameters_interface->get_parameter(ns + "tip", end_effector_name_param);
-  } else {
+  }
+  else
+  {
     RCLCPP_ERROR(LOGGER, "Failed to find end effector name parameter [tip].");
     return false;
   }
@@ -66,22 +74,26 @@ bool KinematicsInterfaceKDL::initialize(
   kdl_parser::treeFromString(robot_description_local, robot_tree);
   // get root name
   auto base_param = rclcpp::Parameter();
-  if (parameters_interface->has_parameter(ns + "base")) {
+  if (parameters_interface->has_parameter(ns + "base"))
+  {
     parameters_interface->get_parameter(ns + "base", base_param);
     root_name_ = base_param.as_string();
   }
-  if (root_name_.empty()) {
+  if (root_name_.empty())
+  {
     root_name_ = robot_tree.getRootSegment()->first;
   }
 
-  if (!robot_tree.getChain(root_name_, end_effector_name, chain_)) {
+  if (!robot_tree.getChain(root_name_, end_effector_name, chain_))
+  {
     RCLCPP_ERROR(
       LOGGER, "failed to find chain from robot root '%s' to end effector '%s'", root_name_.c_str(),
       end_effector_name.c_str());
     return false;
   }
   // create map from link names to their index
-  for (size_t i = 0; i < chain_.getNrOfSegments(); ++i) {
+  for (size_t i = 0; i < chain_.getNrOfSegments(); ++i)
+  {
     link_name_map_[chain_.getSegment(static_cast<unsigned int>(i)).getName()] =
       static_cast<int>(i) + 1;
   }
@@ -138,7 +150,8 @@ bool KinematicsInterfaceKDL::convert_cartesian_deltas_to_joint_deltas(
   }
 
   // calculate Jacobian inverse
-  if (!calculate_jacobian_inverse(joint_pos, link_name, *jacobian_inverse_)) {
+  if (!calculate_jacobian_inverse(joint_pos, link_name, *jacobian_inverse_))
+  {
     return false;
   }
 
@@ -204,7 +217,8 @@ bool KinematicsInterfaceKDL::calculate_link_transform(
   Eigen::Isometry3d & transform)
 {
   // verify inputs
-  if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name)) {
+  if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name))
+  {
     RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
@@ -216,7 +230,8 @@ bool KinematicsInterfaceKDL::calculate_link_transform(
   transform.setIdentity();
 
   // special case: since the root is not in the robot tree, need to return identity transform
-  if (link_name == root_name_) {
+  if (link_name == root_name_)
+  {
     return true;
   }
 
@@ -231,7 +246,8 @@ bool KinematicsInterfaceKDL::calculate_frame_difference(
   Eigen::Matrix<double, 6, 1> & delta_x)
 {
   // verify inputs
-  if (!verify_period(dt)) {
+  if (!verify_period(dt))
+  {
     RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
     return false;
   }
@@ -244,7 +260,8 @@ bool KinematicsInterfaceKDL::calculate_frame_difference(
 
   // compute the difference
   delta_x_ = KDL::diff(frames_(0), frames_(1), dt);
-  for (size_t i = 0; i < 6; ++i) {
+  for (size_t i = 0; i < 6; ++i)
+  {
     delta_x(static_cast<Eigen::Index>(i)) = delta_x_[static_cast<int>(i)];
   }
 
@@ -253,12 +270,15 @@ bool KinematicsInterfaceKDL::calculate_frame_difference(
 
 bool KinematicsInterfaceKDL::verify_link_name(const std::string & link_name)
 {
-  if (link_name == root_name_) {
+  if (link_name == root_name_)
+  {
     return true;
   }
-  if (link_name_map_.find(link_name) == link_name_map_.end()) {
+  if (link_name_map_.find(link_name) == link_name_map_.end())
+  {
     std::string links;
-    for (unsigned int i = 0; i < static_cast<unsigned int>(chain_.getNrOfSegments()); ++i) {
+    for (unsigned int i = 0; i < static_cast<unsigned int>(chain_.getNrOfSegments()); ++i)
+    {
       links += "\n" + chain_.getSegment(i).getName();
     }
     RCLCPP_ERROR(
@@ -271,7 +291,8 @@ bool KinematicsInterfaceKDL::verify_link_name(const std::string & link_name)
 
 bool KinematicsInterfaceKDL::verify_joint_vector(const Eigen::VectorXd & joint_vector)
 {
-  if (static_cast<size_t>(joint_vector.size()) != num_joints_) {
+  if (static_cast<size_t>(joint_vector.size()) != num_joints_)
+  {
     RCLCPP_ERROR(
       LOGGER, "Invalid joint vector size (%zu). Expected size is %zu.", joint_vector.size(),
       num_joints_);
@@ -283,7 +304,8 @@ bool KinematicsInterfaceKDL::verify_joint_vector(const Eigen::VectorXd & joint_v
 bool KinematicsInterfaceKDL::verify_initialized()
 {
   // check if interface is initialized
-  if (!initialized) {
+  if (!initialized)
+  {
     RCLCPP_ERROR(
       LOGGER,
       "The KDL kinematics plugin was not initialized. Ensure you called the initialize method.");
@@ -295,7 +317,8 @@ bool KinematicsInterfaceKDL::verify_initialized()
 bool KinematicsInterfaceKDL::verify_jacobian(
   const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian)
 {
-  if (jacobian.rows() != jacobian_->rows() || jacobian.cols() != jacobian_->columns()) {
+  if (jacobian.rows() != jacobian_->rows() || jacobian.cols() != jacobian_->columns())
+  {
     RCLCPP_ERROR(
       LOGGER, "The size of the jacobian (%zu, %zu) does not match the required size of (%u, %u)",
       jacobian.rows(), jacobian.cols(), jacobian_->rows(), jacobian_->columns());
@@ -320,7 +343,8 @@ bool KinematicsInterfaceKDL::verify_jacobian_inverse(
 
 bool KinematicsInterfaceKDL::verify_period(const double dt)
 {
-  if (dt < 0) {
+  if (dt < 0)
+  {
     RCLCPP_ERROR(LOGGER, "The period (%f) must be a non-negative number", dt);
     return false;
   }

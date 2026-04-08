@@ -20,7 +20,7 @@
 
 struct PluginKDL
 {
-  static std::string Name() {return "kinematics_interface_kdl/KinematicsInterfaceKDL";}
+  static std::string Name() { return "kinematics_interface_kdl/KinematicsInterfaceKDL"; }
   static void set_custom_node_parameters(rclcpp_lifecycle::LifecycleNode::SharedPtr node)
   {
     node->declare_parameter("alpha", 0.005);

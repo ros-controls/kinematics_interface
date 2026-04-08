@@ -1,16 +1,27 @@
-# pre-commit configuration for ROS2 workspace
-# See https://pre-commit.com/
+
+# To use:
+#
+#     pre-commit run -a
+#
+# Or:
+#
+#     pre-commit install  # (runs every time you commit in git)
+#
+# To update this file:
+#
+#     pre-commit autoupdate
+#
+# See https://github.com/pre-commit/pre-commit
 
 repos:
-  # -----------------------------
-  # Basic sanity checks
-  # -----------------------------
+  # Standard hooks
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
     hooks:
       - id: check-added-large-files
       - id: check-ast
       - id: check-case-conflict
+      - id: check-docstring-first
       - id: check-merge-conflict
       - id: check-symlinks
       - id: check-xml
@@ -22,14 +33,20 @@ repos:
         exclude_types: [rst]
       - id: fix-byte-order-marker
 
-  # -----------------------------
-  # Python (aligned with ROS2 CI)
-  # -----------------------------
+
+  # Python hooks
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.21.2
     hooks:
-      - id: pyupgrade
+    -   id: pyupgrade
         args: [--py36-plus]
+
+  # PyDocStyle
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+    - id: pydocstyle
+      args: ["--ignore=D100,D101,D102,D103,D104,D105,D106,D107,D203,D212,D404"]
 
   - repo: https://github.com/psf/black
     rev: 25.12.0
@@ -37,77 +54,58 @@ repos:
       - id: black
         args: ["--line-length=99"]
 
-  - repo: https://github.com/pycqa/isort
-    rev: 5.13.2
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.3.0
     hooks:
-      - id: isort
-        args: ["--profile=black"]
+    - id: flake8
+      args: ["--extend-ignore=E501"]
+
+  # CPP hooks
+  - repo: https://github.com/pre-commit/mirrors-clang-format
+    rev: v21.1.8
+    hooks:
+      - id: clang-format
+        args: ['-fallback-style=none', '-i']
 
   - repo: local
     hooks:
-      - id: ament_flake8
-        name: ament_flake8
-        entry: ament_flake8
-        language: system
-        types: [python]
-
-      - id: ament_pep257
-        name: ament_pep257
-        entry: ament_pep257
-        language: system
-        types: [python]
-
-  # -----------------------------
-  # C++ (ROS2 standard)
-  # -----------------------------
-  - repo: local
-    hooks:
-      - id: ament_uncrustify
-        name: ament_uncrustify
-        entry: ament_uncrustify --reformat
-        language: system
-        files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
-        exclude: ikfast\.h$
-
       - id: ament_cppcheck
         name: ament_cppcheck
+        description: Static code analysis of C/C++ files.
         entry: env AMENT_CPPCHECK_ALLOW_SLOW_VERSIONS=1 ament_cppcheck
         language: system
         files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
-        exclude: ikfast\.h$
 
+  - repo: local
+    hooks:
       - id: ament_cpplint
         name: ament_cpplint
+        description: Static code analysis of C/C++ files.
         entry: ament_cpplint
         language: system
         files: \.(h\+\+|h|hh|hxx|hpp|cuh|c|cc|cpp|cu|c\+\+|cxx|tpp|txx)$
-        args: ["--linelength=100"]
-        exclude: ikfast\.h$
+        args: ["--linelength=100", "--filter=-whitespace/newline"]
 
-  # -----------------------------
-  # CMake
-  # -----------------------------
+  # Cmake hooks
   - repo: local
     hooks:
       - id: ament_lint_cmake
         name: ament_lint_cmake
+        description: Check format of CMakeLists.txt files.
         entry: ament_lint_cmake
         language: system
         files: CMakeLists\.txt$
 
-  # -----------------------------
-  # Copyright (ROS2 REQUIRED)
-  # -----------------------------
+  # Copyright
   - repo: local
     hooks:
       - id: ament_copyright
         name: ament_copyright
+        description: Check if copyright notice is available in all files.
         entry: ament_copyright
         language: system
 
-  # -----------------------------
-  # Documentation
-  # -----------------------------
+  # Docs - RestructuredText hooks
   - repo: https://github.com/PyCQA/doc8
     rev: v2.0.0
     hooks:
@@ -123,9 +121,8 @@ repos:
       - id: rst-directive-colons
       - id: rst-inline-touching-normal
 
-  # -----------------------------
-  # Spellcheck
-  # -----------------------------
+  # Spellcheck in comments and docs
+  # skipping of *.svg files is not working...
   - repo: https://github.com/codespell-project/codespell
     rev: v2.4.1
     hooks:
@@ -133,9 +130,6 @@ repos:
         args: ['--write-changes']
         exclude: CHANGELOG\.rst|\.(svg|pyc)$
 
-  # -----------------------------
-  # GitHub / CI configs
-  # -----------------------------
   - repo: https://github.com/python-jsonschema/check-jsonschema
     rev: 0.36.0
     hooks:
