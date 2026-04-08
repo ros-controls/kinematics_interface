@@ -115,7 +115,8 @@ bool KinematicsInterfaceIKFast::calculate_jacobian(
     if (!calculate_link_transform(q_plus, link_name, T_plus)) return false;
     if (!calculate_link_transform(q_minus, link_name, T_minus)) return false;
 
-    jacobian.block<3, 1>(0, idx) = (T_plus.translation() - T_minus.translation()) / (2.0 * epsilon_);
+    jacobian.block<3, 1>(0, idx) =
+      (T_plus.translation() - T_minus.translation()) / (2.0 * epsilon_);
 
     Eigen::Matrix3d R_diff = T_plus.linear() * T_minus.linear().transpose();
     Eigen::AngleAxisd angle_axis(R_diff);
@@ -325,8 +326,8 @@ bool KinematicsInterfaceIKFast::convert_cartesian_pose_to_possible_joint_states(
 bool KinematicsInterfaceIKFast::convert_joint_state_to_cartesian_pose(
   const std::vector<double> & joint_state, Eigen::Isometry3d & pose)
 {
-  Eigen::VectorXd joint_pos =
-    Eigen::Map<const Eigen::VectorXd>(joint_state.data(), static_cast<Eigen::Index>(joint_state.size()));
+  Eigen::VectorXd joint_pos = Eigen::Map<const Eigen::VectorXd>(
+    joint_state.data(), static_cast<Eigen::Index>(joint_state.size()));
   return calculate_link_transform(joint_pos, end_effector_name_, pose);
 }
 
