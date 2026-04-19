@@ -393,10 +393,93 @@ TYPED_TEST_P(TestPlugin, plugin_no_robot_description)
   ASSERT_FALSE(this->ik_->initialize("", this->node_->get_node_parameters_interface(), ""));
 }
 
+TYPED_TEST_P(TestPlugin, plugin_output_match)
+{
+  this->loadTipParameter("link3");
+
+  // initialize the plugin
+  ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
+
+  {
+    // ensure that all plugins calculate the same result for calculate_link_transform
+    auto pos = Eigen::VectorXd::Zero(3);
+    Eigen::Isometry3d end_effector_transform_est = Eigen::Isometry3d::Identity();
+    Eigen::Isometry3d end_effector_transform = Eigen::Isometry3d::Identity();
+    end_effector_transform.translation() << 0.0, 0.9, 1.1;
+    // clang-format off
+    end_effector_transform.linear() << 1.0, 0.0, 0.0,
+                                       0.0, 0.0, -1.0,
+                                       0.0, 1.0, 0.0;
+    // clang-format on
+    ASSERT_TRUE(
+      this->ik_->calculate_link_transform(pos, this->end_effector_, end_effector_transform_est));
+    EXPECT_THAT(
+      end_effector_transform_est.matrix(), MatrixNear(end_effector_transform.matrix(), 0.02));
+  }
+
+  {
+    // ensure that all plugins calculate the same result for convert_cartesian_deltas_to_joint_deltas
+    kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
+    auto pos = Eigen::VectorXd::Zero(3);
+    delta_x[2] = 1;  // vz
+    Eigen::VectorXd delta_theta_est = Eigen::VectorXd::Zero(3);
+    Eigen::VectorXd delta_theta = Eigen::VectorXd::Zero(3);
+    delta_theta << 1.0976017859563583, -1.0909088891083099, -0.0066595988537794448;
+    ASSERT_TRUE(this->ik_->convert_cartesian_deltas_to_joint_deltas(
+      pos, delta_x, this->end_effector_, delta_theta_est));
+    EXPECT_THAT(delta_theta_est, MatrixNear(delta_theta, 0.02));
+  }
+
+  {
+    // ensure that all plugins calculate the same result for convert_joint_deltas_to_cartesian_deltas
+    kinematics_interface::Vector6d delta_x_est = kinematics_interface::Vector6d::Zero();
+    kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
+    delta_x[2] = 1;
+    Eigen::VectorXd delta_theta = Eigen::VectorXd::Zero(3);
+    delta_theta << 1.0976017859563583, -1.0909088891083099, -0.0066595988537794448;
+    auto pos = Eigen::VectorXd::Zero(3);
+    ASSERT_TRUE(this->ik_->convert_joint_deltas_to_cartesian_deltas(
+      pos, delta_theta, this->end_effector_, delta_x_est));
+    EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 0.02));
+  }
+
+  {
+    // ensure that all plugins calculate the same result for calculate_jacobian
+    Eigen::Matrix<double, 6, Eigen::Dynamic> jac_est =
+      Eigen::Matrix<double, 6, Eigen::Dynamic>::Zero(6, 3);
+    Eigen::Matrix<double, 6, 3> jac;
+    // clang-format off
+    jac << 0.0, 0.0, 0.0,
+           -0.9, -0.9, 0.0,
+           0.9, 0.0, 0.0,
+           1.0, 1.0, 1.0,
+           0.0, 0.0, 0.0,
+           0.0, 0.0, 0.0;
+    // clang-format on
+    auto pos = Eigen::VectorXd::Zero(3);
+    ASSERT_TRUE(this->ik_->calculate_jacobian(pos, this->end_effector_, jac_est));
+    EXPECT_THAT(jac_est, MatrixNear(jac, 0.02));
+  }
+
+  {
+    // ensure that all plugins calculate the same result for calculate_jacobian_inverse
+    Eigen::Matrix<double, Eigen::Dynamic, 6> jac_inverse = Eigen::Matrix<double, 3, 6>::Zero();
+    // clang-format off
+    jac_inverse << 0, -0.0066929, 1.0976,     3.69978e-05, 0, 0,
+                   0, -1.09094,   -1.09091,   0.00603064,  0, 0,
+                   0, 1.09217,    -0.0066596, 0.988987,    0, 0;
+    // clang-format on
+    Eigen::Matrix<double, Eigen::Dynamic, 6> jac_inverse_est = Eigen::Matrix<double, 3, 6>::Zero();
+    auto pos = Eigen::VectorXd::Zero(3);
+    ASSERT_TRUE(this->ik_->calculate_jacobian_inverse(pos, this->end_effector_, jac_inverse_est));
+    EXPECT_THAT(jac_inverse_est, MatrixNear(jac_inverse, 0.02));
+  }
+}
+
 REGISTER_TYPED_TEST_SUITE_P(
   TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
   plugin_function_reduced_model_base, plugin_function_std_vector, plugin_calculate_frame_difference,
   plugin_calculate_frame_difference_std_vector, incorrect_parameters, incorrect_input_sizes,
-  plugin_no_robot_description);
+  plugin_no_robot_description, plugin_output_match);
 
 #endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_

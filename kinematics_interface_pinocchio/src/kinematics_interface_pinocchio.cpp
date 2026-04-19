@@ -18,6 +18,7 @@
 
 #include <queue>
 #include <unordered_set>
+#include "pinocchio/multibody/fwd.hpp"
 
 namespace kinematics_interface_pinocchio
 {
@@ -255,7 +256,8 @@ bool KinematicsInterfacePinocchio::convert_joint_deltas_to_cartesian_deltas(
 
   // calculate Jacobian
   const auto ee_frame_id = model_.getFrameId(link_name);
-  pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+  pinocchio::computeFrameJacobian(
+    model_, *data_, q_, ee_frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobian_);
   delta_x = jacobian_ * delta_theta;
 
   return true;
@@ -304,7 +306,8 @@ bool KinematicsInterfacePinocchio::calculate_jacobian(
 
   // calculate Jacobian
   const auto ee_frame_id = model_.getFrameId(link_name);
-  pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+  pinocchio::computeFrameJacobian(
+    model_, *data_, q_, ee_frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobian_);
   jacobian = jacobian_;
 
   return true;
@@ -328,7 +331,8 @@ bool KinematicsInterfacePinocchio::calculate_jacobian_inverse(
 
   // calculate Jacobian
   const auto ee_frame_id = model_.getFrameId(link_name);
-  pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+  pinocchio::computeFrameJacobian(
+    model_, *data_, q_, ee_frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobian_);
   // damped inverse
   jacobian_inverse_ =
     (jacobian_.transpose() * jacobian_ + alpha * I).inverse() * jacobian_.transpose();
