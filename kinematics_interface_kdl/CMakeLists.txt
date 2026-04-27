@@ -29,7 +29,6 @@ target_include_directories(kinematics_interface_kdl PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/kinematics_interface_kdl>
 )
-target_compile_features(kinematics_interface_kdl PUBLIC cxx_std_17)
 target_link_libraries(kinematics_interface_kdl PUBLIC
   Eigen3::Eigen kdl_parser::kdl_parser kinematics_interface::kinematics_interface pluginlib::pluginlib tf2_eigen_kdl::tf2_eigen_kdl
 )
