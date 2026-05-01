@@ -30,7 +30,7 @@ concurrency:
 
 jobs:
   source:
-    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-source-build.yml@source-pinocchio
+    uses: ros-controls/ros2_control_ci/.github/workflows/reusable-ros-tooling-source-build.yml@master
     strategy:
       fail-fast: false
       matrix:
