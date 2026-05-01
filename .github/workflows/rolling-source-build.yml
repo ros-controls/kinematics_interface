@@ -43,4 +43,3 @@ jobs:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ref: master
       container: ${{ matrix.CONTAINER }}
-      exclude_source_packages: pinocchio
