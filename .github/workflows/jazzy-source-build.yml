@@ -35,4 +35,3 @@ jobs:
       ros_distro: jazzy
       ref: jazzy
       container: ubuntu:24.04
-      exclude_source_packages: pinocchio
