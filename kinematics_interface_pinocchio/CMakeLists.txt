@@ -28,7 +28,6 @@ target_include_directories(kinematics_interface_pinocchio PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/kinematics_interface_pinocchio>
 )
-target_compile_features(kinematics_interface_pinocchio PUBLIC cxx_std_17)
 target_link_libraries(kinematics_interface_pinocchio PUBLIC
   kinematics_interface::kinematics_interface
   pluginlib::pluginlib
