@@ -403,7 +403,9 @@ void IKPluginKinematicsServiceNode::get_position_ik_callback(
 
   // Requested tcp link -> e.g. left_grippertcp_link
   // Requested target frame -> e.g. part_1/pick_frame
-  const std::string requested_tcp_link = request->ik_request.ik_link_name;
+  const std::string requested_tcp_link = request->ik_request.ik_link_name.empty()
+    ? tip_link_
+    : request->ik_request.ik_link_name;
   const std::string target_frame = request->ik_request.pose_stamped.header.frame_id;
 
   RCLCPP_INFO(
