@@ -56,4 +56,3 @@ jobs:
       c_compiler: clang
       cxx_compiler: clang++
       not_test_build: true
-      docker_image_tag_suffix: -pr-786
