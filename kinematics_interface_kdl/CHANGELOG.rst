@@ -2,6 +2,9 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+
 2.4.1 (2026-05-13)
 ------------------
 * Bump C++ version to C++20 (`#259 <https://github.com/ros-controls/kinematics_interface/issues/259>`_)
