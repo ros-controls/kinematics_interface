@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface_pinocchio
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.1 (2026-05-14)
+------------------
 * Fix deprecated `frame` member of pinocchio (backport `#280 <https://github.com/ros-controls/kinematics_interface/issues/280>`_) (`#288 <https://github.com/ros-controls/kinematics_interface/issues/288>`_)
 * Contributors: mergify[bot]
 

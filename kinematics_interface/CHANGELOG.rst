@@ -2,8 +2,8 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
------------
+1.7.1 (2026-05-14)
+------------------
 * Add missing dependency on rclcpp (backport `#289 <https://github.com/ros-controls/kinematics_interface/issues/289>`_) (`#296 <https://github.com/ros-controls/kinematics_interface/issues/296>`_)
 * Contributors: mergify[bot]
 
