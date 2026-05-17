@@ -105,7 +105,9 @@ bool KinematicsInterfacePinocchio::initialize(
     // look for the first frame whose parent joint’s parent is universe (0)
     for (const auto & frame : full_model.frames)
     {
-      if (frame.parent == 0 && frame.type == pinocchio::FrameType::BODY)  // BODY frame = link frame
+      if (
+        frame.parentJoint == 0 &&
+        frame.type == pinocchio::FrameType::BODY)  // BODY frame = link frame
       {
         root_name_ = frame.name;
         break;
@@ -173,13 +175,13 @@ bool KinematicsInterfacePinocchio::initialize(
   {
     pinocchio::FrameIndex base_frame_id = full_model.getFrameId(root_name_);
     const pinocchio::Frame & base_frame = full_model.frames[base_frame_id];
-    base_joint_id = base_frame.parent;  // the joint to which this frame is attached
+    base_joint_id = base_frame.parentJoint;  // the joint to which this frame is attached
   }
 
   pinocchio::FrameIndex end_effector_frame_id = full_model.getFrameId(end_effector_name);
   const pinocchio::Frame & end_effector_frame = full_model.frames[end_effector_frame_id];
   pinocchio::JointIndex tool_joint_id =
-    end_effector_frame.parent;  // the joint to which this frame is attached
+    end_effector_frame.parentJoint;  // the joint to which this frame is attached
 
   // Validate: is tool under base?
   auto base_descendants = get_descendants(full_model, base_joint_id);

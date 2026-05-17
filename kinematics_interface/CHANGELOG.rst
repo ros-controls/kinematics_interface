@@ -2,6 +2,16 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+2.4.2 (2026-05-14)
+------------------
+* Add missing dependency on rclcpp (`#289 <https://github.com/ros-controls/kinematics_interface/issues/289>`_)
+* Contributors: Scott K Logan
+
+2.4.1 (2026-05-13)
+------------------
+* Bump C++ version to C++20 (`#259 <https://github.com/ros-controls/kinematics_interface/issues/259>`_)
+* Contributors: Christoph Fröhlich
+
 2.4.0 (2025-12-06)
 ------------------
 * Add pinocchio plugin (`#199 <https://github.com/ros-controls/kinematics_interface/issues/199>`_)

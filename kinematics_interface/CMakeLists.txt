@@ -20,7 +20,6 @@ find_package(Eigen3 REQUIRED NO_MODULE)
 
 # Create interface library for kinematics base class
 add_library(kinematics_interface SHARED src/kinematics_interface.cpp)
-target_compile_features(kinematics_interface PUBLIC cxx_std_17)
 target_include_directories(kinematics_interface PUBLIC
   $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include/kinematics_interface>
