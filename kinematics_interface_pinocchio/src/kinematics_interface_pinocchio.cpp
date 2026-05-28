@@ -382,7 +382,7 @@ bool KinematicsInterfacePinocchio::calculate_link_transform(
 }
 
 bool KinematicsInterfacePinocchio::calculate_frame_difference(
-  const Eigen::Matrix<double, 7, 1> & x_a, const Eigen::Matrix<double, 7, 1> & x_b, double dt,
+  Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
   Eigen::Matrix<double, 6, 1> & delta_x)
 {
   // verify inputs

@@ -149,15 +149,6 @@ public:
   }
 
   /**
-   * \brief Convert joint state to Cartesian pose using forward kinematics.
-   */
-  virtual bool convert_joint_state_to_cartesian_pose(
-    const std::vector<double> & /*joint_state*/, Eigen::Isometry3d & /*pose*/)
-  {
-    return false;
-  }
-
-  /**
    * \brief Calculates the difference between two Cartesian frames
    * \param[in] x_a first Cartesian frame (x, y, z, qx, qy, qz, qw)
    * \param[in] x_b second Cartesian frame (x, y, z, qx, qy, qz, qw)
@@ -168,7 +159,7 @@ public:
    * \note This method is independent of robot kinematics and the model loaded to the plugin
    */
   virtual bool calculate_frame_difference(
-    const Eigen::Matrix<double, 7, 1> & x_a, const Eigen::Matrix<double, 7, 1> & x_b, double dt,
+    Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
     Eigen::Matrix<double, 6, 1> & delta_x) = 0;
 
   bool convert_cartesian_deltas_to_joint_deltas(
