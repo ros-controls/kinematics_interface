@@ -58,4 +58,17 @@ install(
 ament_export_targets(export_kinematics_interface_ikfast HAS_LIBRARY_TARGET)
 ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS} Eigen3)
 
+if(BUILD_TESTING)
+  find_package(ament_cmake_gmock REQUIRED)
+
+  ament_add_gmock(
+    test_kinematics_interface_ikfast
+    test/test_kinematics_interface_ikfast.cpp
+  )
+  target_link_libraries(test_kinematics_interface_ikfast
+    kinematics_interface_ikfast
+    rclcpp::rclcpp
+  )
+endif()
+
 ament_package()
