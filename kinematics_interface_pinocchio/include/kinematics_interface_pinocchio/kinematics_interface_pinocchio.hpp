@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 /// \author: Saif Sidhik
-/// \description: Pinocchio plugin for kinematics interface
+/// \description: Pinocchio plugin for kinematics interface.
 
 #ifndef KINEMATICS_INTERFACE_PINOCCHIO__KINEMATICS_INTERFACE_PINOCCHIO_HPP_
 #define KINEMATICS_INTERFACE_PINOCCHIO__KINEMATICS_INTERFACE_PINOCCHIO_HPP_
@@ -69,6 +69,17 @@ public:
     Eigen::Matrix<double, 6, 1> & delta_x) override;
 
 private:
+  /// \brief Fill `jacobian_` with the frame Jacobian of `frame_id` expressed in the
+  ///        chain-root frame, matching KDL.
+  ///
+  /// Pinocchio's LOCAL_WORLD_ALIGNED Jacobian has its reference point at the frame origin
+  /// (as KDL does) but its axes aligned with the URDF universe. When a custom `base` link
+  /// is selected, the chain root is rotated with respect to the universe, so the linear and
+  /// angular blocks are rotated by R_root^T to express them in the chain-root frame. When
+  /// the chain root is the universe, R_root is the identity and this is a no-op.
+  void compute_jacobian_in_root_frame(
+    const Eigen::VectorXd & q, const pinocchio::FrameIndex frame_id);
+
   // verification methods
   bool verify_initialized();
   bool verify_link_name(const std::string & link_name);
@@ -79,6 +90,9 @@ private:
 
   bool initialized = false;
   std::string root_name_;
+  // Frame id of the chain root (`base`) in the reduced model; Jacobians and transforms are
+  // expressed relative to this frame. "universe" maps to 0 (identity placement).
+  pinocchio::FrameIndex root_frame_id_ = 0;
   Eigen::Index num_joints_;
 
   pinocchio::Model model_;
@@ -86,7 +100,6 @@ private:
   Eigen::VectorXd q_;
   Eigen::MatrixXd jacobian_;
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse_;
-  Eigen::MatrixXd frame_tf_;
 
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface_;
   std::unordered_map<std::string, int> link_name_map_;

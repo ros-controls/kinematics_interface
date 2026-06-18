@@ -226,6 +226,15 @@ bool KinematicsInterfacePinocchio::initialize(
     Eigen::VectorXd::Zero(full_model.nq);  // actual value is not important for kinematics
   model_ = pinocchio::buildReducedModel(full_model, locked_joints, q_fixed);
 
+  // store the chain-root frame id in the reduced model (after any base/tip swap). Jacobians
+  // and link transforms are expressed relative to this frame.
+  if (!model_.existFrame(root_name_))
+  {
+    RCLCPP_ERROR(LOGGER, "Chain root '%s' not found in the reduced model", root_name_.c_str());
+    return false;
+  }
+  root_frame_id_ = model_.getFrameId(root_name_);
+
   // allocate dynamic memory
   data_ = std::make_shared<pinocchio::Data>(model_);
   num_joints_ = static_cast<Eigen::Index>(model_.nq);
@@ -236,6 +245,21 @@ bool KinematicsInterfacePinocchio::initialize(
   jacobian_inverse_.resize(num_joints_, 6);
 
   return true;
+}
+
+void KinematicsInterfacePinocchio::compute_jacobian_in_root_frame(
+  const Eigen::VectorXd & q, const pinocchio::FrameIndex frame_id)
+{
+  // The LOCAL_WORLD_ALIGNED Jacobian uses the frame origin as its reference point
+  // but expresses its axes in the URDF universe frame. Rotate the linear and angular blocks
+  // by R_root^T so the axes are aligned with the chain-root frame, matching KDL. When the
+  // chain root is the universe, R_root is the identity and this is a no-op.
+  pinocchio::computeFrameJacobian(
+    model_, *data_, q, frame_id, pinocchio::LOCAL_WORLD_ALIGNED, jacobian_);
+  pinocchio::updateFramePlacement(model_, *data_, root_frame_id_);
+  const Eigen::Matrix3d R_root_T = data_->oMf[root_frame_id_].rotation().transpose();
+  jacobian_.topRows<3>() = R_root_T * jacobian_.topRows<3>();
+  jacobian_.bottomRows<3>() = R_root_T * jacobian_.bottomRows<3>();
 }
 
 bool KinematicsInterfacePinocchio::convert_joint_deltas_to_cartesian_deltas(
@@ -255,9 +279,9 @@ bool KinematicsInterfacePinocchio::convert_joint_deltas_to_cartesian_deltas(
   // get joint array
   q_ = joint_pos;
 
-  // calculate Jacobian
+  // calculate Jacobian (expressed in the chain-root frame)
   const auto ee_frame_id = model_.getFrameId(link_name);
-  pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+  compute_jacobian_in_root_frame(q_, ee_frame_id);
   delta_x = jacobian_ * delta_theta;
 
   return true;
@@ -304,9 +328,9 @@ bool KinematicsInterfacePinocchio::calculate_jacobian(
   // get joint array
   q_ = joint_pos;
 
-  // calculate Jacobian
+  // calculate Jacobian (expressed in the chain-root frame)
   const auto ee_frame_id = model_.getFrameId(link_name);
-  pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+  compute_jacobian_in_root_frame(q_, ee_frame_id);
   jacobian = jacobian_;
 
   return true;
@@ -328,9 +352,9 @@ bool KinematicsInterfacePinocchio::calculate_jacobian_inverse(
   // get joint array
   q_ = joint_pos;
 
-  // calculate Jacobian
+  // calculate Jacobian (expressed in the chain-root frame)
   const auto ee_frame_id = model_.getFrameId(link_name);
-  pinocchio::computeFrameJacobian(model_, *data_, q_, ee_frame_id, jacobian_);
+  compute_jacobian_in_root_frame(q_, ee_frame_id);
   // damped inverse
   jacobian_inverse_ =
     (jacobian_.transpose() * jacobian_ + alpha * I).inverse() * jacobian_.transpose();
@@ -369,15 +393,14 @@ bool KinematicsInterfacePinocchio::calculate_link_transform(
     return true;
   }
 
-  // calculate Jacobian
   const auto ee_frame_id = model_.getFrameId(link_name);
 
-  // Perform forward kinematics and get a transform.
+  // Perform forward kinematics and express the link pose relative to the chain-root frame
   pinocchio::framesForwardKinematics(model_, *data_, q_);
-  frame_tf_ = data_->oMf[ee_frame_id].toHomogeneousMatrix();
+  const pinocchio::SE3 root_M_link = data_->oMf[root_frame_id_].actInv(data_->oMf[ee_frame_id]);
 
-  transform.linear() = frame_tf_.block<3, 3>(0, 0);
-  transform.translation() = frame_tf_.block<3, 1>(0, 3);
+  transform.linear() = root_M_link.rotation();
+  transform.translation() = root_M_link.translation();
   return true;
 }
 
@@ -405,13 +428,14 @@ bool KinematicsInterfacePinocchio::calculate_frame_difference(
   const Eigen::Matrix3d R_a = q_a.toRotationMatrix();
   const Eigen::Matrix3d R_b = q_b.toRotationMatrix();
 
-  // KDL-like behaviour:
+  // Expected behaviour for standard frame difference (e.g. for velocity control):
   // - linear part: simple difference of positions
-  // - angular part: log3(R_a^T * R_b) (axis-angle vector)
+  // - angular part: R_a * log3(R_a^T * R_b), the axis-angle vector expressed in the base
+  //   frame (frame A), not in the local frame of A.
   const Eigen::Vector3d linear = (t_b - t_a) / dt;
 
   const Eigen::Matrix3d R_rel = R_a.transpose() * R_b;
-  const Eigen::Vector3d angular = pinocchio::log3(R_rel) / dt;  // 3-vector (axis * angle)
+  const Eigen::Vector3d angular = R_a * pinocchio::log3(R_rel) / dt;  // base-frame axis*angle
 
   delta_x.head<3>() = linear;
   delta_x.tail<3>() = angular;
