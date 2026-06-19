@@ -311,6 +311,24 @@ TYPED_TEST_P(TestPlugin, plugin_calculate_frame_difference_std_vector)
   EXPECT_THAT(delta_x, ::testing::Pointwise(::testing::DoubleNear(0.02), delta_x_est));
 }
 
+TYPED_TEST_P(TestPlugin, plugin_calculate_frame_difference_rotated_base)
+{
+  // Regression test: the angular part of the frame difference must be expressed in the
+  // base frame for it to be useful for control.
+  // Here R_a = Rz(90 deg), so a (wrong) local-frame result would point about +x while the
+  // correct base-frame result points about +y.
+  Eigen::Matrix<double, 7, 1> x_a, x_b;
+  x_a << 0, 0, 0, 0, 0, 0.70710678, 0.70710678;  // Rz(90 deg)
+  x_b << 0, 0, 0, 0.5, 0.5, 0.5, 0.5;            // Rz(90 deg) * Rx(90 deg)
+  double dt = 1.0;
+  kinematics_interface::Vector6d delta_x = kinematics_interface::Vector6d::Zero();
+  kinematics_interface::Vector6d delta_x_est;
+  delta_x_est << 0, 0, 0, 0, 1.5708, 0;  // angular velocity about +y in the base frame
+  ASSERT_TRUE(this->ik_->calculate_frame_difference(x_a, x_b, dt, delta_x));
+
+  EXPECT_THAT(delta_x, MatrixNear(delta_x_est, 1e-3));
+}
+
 TYPED_TEST_P(TestPlugin, incorrect_parameters)
 {
   this->loadTipParameter("");
@@ -396,7 +414,7 @@ TYPED_TEST_P(TestPlugin, plugin_no_robot_description)
 REGISTER_TYPED_TEST_SUITE_P(
   TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
   plugin_function_reduced_model_base, plugin_function_std_vector, plugin_calculate_frame_difference,
-  plugin_calculate_frame_difference_std_vector, incorrect_parameters, incorrect_input_sizes,
-  plugin_no_robot_description);
+  plugin_calculate_frame_difference_std_vector, plugin_calculate_frame_difference_rotated_base,
+  incorrect_parameters, incorrect_input_sizes, plugin_no_robot_description);
 
 #endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
