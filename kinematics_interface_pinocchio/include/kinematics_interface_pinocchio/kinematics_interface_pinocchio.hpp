@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 /// \author: Saif Sidhik
-/// \description: Pinocchio plugin for kinematics interface.
+/// \description: Pinocchio plugin for kinematics interface
 
 #ifndef KINEMATICS_INTERFACE_PINOCCHIO__KINEMATICS_INTERFACE_PINOCCHIO_HPP_
 #define KINEMATICS_INTERFACE_PINOCCHIO__KINEMATICS_INTERFACE_PINOCCHIO_HPP_
@@ -71,12 +71,6 @@ public:
 private:
   /// \brief Fill `jacobian_` with the frame Jacobian of `frame_id` expressed in the
   ///        chain-root frame, matching KDL.
-  ///
-  /// Pinocchio's LOCAL_WORLD_ALIGNED Jacobian has its reference point at the frame origin
-  /// (as KDL does) but its axes aligned with the URDF universe. When a custom `base` link
-  /// is selected, the chain root is rotated with respect to the universe, so the linear and
-  /// angular blocks are rotated by R_root^T to express them in the chain-root frame. When
-  /// the chain root is the universe, R_root is the identity and this is a no-op.
   void compute_jacobian_in_root_frame(
     const Eigen::VectorXd & q, const pinocchio::FrameIndex frame_id);
 
