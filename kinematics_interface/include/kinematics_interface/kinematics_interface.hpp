@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "rclcpp/logging.hpp"
@@ -116,6 +117,36 @@ public:
   virtual bool calculate_jacobian_inverse(
     const Eigen::VectorXd & joint_pos, const std::string & link_name,
     Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse) = 0;
+
+  /**
+   * \brief Convert Cartesian pose to the closest joint state using inverse kinematics.
+   */
+  virtual bool convert_cartesian_pose_to_closest_joint_state(
+    const Eigen::Isometry3d & /*pose*/, const std::vector<double> & /*current_joint_state*/,
+    std::vector<double> & /*joint_state*/)
+  {
+    return false;
+  }
+
+  /**
+   * \brief Convert Cartesian pose to joint state within specified ranges using inverse kinematics.
+   */
+  virtual bool convert_cartesian_pose_to_joint_state_within_range(
+    const Eigen::Isometry3d & /*pose*/,
+    const std::vector<std::pair<double, double>> & /*joint_ranges*/,
+    std::vector<double> & /*joint_state*/)
+  {
+    return false;
+  }
+
+  /**
+   * \brief Convert Cartesian pose to all possible joint states using inverse kinematics.
+   */
+  virtual bool convert_cartesian_pose_to_possible_joint_states(
+    const Eigen::Isometry3d & /*pose*/, std::vector<std::vector<double>> & /*joint_states*/)
+  {
+    return false;
+  }
 
   /**
    * \brief Calculates the difference between two Cartesian frames
