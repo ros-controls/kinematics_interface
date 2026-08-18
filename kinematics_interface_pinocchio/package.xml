@@ -31,7 +31,6 @@
 
   <test_depend>ament_cmake_gmock</test_depend>
   <test_depend>ros2_control_test_assets</test_depend>
-  <test_depend>kinematics_interface_kdl</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

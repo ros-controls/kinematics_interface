@@ -238,6 +238,48 @@ TYPED_TEST_P(TestPlugin, plugin_function_reduced_model_base)
   EXPECT_THAT(jacobian_inverse, MatrixNear(jacobian_inverse_est, 0.02));
 }
 
+TYPED_TEST_P(TestPlugin, plugin_jacobian_and_transform_in_root_frame)
+{
+  // Regression test for https://github.com/ros-controls/kinematics_interface/issues/256:
+  // "link1" is rotated by -90 deg about x with respect to the URDF world, so the Jacobian axes
+  // and the link transform must be expressed in that chain-root frame, and not in the world
+  // frame nor in the local frame of the tip.
+  this->loadBaseParameter("link1");
+  this->loadTipParameter("link3");
+
+  // initialize the plugin
+  ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
+
+  Eigen::VectorXd pos(2);
+  pos << 0.5, -0.3;
+
+  // calculate jacobian
+  Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
+  ASSERT_TRUE(this->ik_->calculate_jacobian(pos, this->end_effector_, jacobian));
+
+  // reference point at the tip origin, axes expressed in the chain-root frame
+  Eigen::Matrix<double, 6, 2> jacobian_est;
+  jacobian_est << 0.0, 0.0,  // vx
+    0.431483, 0.0,           // vy
+    -0.789824, 0.0,          // vz
+    1.0, 1.0,                // wx
+    0.0, 0.0,                // wy
+    0.0, 0.0;                // wz
+  EXPECT_THAT(jacobian, MatrixNear(jacobian_est, 1e-4));
+
+  // calculate link transform
+  Eigen::Isometry3d end_effector_transform;
+  ASSERT_TRUE(
+    this->ik_->calculate_link_transform(pos, this->end_effector_, end_effector_transform));
+
+  Eigen::Isometry3d end_effector_transform_est = Eigen::Isometry3d::Identity();
+  end_effector_transform_est.linear() << 1.0, 0.0, 0.0, 0.0, -0.980067, 0.198669, 0.0, -0.198669,
+    -0.980067;
+  end_effector_transform_est.translation() << 0.0, -0.789824, 0.468517;
+  EXPECT_THAT(
+    end_effector_transform.matrix(), MatrixNear(end_effector_transform_est.matrix(), 1e-4));
+}
+
 TYPED_TEST_P(TestPlugin, plugin_function_std_vector)
 {
   // initialize the plugin
@@ -413,7 +455,8 @@ TYPED_TEST_P(TestPlugin, plugin_no_robot_description)
 
 REGISTER_TYPED_TEST_SUITE_P(
   TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
-  plugin_function_reduced_model_base, plugin_function_std_vector, plugin_calculate_frame_difference,
+  plugin_function_reduced_model_base, plugin_jacobian_and_transform_in_root_frame,
+  plugin_function_std_vector, plugin_calculate_frame_difference,
   plugin_calculate_frame_difference_std_vector, plugin_calculate_frame_difference_rotated_base,
   incorrect_parameters, incorrect_input_sizes, plugin_no_robot_description);
 

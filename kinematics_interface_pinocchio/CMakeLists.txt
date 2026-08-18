@@ -49,16 +49,6 @@ if(BUILD_TESTING)
     kinematics_interface_pinocchio
     ros2_control_test_assets::ros2_control_test_assets
   )
-  ament_add_gmock(
-    test_pinocchio_kdl_frame_consistency
-    test/test_pinocchio_kdl_frame_consistency.cpp
-  )
-  target_link_libraries(test_pinocchio_kdl_frame_consistency
-    kinematics_interface::kinematics_interface
-    pluginlib::pluginlib
-    ros2_control_test_assets::ros2_control_test_assets
-    Eigen3::Eigen
-  )
 endif()
 
 install(
