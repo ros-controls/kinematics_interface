@@ -69,6 +69,11 @@ public:
     Eigen::Matrix<double, 6, 1> & delta_x) override;
 
 private:
+  /// \brief Fill `jacobian_` with the frame Jacobian of `frame_id` expressed in the
+  ///        chain-root frame, matching KDL.
+  void compute_jacobian_in_root_frame(
+    const Eigen::VectorXd & q, const pinocchio::FrameIndex frame_id);
+
   // verification methods
   bool verify_initialized();
   bool verify_link_name(const std::string & link_name);
@@ -79,6 +84,9 @@ private:
 
   bool initialized = false;
   std::string root_name_;
+  // Frame id of the chain root (`base`) in the reduced model; Jacobians and transforms are
+  // expressed relative to this frame. "universe" maps to 0 (identity placement).
+  pinocchio::FrameIndex root_frame_id_ = 0;
   Eigen::Index num_joints_;
 
   pinocchio::Model model_;
@@ -86,7 +94,6 @@ private:
   Eigen::VectorXd q_;
   Eigen::MatrixXd jacobian_;
   Eigen::Matrix<double, Eigen::Dynamic, 6> jacobian_inverse_;
-  Eigen::MatrixXd frame_tf_;
 
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface_;
   std::unordered_map<std::string, int> link_name_map_;
