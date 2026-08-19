@@ -404,48 +404,6 @@ bool KinematicsInterfacePinocchio::calculate_link_transform(
   return true;
 }
 
-<<<<<<< HEAD
-=======
-bool KinematicsInterfacePinocchio::calculate_frame_difference(
-  Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
-  Eigen::Matrix<double, 6, 1> & delta_x)
-{
-  // verify inputs
-  if (!verify_period(dt))
-  {
-    RCLCPP_ERROR(LOGGER, "Input verification failed in '%s'", FUNCTION_SIGNATURE);
-    return false;
-  }
-
-  // translation
-  const Eigen::Vector3d t_a = x_a.head<3>();
-  const Eigen::Vector3d t_b = x_b.head<3>();
-
-  // quaternions: input layout is [tx,ty,tz, qx,qy,qz,qw]
-  Eigen::Quaterniond q_a(x_a(6), x_a(3), x_a(4), x_a(5));  // (w,x,y,z)
-  Eigen::Quaterniond q_b(x_b(6), x_b(3), x_b(4), x_b(5));
-  q_a.normalize();
-  q_b.normalize();
-
-  const Eigen::Matrix3d R_a = q_a.toRotationMatrix();
-  const Eigen::Matrix3d R_b = q_b.toRotationMatrix();
-
-  // Expected behaviour for standard frame difference (e.g. for velocity control):
-  // - linear part: simple difference of positions
-  // - angular part: R_a * log3(R_a^T * R_b), the axis-angle vector expressed in the base
-  //   frame (frame A), not in the local frame of A.
-  const Eigen::Vector3d linear = (t_b - t_a) / dt;
-
-  const Eigen::Matrix3d R_rel = R_a.transpose() * R_b;
-  const Eigen::Vector3d angular = R_a * pinocchio::log3(R_rel) / dt;  // base-frame axis*angle
-
-  delta_x.head<3>() = linear;
-  delta_x.tail<3>() = angular;
-
-  return true;
-}
-
->>>>>>> ba36847 (Fix frame inconsistencies in pinocchio plugin (#304))
 bool KinematicsInterfacePinocchio::verify_link_name(const std::string & link_name)
 {
   if (link_name == root_name_)
