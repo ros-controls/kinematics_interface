@@ -84,12 +84,56 @@ bool KinematicsInterfaceKDL::initialize(
     root_name_ = robot_tree.getRootSegment()->first;
   }
 
-  if (!robot_tree.getChain(root_name_, end_effector_name, chain_))
+  KDL::Chain direct_chain;
+  KDL::Chain swapped_chain;
+  const bool has_direct_chain = robot_tree.getChain(root_name_, end_effector_name, direct_chain);
+  const bool has_swapped_chain = robot_tree.getChain(end_effector_name, root_name_, swapped_chain);
+
+  if (!has_direct_chain && !has_swapped_chain)
   {
     RCLCPP_ERROR(
       LOGGER, "failed to find chain from robot root '%s' to end effector '%s'", root_name_.c_str(),
       end_effector_name.c_str());
     return false;
+  }
+
+  bool choose_swapped_chain = !has_direct_chain;
+  if (!choose_swapped_chain && has_swapped_chain)
+  {
+    const auto direct_joints = direct_chain.getNrOfJoints();
+    const auto swapped_joints = swapped_chain.getNrOfJoints();
+
+    if (swapped_joints > direct_joints)
+    {
+      choose_swapped_chain = true;
+    }
+    else if (swapped_joints == direct_joints)
+    {
+      // Tie-breaker: choose orientation where base is closer to tree root than tip.
+      KDL::Chain root_to_base_chain;
+      KDL::Chain root_to_tip_chain;
+      const std::string tree_root = robot_tree.getRootSegment()->first;
+      const bool has_root_to_base = robot_tree.getChain(tree_root, root_name_, root_to_base_chain);
+      const bool has_root_to_tip =
+        robot_tree.getChain(tree_root, end_effector_name, root_to_tip_chain);
+      if (
+        has_root_to_base && has_root_to_tip &&
+        root_to_base_chain.getNrOfSegments() > root_to_tip_chain.getNrOfSegments())
+      {
+        choose_swapped_chain = true;
+      }
+    }
+  }
+
+  if (choose_swapped_chain)
+  {
+    std::swap(root_name_, end_effector_name);
+    chain_ = swapped_chain;
+    RCLCPP_WARN(LOGGER, "Swapping tool and base frame");
+  }
+  else
+  {
+    chain_ = direct_chain;
   }
   // create map from link names to their index
   for (size_t i = 0; i < chain_.getNrOfSegments(); ++i)
