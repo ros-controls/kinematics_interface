@@ -439,7 +439,6 @@ REGISTER_TYPED_TEST_SUITE_P(
   TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
   plugin_function_reduced_model_base, plugin_jacobian_and_transform_in_root_frame,
   plugin_function_std_vector, incorrect_parameters, incorrect_input_sizes,
-  plugin_swapped_base_tip_keeps_chain_consistent,
-  plugin_no_robot_description);
+  plugin_swapped_base_tip_keeps_chain_consistent, plugin_no_robot_description);
 
 #endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
