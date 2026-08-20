@@ -201,6 +201,7 @@ bool KinematicsInterfacePinocchio::initialize(
     else
     {
       std::swap(root_name_, end_effector_name);
+      std::swap(base_joint_id, tool_joint_id);
       RCLCPP_WARN(LOGGER, "Swapping tool and base frame");
     }
   }
