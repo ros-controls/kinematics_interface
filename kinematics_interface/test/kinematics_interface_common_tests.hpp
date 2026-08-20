@@ -280,6 +280,44 @@ TYPED_TEST_P(TestPlugin, plugin_jacobian_and_transform_in_root_frame)
     end_effector_transform.matrix(), MatrixNear(end_effector_transform_est.matrix(), 1e-4));
 }
 
+TYPED_TEST_P(TestPlugin, plugin_swapped_base_tip_keeps_chain_consistent)
+{
+  // Regression test for swapped parameters: if tip is an ancestor of base,
+  // initialization swaps them internally and must also keep the reduced-model
+  // chain consistent with that swap.
+  this->loadBaseParameter("link3");
+  this->loadTipParameter("link1");
+
+  // initialize the plugin
+  ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
+
+  Eigen::VectorXd pos(2);
+  pos << 0.5, -0.3;
+
+  // After the internal swap, the effective tip should be link3 and the chain should have 2 joints.
+  Eigen::Matrix<double, 6, Eigen::Dynamic> jacobian = Eigen::Matrix<double, 6, 2>::Zero();
+  ASSERT_TRUE(this->ik_->calculate_jacobian(pos, "link3", jacobian));
+
+  Eigen::Matrix<double, 6, 2> jacobian_est;
+  jacobian_est << 0.0, 0.0,  // vx
+    0.431483, 0.0,           // vy
+    -0.789824, 0.0,          // vz
+    1.0, 1.0,                // wx
+    0.0, 0.0,                // wy
+    0.0, 0.0;                // wz
+  EXPECT_THAT(jacobian, MatrixNear(jacobian_est, 1e-4));
+
+  Eigen::Isometry3d end_effector_transform;
+  ASSERT_TRUE(this->ik_->calculate_link_transform(pos, "link3", end_effector_transform));
+
+  Eigen::Isometry3d end_effector_transform_est = Eigen::Isometry3d::Identity();
+  end_effector_transform_est.linear() << 1.0, 0.0, 0.0, 0.0, -0.980067, 0.198669, 0.0, -0.198669,
+    -0.980067;
+  end_effector_transform_est.translation() << 0.0, -0.789824, 0.468517;
+  EXPECT_THAT(
+    end_effector_transform.matrix(), MatrixNear(end_effector_transform_est.matrix(), 1e-4));
+}
+
 TYPED_TEST_P(TestPlugin, plugin_function_std_vector)
 {
   // initialize the plugin
@@ -401,6 +439,6 @@ REGISTER_TYPED_TEST_SUITE_P(
   TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
   plugin_function_reduced_model_base, plugin_jacobian_and_transform_in_root_frame,
   plugin_function_std_vector, incorrect_parameters, incorrect_input_sizes,
-  plugin_no_robot_description);
+  plugin_swapped_base_tip_keeps_chain_consistent, plugin_no_robot_description);
 
 #endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
