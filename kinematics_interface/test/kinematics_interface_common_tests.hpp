@@ -438,13 +438,8 @@ TYPED_TEST_P(TestPlugin, plugin_no_robot_description)
 REGISTER_TYPED_TEST_SUITE_P(
   TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
   plugin_function_reduced_model_base, plugin_jacobian_and_transform_in_root_frame,
-<<<<<<< HEAD
   plugin_function_std_vector, incorrect_parameters, incorrect_input_sizes,
-=======
-  plugin_swapped_base_tip_keeps_chain_consistent, plugin_function_std_vector,
-  plugin_calculate_frame_difference, plugin_calculate_frame_difference_std_vector,
-  plugin_calculate_frame_difference_rotated_base, incorrect_parameters, incorrect_input_sizes,
->>>>>>> 4296d45 (Fix swap in kinematic chain (#319))
+  plugin_swapped_base_tip_keeps_chain_consistent,
   plugin_no_robot_description);
 
 #endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
