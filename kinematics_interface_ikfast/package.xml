@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>kinematics_interface_ikfast</name>
+  <version>0.0.0</version>
+  <description>IKFast Kinematics Interface Plugin</description>
+  <maintainer email="oguzhan.bozoglu@b-robotized.com">Oguzhan Bozoglu</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <buildtool_depend>eigen3_cmake_module</buildtool_depend>
+
+  <build_depend>ros2_control_cmake</build_depend>
+
+  <depend>backward_ros</depend>
+  <depend>eigen</depend>
+  <depend>kinematics_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>rclcpp</depend>
+  <depend>tf2_eigen</depend>
+
+  <test_depend>ament_cmake_gmock</test_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
