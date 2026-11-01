@@ -2,6 +2,11 @@
 Changelog for package kinematics_interface_kdl
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix swap in kinematic chain (`#319 <https://github.com/ros-controls/kinematics_interface/issues/319>`_)
+* Contributors: Christoph Fröhlich
+
 2.4.2 (2026-05-14)
 ------------------
 

@@ -2,6 +2,12 @@
 Changelog for package kinematics_interface
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix swap in kinematic chain (`#319 <https://github.com/ros-controls/kinematics_interface/issues/319>`_)
+* Fix frame inconsistencies in pinocchio plugin (`#304 <https://github.com/ros-controls/kinematics_interface/issues/304>`_)
+* Contributors: Christoph Fröhlich, Saif Sidhik
+
 2.4.2 (2026-05-14)
 ------------------
 * Add missing dependency on rclcpp (`#289 <https://github.com/ros-controls/kinematics_interface/issues/289>`_)
