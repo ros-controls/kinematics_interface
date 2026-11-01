@@ -2,6 +2,12 @@
 Changelog for package kinematics_interface_pinocchio
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Fix swap in kinematic chain (backport `#319 <https://github.com/ros-controls/kinematics_interface/issues/319>`_) (`#320 <https://github.com/ros-controls/kinematics_interface/issues/320>`_)
+* Fix frame inconsistencies in pinocchio plugin (backport `#304 <https://github.com/ros-controls/kinematics_interface/issues/304>`_) (`#318 <https://github.com/ros-controls/kinematics_interface/issues/318>`_)
+* Contributors: mergify[bot]
+
 1.7.1 (2026-05-14)
 ------------------
 * Fix deprecated `frame` member of pinocchio (backport `#280 <https://github.com/ros-controls/kinematics_interface/issues/280>`_) (`#288 <https://github.com/ros-controls/kinematics_interface/issues/288>`_)
