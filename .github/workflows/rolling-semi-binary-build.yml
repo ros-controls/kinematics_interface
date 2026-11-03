@@ -17,7 +17,6 @@ on:
       - '**/CMakeLists.txt'
       - 'kinematics_interface.rolling.repos'
       - 'kinematics_interface.lyrical.repos'
-      - 'kinematics_interface.kilted.repos'
       - '**.xml'
   push: *event
   schedule:
@@ -35,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [kilted, lyrical, rolling]
+        ROS_DISTRO: [lyrical, rolling]
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ros_repo: testing
@@ -46,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [kilted, lyrical, rolling]
+        ROS_DISTRO: [lyrical, rolling]
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ros_repo: testing
