@@ -17,7 +17,6 @@ on:
       - '**/package.xml'
       - '**/CMakeLists.txt'
       - 'kinematics_interface-not-released.rolling.repos'
-      - 'kinematics_interface-not-released.kilted.repos'
       - '**.xml'
   push: *event
   schedule:
@@ -35,7 +34,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ROS_DISTRO: [kilted, lyrical, rolling]
+        ROS_DISTRO: [lyrical, rolling]
         ROS_REPO: [main, testing]
         exclude:
           - ROS_DISTRO: rolling

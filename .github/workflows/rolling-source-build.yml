@@ -39,8 +39,6 @@ jobs:
           CONTAINER: ubuntu:26.04
         - ROS_DISTRO: lyrical
           CONTAINER: ubuntu:26.04
-        - ROS_DISTRO: kilted
-          CONTAINER: ubuntu:24.04
     with:
       ros_distro: ${{ matrix.ROS_DISTRO }}
       ref: master
