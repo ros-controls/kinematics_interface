@@ -512,6 +512,18 @@ TYPED_TEST_P(TestPlugin, plugin_is_thread_safe)
     expected.push_back(jac);
   }
 
+  std::vector<Eigen::Matrix<double, Eigen::Dynamic, 6>> expected_inverse;
+  std::vector<Eigen::MatrixXd> expected_transform;
+  for (int t = 0; t < kThreads; ++t)
+  {
+    Eigen::Matrix<double, Eigen::Dynamic, 6> jac_inv = Eigen::Matrix<double, 3, 6>::Zero();
+    Eigen::Isometry3d tf;
+    ASSERT_TRUE(this->ik_->calculate_jacobian_inverse(positions[t], this->end_effector_, jac_inv));
+    ASSERT_TRUE(this->ik_->calculate_link_transform(positions[t], this->end_effector_, tf));
+    expected_inverse.push_back(jac_inv);
+    expected_transform.push_back(tf.matrix());
+  }
+
   std::atomic<int> failures{0};
   std::vector<std::thread> threads;
   for (int t = 0; t < kThreads; ++t)
@@ -528,7 +540,9 @@ TYPED_TEST_P(TestPlugin, plugin_is_thread_safe)
             !this->ik_->calculate_jacobian(positions[t], this->end_effector_, jac) ||
             !jac.isApprox(expected[t], 1e-9) ||
             !this->ik_->calculate_jacobian_inverse(positions[t], this->end_effector_, jac_inv) ||
-            !this->ik_->calculate_link_transform(positions[t], this->end_effector_, tf))
+            !jac_inv.isApprox(expected_inverse[t], 1e-9) ||
+            !this->ik_->calculate_link_transform(positions[t], this->end_effector_, tf) ||
+            !tf.matrix().isApprox(expected_transform[t], 1e-9))
           {
             ++failures;
           }
