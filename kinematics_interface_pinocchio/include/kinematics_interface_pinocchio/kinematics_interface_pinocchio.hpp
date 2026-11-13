@@ -28,6 +28,9 @@
 #include "eigen3/Eigen/LU"
 #include "kinematics_interface/kinematics_interface.hpp"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
+#ifndef _WIN32
+#include "realtime_tools/mutex.hpp"
+#endif
 
 #include "pinocchio/algorithm/frames.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
@@ -37,6 +40,14 @@
 
 namespace kinematics_interface_pinocchio
 {
+#ifdef _WIN32
+// realtime_tools' priority-inheritance mutex is pthread based and unavailable on Windows
+using RecursiveMutex = std::recursive_mutex;
+#else
+// Priority inheritance avoids priority inversion when a real-time thread waits on this lock
+using RecursiveMutex = realtime_tools::prio_inherit_recursive_mutex;
+#endif
+
 class KinematicsInterfacePinocchio : public kinematics_interface::KinematicsInterface
 {
 public:
@@ -85,7 +96,7 @@ private:
 
   // Guards all member state below. Recursive because public methods call each other
   // (e.g. convert_cartesian_deltas_to_joint_deltas -> calculate_jacobian_inverse).
-  std::recursive_mutex mutex_;
+  RecursiveMutex mutex_;
 
   bool initialized = false;
   std::string root_name_;
