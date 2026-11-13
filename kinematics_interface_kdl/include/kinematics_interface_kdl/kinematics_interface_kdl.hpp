@@ -19,6 +19,7 @@
 #define KINEMATICS_INTERFACE_KDL__KINEMATICS_INTERFACE_KDL_HPP_
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -76,6 +77,10 @@ private:
   bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian);
   bool verify_jacobian_inverse(const Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian);
   bool verify_period(const double dt);
+
+  // Guards all member state below. Recursive because public methods call each other
+  // (e.g. convert_cartesian_deltas_to_joint_deltas -> calculate_jacobian_inverse).
+  std::recursive_mutex mutex_;
 
   bool initialized = false;
   std::string root_name_;
