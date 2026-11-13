@@ -18,8 +18,10 @@
 #define KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
 
 #include <gmock/gmock.h>
+#include <atomic>
 #include <memory>
 #include <string>
+#include <thread>
 #include <vector>
 
 #include "kinematics_interface/kinematics_interface.hpp"
@@ -491,12 +493,61 @@ TYPED_TEST_P(TestPlugin, plugin_no_robot_description)
   ASSERT_FALSE(this->ik_->initialize("", this->node_->get_node_parameters_interface(), ""));
 }
 
+TYPED_TEST_P(TestPlugin, plugin_is_thread_safe)
+{
+  this->loadTipParameter("link3");
+  ASSERT_TRUE(this->ik_->initialize(this->urdf_, this->node_->get_node_parameters_interface(), ""));
+
+  // Each thread uses its own joint configuration; the plugin shares internal buffers, so without
+  // a lock concurrent calls overwrite each other's state and results deviate from the serial ones.
+  constexpr int kThreads = 4;
+  constexpr int kIterations = 2000;
+  std::vector<Eigen::VectorXd> positions;
+  std::vector<Eigen::Matrix<double, 6, Eigen::Dynamic>> expected;
+  for (int t = 0; t < kThreads; ++t)
+  {
+    positions.push_back(Eigen::VectorXd::Constant(3, 0.3 * (t + 1)));
+    Eigen::Matrix<double, 6, Eigen::Dynamic> jac = Eigen::Matrix<double, 6, 3>::Zero();
+    ASSERT_TRUE(this->ik_->calculate_jacobian(positions[t], this->end_effector_, jac));
+    expected.push_back(jac);
+  }
+
+  std::atomic<int> failures{0};
+  std::vector<std::thread> threads;
+  for (int t = 0; t < kThreads; ++t)
+  {
+    threads.emplace_back(
+      [&, t]()
+      {
+        Eigen::Matrix<double, 6, Eigen::Dynamic> jac = Eigen::Matrix<double, 6, 3>::Zero();
+        Eigen::Matrix<double, Eigen::Dynamic, 6> jac_inv = Eigen::Matrix<double, 3, 6>::Zero();
+        Eigen::Isometry3d tf;
+        for (int i = 0; i < kIterations; ++i)
+        {
+          if (
+            !this->ik_->calculate_jacobian(positions[t], this->end_effector_, jac) ||
+            !jac.isApprox(expected[t], 1e-9) ||
+            !this->ik_->calculate_jacobian_inverse(positions[t], this->end_effector_, jac_inv) ||
+            !this->ik_->calculate_link_transform(positions[t], this->end_effector_, tf))
+          {
+            ++failures;
+          }
+        }
+      });
+  }
+  for (auto & th : threads)
+  {
+    th.join();
+  }
+  EXPECT_EQ(failures.load(), 0);
+}
+
 REGISTER_TYPED_TEST_SUITE_P(
   TestPlugin, plugin_function_basic, plugin_function_reduced_model_tip,
   plugin_function_reduced_model_base, plugin_jacobian_and_transform_in_root_frame,
   plugin_swapped_base_tip_keeps_chain_consistent, plugin_function_std_vector,
   plugin_calculate_frame_difference, plugin_calculate_frame_difference_std_vector,
   plugin_calculate_frame_difference_rotated_base, incorrect_parameters, incorrect_input_sizes,
-  plugin_no_robot_description);
+  plugin_no_robot_description, plugin_is_thread_safe);
 
 #endif  // KINEMATICS_INTERFACE_COMMON_TESTS_HPP_
