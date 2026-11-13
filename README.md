@@ -5,6 +5,10 @@
 
 This is a ROS 2 package for using C++ kinematics frameworks in the context of ROS 2 control. A kinematics interface is designed to allow ROS 2 controllers to control robots in Cartesian space. This package also contains a basic implementation of the interface using KDL and a pinocchio-based implementation. Use  `kinematics_interface_pinocchio`  plugin when you need high-performance kinematics computations for complex robots, require efficient handling of large kinematic chains, or want to leverage Pinocchio's advanced features such as automatic differentiation and collision detection integration. The plugin supports damped least-squares Jacobian inversion for robust singularity handling.
 
+## Thread safety
+
+The KDL and Pinocchio plugins guard their internal state with a recursive mutex (`realtime_tools::prio_inherit_recursive_mutex`, which uses priority inheritance; `std::recursive_mutex` on Windows), so the public methods (`initialize`, `calculate_*`, `convert_*`) can be called concurrently from different threads. Calls are serialized, so a real-time thread may still wait on another thread, but priority inheritance bounds the resulting priority inversion.
+
 ## Contributing
 
 As an open-source project, we welcome each contributor, regardless of their background and experience. Pick a [PR](https://github.com/ros-controls/kinematics_interface/pulls) and review it, or [create your own](https://github.com/ros-controls/kinematics_interface/contribute)!

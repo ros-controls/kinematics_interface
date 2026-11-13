@@ -25,6 +25,7 @@ bool KinematicsInterfaceKDL::initialize(
   std::shared_ptr<rclcpp::node_interfaces::NodeParametersInterface> parameters_interface,
   const std::string & param_namespace)
 {
+  std::lock_guard<RecursiveMutex> lock(mutex_);
   // track initialization plugin
   initialized = true;
 
@@ -160,6 +161,7 @@ bool KinematicsInterfaceKDL::convert_joint_deltas_to_cartesian_deltas(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & delta_theta, const std::string & link_name,
   Eigen::Matrix<double, 6, 1> & delta_x)
 {
+  std::lock_guard<RecursiveMutex> lock(mutex_);
   // verify inputs
   if (
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
@@ -184,6 +186,7 @@ bool KinematicsInterfaceKDL::convert_cartesian_deltas_to_joint_deltas(
   const Eigen::Matrix<double, 6, 1> & delta_x, const std::string & link_name,
   Eigen::Matrix<double, Eigen::Dynamic, 1> & delta_theta)
 {
+  std::lock_guard<RecursiveMutex> lock(mutex_);
   // verify inputs
   if (
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
@@ -208,6 +211,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos, const std::string & link_name,
   Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian)
 {
+  std::lock_guard<RecursiveMutex> lock(mutex_);
   // verify inputs
   if (
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
@@ -231,6 +235,7 @@ bool KinematicsInterfaceKDL::calculate_jacobian_inverse(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos, const std::string & link_name,
   Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse)
 {
+  std::lock_guard<RecursiveMutex> lock(mutex_);
   // verify inputs
   if (
     !verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name) ||
@@ -260,6 +265,7 @@ bool KinematicsInterfaceKDL::calculate_link_transform(
   const Eigen::Matrix<double, Eigen::Dynamic, 1> & joint_pos, const std::string & link_name,
   Eigen::Isometry3d & transform)
 {
+  std::lock_guard<RecursiveMutex> lock(mutex_);
   // verify inputs
   if (!verify_initialized() || !verify_joint_vector(joint_pos) || !verify_link_name(link_name))
   {
@@ -289,6 +295,7 @@ bool KinematicsInterfaceKDL::calculate_frame_difference(
   Eigen::Matrix<double, 7, 1> & x_a, Eigen::Matrix<double, 7, 1> & x_b, double dt,
   Eigen::Matrix<double, 6, 1> & delta_x)
 {
+  std::lock_guard<RecursiveMutex> lock(mutex_);
   // verify inputs
   if (!verify_period(dt))
   {

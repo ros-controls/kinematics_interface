@@ -8,6 +8,7 @@ export_windows_symbols()
 set(THIS_PACKAGE_INCLUDE_DEPENDS
   kinematics_interface
   pluginlib
+  realtime_tools
   eigen3_cmake_module
   pinocchio
 )
@@ -31,6 +32,7 @@ target_include_directories(kinematics_interface_pinocchio PUBLIC
 target_link_libraries(kinematics_interface_pinocchio PUBLIC
   kinematics_interface::kinematics_interface
   pluginlib::pluginlib
+  realtime_tools::realtime_tools
   Eigen3::Eigen
   pinocchio::pinocchio
 )

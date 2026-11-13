@@ -19,6 +19,7 @@
 #define KINEMATICS_INTERFACE_PINOCCHIO__KINEMATICS_INTERFACE_PINOCCHIO_HPP_
 
 #include <memory>
+#include <mutex>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -27,6 +28,9 @@
 #include "eigen3/Eigen/LU"
 #include "kinematics_interface/kinematics_interface.hpp"
 #include "rclcpp/node_interfaces/node_parameters_interface.hpp"
+#ifndef _WIN32
+#include "realtime_tools/mutex.hpp"
+#endif
 
 #include "pinocchio/algorithm/frames.hpp"
 #include "pinocchio/algorithm/geometry.hpp"
@@ -36,6 +40,14 @@
 
 namespace kinematics_interface_pinocchio
 {
+#ifdef _WIN32
+// realtime_tools' priority-inheritance mutex is pthread based and unavailable on Windows
+using RecursiveMutex = std::recursive_mutex;
+#else
+// Priority inheritance avoids priority inversion when a real-time thread waits on this lock
+using RecursiveMutex = realtime_tools::prio_inherit_recursive_mutex;
+#endif
+
 class KinematicsInterfacePinocchio : public kinematics_interface::KinematicsInterface
 {
 public:
@@ -81,6 +93,10 @@ private:
   bool verify_jacobian(const Eigen::Matrix<double, 6, Eigen::Dynamic> & jacobian);
   bool verify_jacobian_inverse(const Eigen::Matrix<double, Eigen::Dynamic, 6> & jacobian_inverse);
   bool verify_period(const double dt);
+
+  // Guards all member state below. Recursive because public methods call each other
+  // (e.g. convert_cartesian_deltas_to_joint_deltas -> calculate_jacobian_inverse).
+  RecursiveMutex mutex_;
 
   bool initialized = false;
   std::string root_name_;

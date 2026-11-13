@@ -17,6 +17,7 @@ on:
       - '**/package.xml'
       - '**/CMakeLists.txt'
       - '**.xml'
+      - 'kinematics_interface.rolling.repos'
   push: *event
 
 jobs:
@@ -25,3 +26,4 @@ jobs:
     with:
       ros_distro: rolling
       pixi_dependencies: typeguard jinja2 libboost-devel compilers octomap cpp-expected
+      upstream_workspace: kinematics_interface.rolling.repos
