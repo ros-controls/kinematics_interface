@@ -7,7 +7,7 @@ This is a ROS 2 package for using C++ kinematics frameworks in the context of RO
 
 ## Thread safety
 
-The KDL and Pinocchio plugins guard their internal state with a recursive mutex, so the public methods (`initialize`, `calculate_*`, `convert_*`) can be called concurrently from different threads. Calls are serialized, so avoid calling them from a real-time thread that must not block on another thread.
+The KDL and Pinocchio plugins guard their internal state with a recursive mutex (`realtime_tools::prio_inherit_recursive_mutex`, which uses priority inheritance; `std::recursive_mutex` on Windows), so the public methods (`initialize`, `calculate_*`, `convert_*`) can be called concurrently from different threads. Calls are serialized, so a real-time thread may still wait on another thread, but priority inheritance bounds the resulting priority inversion.
 
 ## Contributing
 
