@@ -31,7 +31,12 @@ target_include_directories(kinematics_interface_kdl PUBLIC
   $<INSTALL_INTERFACE:include/kinematics_interface_kdl>
 )
 target_link_libraries(kinematics_interface_kdl PUBLIC
-  Eigen3::Eigen kdl_parser::kdl_parser kinematics_interface::kinematics_interface pluginlib::pluginlib realtime_tools::realtime_tools tf2_eigen_kdl::tf2_eigen_kdl
+  Eigen3::Eigen
+  kdl_parser::kdl_parser
+  kinematics_interface::kinematics_interface
+  pluginlib::pluginlib
+  realtime_tools::realtime_tools
+  tf2_eigen_kdl::tf2_eigen_kdl
 )
 
 pluginlib_export_plugin_description_file(kinematics_interface kinematics_interface_kdl.xml)
